@@ -1,0 +1,61 @@
+# Publishing
+
+## Chrome Web Store Draft
+
+Copy-ready store listing text is maintained in [CHROME_WEB_STORE_GUIDE.md](CHROME_WEB_STORE_GUIDE.md).
+
+### Product Name
+
+WideMark: Bookmark Side Panel
+
+### Short Description
+
+A compact bookmark manager in Chrome's side panel. Browse, search, organize, style folders, and find duplicates locally.
+
+### Long Description
+
+WideMark is a lightweight bookmark manager for Chrome's side panel. It keeps bookmarks visible beside the current tab, so users can browse, search, organize, and clean up duplicate bookmark URLs without opening Chrome's full bookmark manager.
+
+Key features:
+
+- Browse bookmarks in a persistent Chrome side panel.
+- Search bookmark titles and URLs quickly.
+- Open bookmarks in the current tab, a foreground tab, or a background tab.
+- Create, edit, delete, reorder, and move bookmarks.
+- Customize folder colors and icons.
+- Adjust theme, font size, row spacing, and UI zoom.
+- Find duplicate bookmarks locally without visiting bookmarked websites.
+
+WideMark keeps the permission model narrow. It uses Chrome bookmark, storage, side panel, and favicon APIs. It does not request website host permissions and does not scan web pages.
+
+## Permissions Explanation
+
+- `sidePanel`: shows WideMark in Chrome's side panel.
+- `bookmarks`: reads and manages bookmarks at the user's request.
+- `storage`: saves display, behavior, and folder style settings.
+- `favicon`: displays bookmark icons through Chrome's Manifest V3 favicon endpoint.
+
+WideMark does not declare `host_permissions`.
+
+## Privacy Summary
+
+WideMark processes bookmark data locally in the browser. It does not sell, share, upload, or use bookmark data for advertising, profiling, analytics, or unrelated purposes.
+
+Before publishing, host the privacy policy and add the hosted URL to the Chrome Web Store Developer Dashboard.
+
+## Support Links
+
+- N2NS Lab: https://n2ns.com
+- datafrog.io: https://datafrog.io
+
+## Checklist
+
+- Run `npm run package`.
+- Upload `dist/widemark-v<version>.zip` to the Chrome Web Store.
+- Fill the store listing fields from [CHROME_WEB_STORE_GUIDE.md](CHROME_WEB_STORE_GUIDE.md).
+- Capture Chrome Web Store screenshots.
+- Host the privacy policy on the project website.
+- Add the hosted privacy policy URL to the store listing.
+- Complete the privacy practices form.
+- Verify the packaged extension contains no stale files.
+- Reload the unpacked extension and manually test browsing, search, drag/drop, settings, and duplicate checks.

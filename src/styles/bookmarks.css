@@ -1,0 +1,184 @@
+/* Bookmark Tree */
+.tree-container {
+  display: flex;
+  flex-direction: column;
+}
+
+ul {
+  list-style: none;
+  padding-left: 16px;
+  position: relative;
+}
+
+/* Vertical line for visualization */
+ul.nested-tree {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+ul.nested-tree::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--border);
+  opacity: 0.6;
+}
+
+li {
+  position: relative;
+  margin: var(--bookmark-row-gap) 0;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: var(--bookmark-padding, var(--bookmark-padding-medium));
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+  position: relative;
+}
+
+.tree-node:hover {
+  background-color: var(--bg-folder-hover);
+}
+
+.bookmark-item {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.bookmark-item:hover {
+  background-color: var(--bg-hover);
+  color: var(--accent);
+}
+
+/* Icons */
+.node-icon {
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--bookmark-icon-size);
+  height: var(--bookmark-icon-size);
+  flex: 0 0 var(--bookmark-icon-size);
+}
+
+.bookmark-item .node-icon {
+  padding: 0.12em;
+  border-radius: 50%;
+  background-color: var(--surface-variant);
+  object-fit: contain;
+}
+
+.folder-icon {
+  color: var(--folder-color);
+}
+
+.node-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+/* Folder collapse anim */
+.folder-children {
+  overflow: hidden;
+  transition: max-height var(--transition-speed) ease-in-out, opacity var(--transition-speed) ease-in-out;
+  max-height: 0;
+  opacity: 0;
+}
+
+.folder-children.visible {
+  max-height: 2000px; /* Big enough for most folders, transition done via JS height calculation */
+  opacity: 1;
+}
+
+/* Wide panel layout */
+@media (min-width: 480px) {
+  #bookmark-tree-root > ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    align-items: start;
+    gap: 0.75em;
+    padding-left: 0;
+  }
+  
+  #bookmark-tree-root > ul::before {
+    display: none;
+  }
+  
+  #bookmark-tree-root > ul > li {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.45em;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+  }
+  
+  #bookmark-tree-root > ul > li > .tree-node {
+    font-weight: 600;
+    border-radius: 6px;
+  }
+
+  #bookmark-tree-root > ul > li > .tree-node.expanded {
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.45em;
+  }
+  
+  #bookmark-tree-root > ul > li > ul.nested-tree {
+    padding-left: 0.25em;
+  }
+  
+  #bookmark-tree-root > ul > li > ul.nested-tree::before {
+    left: -4px;
+  }
+}
+
+/* Drag and Drop Visual Feedback */
+.tree-node.dragging {
+  opacity: 0.3;
+}
+
+.tree-node.drag-above::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: -1px;
+  height: 2px;
+  background-color: var(--accent);
+  z-index: 100;
+  border-radius: 1px;
+}
+
+.tree-node.drag-below::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -1px;
+  height: 2px;
+  background-color: var(--accent);
+  z-index: 100;
+  border-radius: 1px;
+}
+
+/* Highlight style when hovering in the middle of a folder to drop inside */
+.tree-node.drag-over {
+  background-color: var(--bg-hover);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1.5px var(--accent);
+}
+
