@@ -53,6 +53,22 @@ function bookmarkIcon(x, y, size, color = '#e8ded3') {
   ].join('');
 }
 
+function appIcon(x, y, size) {
+  const scale = size / 512;
+  return [
+    `<g transform="translate(${x} ${y}) scale(${scale})">`,
+    '<rect width="512" height="512" rx="100" fill="#f4f1ea"/>',
+    '<rect x="62" y="76" width="388" height="360" rx="58" fill="#2d3138"/>',
+    '<rect x="95" y="114" width="94" height="284" rx="30" fill="#b88952"/>',
+    '<path d="M121 159h42v126l-21-18-21 18V159z" fill="#f4f1ea"/>',
+    '<rect x="226" y="138" width="158" height="31" rx="15.5" fill="#f4f1ea"/>',
+    '<rect x="226" y="206" width="178" height="31" rx="15.5" fill="#5b8def"/>',
+    '<rect x="226" y="274" width="126" height="31" rx="15.5" fill="#e66b5b"/>',
+    '<rect x="226" y="342" width="151" height="31" rx="15.5" fill="#aeb4bd"/>',
+    '</g>'
+  ].join('');
+}
+
 function folderIcon(x, y, color = '#c69b5d') {
   return [
     rect(x, y + 4, 16, 11, { fill: color, radius: 2 }),
@@ -113,7 +129,7 @@ function sidePanel({ x = 1020, y = 34, width = 260, height = 766, theme = 'dark'
   const parts = [
     rect(x, y, width, height, { fill: bg, stroke: border, strokeWidth: 1 }),
     rect(x, y, width, 34, { fill: surface, stroke: border, strokeWidth: 1 }),
-    bookmarkIcon(x + 16, y + 9, 15, dark ? '#d8ccbf' : '#4f433a'),
+    appIcon(x + 15, y + 9, 16),
     text(x + 42, y + 23, 'WideMark', { size: 12, weight: 800, fill: textMain }),
     text(x + width - 20, y + 23, 'x', { size: 14, fill: textMuted, anchor: 'middle' })
   ];
@@ -314,7 +330,7 @@ function smallTile() {
   return svg(w, h, [
     rect(0, 0, w, h, { fill: '#2f2924' }),
     rect(24, 24, 392, 232, { fill: '#f6efe8', radius: 22 }),
-    bookmarkIcon(48, 50, 42, '#4b3f37'),
+    appIcon(48, 48, 46),
     text(104, 80, 'WideMark', { size: 32, weight: 900, fill: '#332821' }),
     text(50, 126, 'Bookmarks in a', { size: 30, weight: 850, fill: '#332821' }),
     text(50, 160, 'clean side panel', { size: 30, weight: 850, fill: '#332821' }),
@@ -334,7 +350,7 @@ function marqueeTile() {
   return svg(w, h, [
     rect(0, 0, w, h, { fill: '#2f2924' }),
     rect(50, 52, 1300, 456, { fill: '#f6efe8', radius: 34 }),
-    bookmarkIcon(96, 96, 58, '#4b3f37'),
+    appIcon(96, 92, 64),
     text(174, 136, 'WideMark', { size: 48, weight: 900, fill: '#332821' }),
     text(96, 220, 'A compact Chrome side panel', { size: 54, weight: 900, fill: '#332821' }),
     text(98, 276, 'for bookmarks that stay organized.', { size: 44, weight: 850, fill: '#332821' }),

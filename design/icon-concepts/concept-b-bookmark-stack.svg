@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>WideMark icon concept B - bookmark stack</title>
+  <rect width="512" height="512" rx="108" fill="#2b2925"/>
+  <path d="M160 103h164c30 0 54 24 54 54v238l-109-60-109 60V103z" fill="#b88952"/>
+  <path d="M137 132h164c30 0 54 24 54 54v238l-109-60-109 60V132z" fill="#dfc29d"/>
+  <path d="M114 161h164c30 0 54 24 54 54v238l-109-60-109 60V161z" fill="#f4efe7"/>
+  <rect x="157" y="216" width="130" height="22" rx="11" fill="#2b2925"/>
+  <rect x="157" y="270" width="94" height="22" rx="11" fill="#70675c"/>
+  <rect x="157" y="324" width="114" height="22" rx="11" fill="#70675c"/>
+</svg>

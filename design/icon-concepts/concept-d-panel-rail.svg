@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>WideMark icon concept D - panel rail</title>
+  <rect width="512" height="512" rx="108" fill="#f4f1ea"/>
+  <rect x="95" y="92" width="322" height="328" rx="54" fill="#2d3138"/>
+  <rect x="126" y="129" width="76" height="254" rx="28" fill="#b88952"/>
+  <path d="M148 169h32v94l-16-14-16 14V169z" fill="#f4f1ea"/>
+  <rect x="235" y="160" width="115" height="24" rx="12" fill="#f4f1ea"/>
+  <rect x="235" y="217" width="145" height="24" rx="12" fill="#aeb4bd"/>
+  <rect x="235" y="274" width="94" height="24" rx="12" fill="#aeb4bd"/>
+  <rect x="235" y="331" width="126" height="24" rx="12" fill="#aeb4bd"/>
+</svg>

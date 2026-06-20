@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>WideMark icon concept C - W bookmark</title>
+  <rect width="512" height="512" rx="108" fill="#111827"/>
+  <path d="M142 79h228c24 0 44 20 44 44v318L256 351 98 441V123c0-24 20-44 44-44z" fill="#eef2f7"/>
+  <path d="M154 136h204v208l-102-58-102 58V136z" fill="#111827"/>
+  <path d="M166 166l43 137 47-102 47 102 43-137" fill="none" stroke="#eef2f7" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="179" y="114" width="154" height="18" rx="9" fill="#9aa4b2"/>
+</svg>

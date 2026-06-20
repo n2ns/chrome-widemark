@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>WideMark icon concept A - side panel bookmark</title>
+  <rect width="512" height="512" rx="108" fill="#202124"/>
+  <rect x="82" y="86" width="348" height="340" rx="44" fill="#f7f3ed"/>
+  <rect x="111" y="122" width="205" height="268" rx="22" fill="#2f3136"/>
+  <rect x="334" y="122" width="67" height="268" rx="22" fill="#d7e3ff"/>
+  <path d="M353 159h29v108l-14.5-13.5L353 267V159z" fill="#2563eb"/>
+  <rect x="138" y="159" width="143" height="22" rx="11" fill="#f7f3ed"/>
+  <rect x="138" y="207" width="111" height="22" rx="11" fill="#c7c4bd"/>
+  <rect x="138" y="255" width="132" height="22" rx="11" fill="#c7c4bd"/>
+  <rect x="138" y="303" width="82" height="22" rx="11" fill="#c7c4bd"/>
+</svg>
