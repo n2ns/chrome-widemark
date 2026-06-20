@@ -43,7 +43,7 @@ The duplicate bookmark check reads bookmarks through the Chrome Bookmarks API an
 
 WideMark does not sell, rent, transfer, or share user bookmark data with third parties.
 
-WideMark does not upload bookmark data to N2NS Lab, datafrog.io, or any external server.
+WideMark does not upload any user data to N2NS Lab, datafrog.io, or any external server.
 
 ## Network Access
 

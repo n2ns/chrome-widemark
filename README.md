@@ -25,9 +25,7 @@ WideMark uses only the permissions needed for bookmark-side-panel behavior:
 ]
 ```
 
-It does not declare `host_permissions`.
-
-Duplicate detection is local only. It groups matching bookmark URLs and does not fetch bookmarked websites, open hidden tabs, or scan pages.
+It does not declare `host_permissions`. WideMark does not collect, track, upload, or sell user data. Bookmark browsing, settings, and duplicate checks are processed locally in Chrome.
 
 See [PRIVACY.md](PRIVACY.md) for the privacy policy draft.
 
