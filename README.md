@@ -88,6 +88,8 @@ chrome-widemark/
 │   ├── ui-icons.js
 │   └── styles/
 ├── icons/
+├── store-assets/
+├── design/
 ├── scripts/
 ├── test/
 └── docs/

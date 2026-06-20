@@ -51,11 +51,12 @@ Before publishing, host the privacy policy and add the hosted URL to the Chrome 
 ## Checklist
 
 - Run `npm run package`.
+- Inspect the package with `unzip -l dist/widemark-v<version>.zip`.
 - Upload `dist/widemark-v<version>.zip` to the Chrome Web Store.
 - Fill the store listing fields from [CHROME_WEB_STORE_GUIDE.md](CHROME_WEB_STORE_GUIDE.md).
 - Capture Chrome Web Store screenshots.
 - Host the privacy policy on the project website.
 - Add the hosted privacy policy URL to the store listing.
 - Complete the privacy practices form.
-- Verify the packaged extension contains no stale files.
+- Verify the packaged extension contains only `manifest.json`, `src/`, `icons/`, `icon.png`, and optional `_locales/`.
 - Reload the unpacked extension and manually test browsing, search, drag/drop, settings, and duplicate checks.

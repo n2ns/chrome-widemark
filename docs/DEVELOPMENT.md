@@ -58,6 +58,22 @@ dist/
 └── widemark-v<version>.zip
 ```
 
+The release zip is intentionally minimal. It should contain only runtime extension files:
+
+- `manifest.json`
+- `src/`
+- `icons/`
+- `icon.png`
+- `_locales/` when localization is added
+
+It must not contain development or publishing support files such as `.env`, `node_modules/`, `dist/`, `docs/`, `design/`, `store-assets/`, `scripts/`, `test/`, `README.md`, `TODO.md`, or `package*.json`.
+
+Check the zip contents before upload:
+
+```bash
+unzip -l dist/widemark-v<version>.zip
+```
+
 Upload the zip file to the Chrome Web Store. `dist/` is generated output and should not be committed.
 
 `npm run build` uses the unpacked `dist/widemark/` directory for local Windows/Chrome testing, so the tested layout matches the release package layout. It also copies the zip file to the parent Windows artifacts directory.
@@ -82,6 +98,8 @@ chrome-widemark/
 │   ├── ui-icons.js
 │   └── styles/
 ├── icons/
+├── store-assets/
+├── design/
 ├── scripts/
 ├── test/
 └── docs/
