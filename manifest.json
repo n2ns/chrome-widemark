@@ -1,5 +1,6 @@
 {
   "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA14k0h++bl/TQ5fAtLO/RGxvRRI5zwBMdOYDqAKt+mMC5KNVj5UTOkjOmzy1dSXLNVRVWrlNtMzQf+U0Duzyp/vC9w0Y/9sm687wrqMonFDJqRRo06+6iqriMHCzL2eYnFuoORCfeEatdhPvNWs1Cs60Rcy5ZuZQjv6R0vBh+drplqyjzwoxt0Ltvp2IIwpHI19MppBv3MSbDUYQ5Tf0ijpMNmVG/KrJ61Mi+/a08TZ2oOpfveIGTmyzqT5Hccjmt2/JXeHA56aZCBWamsV4sOfW4O1He+NfuHJC4xbq4Yxm0hQdRG6D+/yLrBYg0UT8JaCzXEFwYekswhgIp4IiB4QIDAQAB",
   "name": "WideMark: Bookmark Side Panel",
   "short_name": "WideMark",
   "version": "1.0.1",
