@@ -1,0 +1,44 @@
+name: Publish to Chrome Web Store
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    name: Build, Package, and Submit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build and Package Extension
+        run: npm run package
+
+      - name: Locate Packaged Zip
+        id: locate_zip
+        run: |
+          ZIP_FILE=$(find dist -maxdepth 1 -name "widemark-v*.zip" | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "Error: Packaged zip file not found in dist/"
+            exit 1
+          fi
+          echo "Found package zip: $ZIP_FILE"
+          echo "zip_path=$ZIP_FILE" >> $GITHUB_OUTPUT
+
+      - name: Upload & Submit for Review
+        run: |
+          npx chrome-webstore-upload-cli upload --source "${{ steps.locate_zip.outputs.zip_path }}"
+          npx chrome-webstore-upload-cli publish
+        env:
+          EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
