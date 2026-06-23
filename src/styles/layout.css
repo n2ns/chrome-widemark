@@ -23,9 +23,9 @@
   width: 100%;
 }
 
-.brand-svg {
-  color: var(--text-secondary);
+.brand-icon {
   flex: 0 0 auto;
+  display: block;
 }
 
 .header-actions {
