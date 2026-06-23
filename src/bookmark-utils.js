@@ -18,11 +18,9 @@
 
   function sortNodes(nodesList) {
     return [...nodesList].sort((a, b) => {
-      const aIsFolder = !a.url;
-      const bIsFolder = !b.url;
-      if (aIsFolder && !bIsFolder) return -1;
-      if (!aIsFolder && bIsFolder) return 1;
-      return 0;
+      const aIndex = typeof a.index === 'number' ? a.index : 0;
+      const bIndex = typeof b.index === 'number' ? b.index : 0;
+      return aIndex - bIndex;
     });
   }
 
@@ -50,20 +48,22 @@
   }
 
   function findDuplicateBookmarks(bookmarks) {
-    const urlMap = new Map();
+    const domainMap = new Map();
     bookmarks.forEach((bookmark) => {
       if (!bookmark || !bookmark.url) return;
-      const normalizedUrl = bookmark.url.trim().toLowerCase();
-      if (!urlMap.has(normalizedUrl)) {
-        urlMap.set(normalizedUrl, []);
+      const domain = bookmarkDomain(bookmark.url);
+      if (!domain) return;
+      const normalizedDomain = domain.trim().toLowerCase();
+      if (!domainMap.has(normalizedDomain)) {
+        domainMap.set(normalizedDomain, []);
       }
-      urlMap.get(normalizedUrl).push(bookmark);
+      domainMap.get(normalizedDomain).push(bookmark);
     });
 
     const duplicates = [];
-    urlMap.forEach((items) => {
+    domainMap.forEach((items, domain) => {
       if (items.length > 1) {
-        duplicates.push({ url: items[0].url, items });
+        duplicates.push({ url: domain, items });
       }
     });
     return duplicates;

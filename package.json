@@ -1,6 +1,6 @@
 {
   "name": "widemark",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Compact Chrome bookmark side panel extension for browsing, search, organization, styling, and local duplicate checks.",
   "scripts": {
     "validate": "node --check src/background.js && node --check src/bookmark-utils.js && node --check src/ui-icons.js && node --check src/bookmark-tree-controller.js && node --check src/duplicate-renderer.js && node --check src/duplicate-finder-controller.js && node --check src/modal-dialog.js && node --check src/context-menu-controller.js && node --check src/settings-controller.js && node --check src/sidepanel.js && node --check scripts/package-extension.js && node --check scripts/generate-store-assets.js",

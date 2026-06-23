@@ -25,18 +25,30 @@ test('bookmarkDomain - extracts hostname correctly', () => {
   assert.strictEqual(bookmarkDomain('invalid-url'), null);
 });
 
-test('sortNodes - folders are grouped first', () => {
+test('sortNodes - sorts by index', () => {
   const nodes = [
-    { title: 'A Bookmark', url: 'https://a.com' },
-    { title: 'B Folder' },
-    { title: 'C Bookmark', url: 'https://c.com' },
-    { title: 'D Folder' }
+    { title: 'A Bookmark', url: 'https://a.com', index: 2 },
+    { title: 'B Folder', index: 0 },
+    { title: 'C Bookmark', url: 'https://c.com', index: 3 },
+    { title: 'D Folder', index: 1 }
   ];
   const sorted = sortNodes(nodes);
   assert.strictEqual(sorted[0].title, 'B Folder');
   assert.strictEqual(sorted[1].title, 'D Folder');
   assert.strictEqual(sorted[2].title, 'A Bookmark');
   assert.strictEqual(sorted[3].title, 'C Bookmark');
+});
+
+test('sortNodes - preserves mixed folder and bookmark index order', () => {
+  const nodes = [
+    { title: 'A Bookmark', url: 'https://a.com', index: 0 },
+    { title: 'B Folder', index: 1 },
+    { title: 'C Bookmark', url: 'https://c.com', index: 2 }
+  ];
+  const sorted = sortNodes(nodes);
+  assert.strictEqual(sorted[0].title, 'A Bookmark');
+  assert.strictEqual(sorted[1].title, 'B Folder');
+  assert.strictEqual(sorted[2].title, 'C Bookmark');
 });
 
 test('computeMoveDestination - adjusts same-parent downward moves', () => {
@@ -82,7 +94,7 @@ test('computeMoveDestination - inside folder appends to target folder', () => {
   });
 });
 
-test('findDuplicateBookmarks - groups matching URLs case-insensitively', () => {
+test('findDuplicateBookmarks - groups matching domains case-insensitively', () => {
   const duplicates = findDuplicateBookmarks([
     { id: '1', title: 'A', url: 'https://example.com/page' },
     { id: '2', title: 'B', url: ' https://EXAMPLE.com/page ' },
@@ -91,7 +103,19 @@ test('findDuplicateBookmarks - groups matching URLs case-insensitively', () => {
   ]);
 
   assert.strictEqual(duplicates.length, 1);
-  assert.strictEqual(duplicates[0].url, 'https://example.com/page');
+  assert.strictEqual(duplicates[0].url, 'example.com');
+  assert.deepStrictEqual(duplicates[0].items.map(item => item.id), ['1', '2']);
+});
+
+test('findDuplicateBookmarks - groups matching domains with different paths', () => {
+  const duplicates = findDuplicateBookmarks([
+    { id: '1', title: 'A', url: 'https://example.com/page1' },
+    { id: '2', title: 'B', url: 'https://example.com/page2' },
+    { id: '3', title: 'C', url: 'https://other.com/' }
+  ]);
+
+  assert.strictEqual(duplicates.length, 1);
+  assert.strictEqual(duplicates[0].url, 'example.com');
   assert.deepStrictEqual(duplicates[0].items.map(item => item.id), ['1', '2']);
 });
 

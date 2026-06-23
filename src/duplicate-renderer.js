@@ -110,6 +110,7 @@
           titleSpan.style.cursor = 'pointer';
           titleSpan.style.textDecoration = 'none';
           titleSpan.textContent = item.title || '(No Title)';
+          titleSpan.title = item.url;
 
           const pathSpan = document.createElement('span');
           pathSpan.className = 'duplicate-item-path';
@@ -122,7 +123,7 @@
           deleteBtn.innerHTML = DELETE_ICON;
 
           titleSpan.addEventListener('click', (event) => {
-            handleBookmarkClick(group.url, event);
+            handleBookmarkClick(item.url, event);
           });
           titleSpan.addEventListener('mouseenter', () => {
             titleSpan.style.textDecoration = 'underline';
