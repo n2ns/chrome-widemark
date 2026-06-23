@@ -34,11 +34,12 @@ jobs:
           echo "zip_path=$ZIP_FILE" >> $GITHUB_OUTPUT
 
       - name: Upload & Submit for Review
-        run: |
-          npx chrome-webstore-upload-cli upload --source "${{ steps.locate_zip.outputs.zip_path }}"
-          npx chrome-webstore-upload-cli publish
-        env:
-          EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+        uses: mnao305/chrome-extension-upload@v6.0.0
+        with:
+          file-path: ${{ steps.locate_zip.outputs.zip_path }}
+          extension-id: ${{ secrets.EXTENSION_ID }}
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+          refresh-token: ${{ secrets.REFRESH_TOKEN }}
+          publish: true
+
