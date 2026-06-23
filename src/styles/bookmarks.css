@@ -10,6 +10,10 @@ ul {
   position: relative;
 }
 
+#bookmark-tree-root > ul {
+  padding-left: 0;
+}
+
 /* Vertical line for visualization */
 ul.nested-tree {
   margin-top: 2px;
