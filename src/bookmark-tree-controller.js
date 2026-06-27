@@ -48,6 +48,65 @@
     element.dataset.dropPosition = dropPosition;
   }
 
+  function hasTransferType(dataTransfer, type) {
+    return Array.prototype.includes.call(dataTransfer.types || [], type);
+  }
+
+  function firstUriListUrl(uriList) {
+    return uriList
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .find(line => line && !line.startsWith('#')) || '';
+  }
+
+  function firstPlainTextUrl(text) {
+    return text
+      .trim()
+      .split(/\s+/)
+      .find(Boolean) || '';
+  }
+
+  function normalizeDroppedUrl(dataTransfer) {
+    const uriListUrl = firstUriListUrl(dataTransfer.getData('text/uri-list') || '');
+    const url = uriListUrl || firstPlainTextUrl(dataTransfer.getData('text/plain') || '');
+    if (!url) return null;
+
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+        return null;
+      }
+      return parsedUrl.href;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function extractLinkInfo(dataTransfer) {
+    const url = normalizeDroppedUrl(dataTransfer);
+    if (!url) return null;
+
+    let title = '';
+    const html = dataTransfer.getData('text/html');
+    if (html && typeof DOMParser !== 'undefined') {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const anchor = doc.querySelector('a');
+      if (anchor) {
+        title = (anchor.textContent || anchor.innerText || '').trim();
+      }
+    }
+    if (!title) {
+      try {
+        const parsedUrl = new URL(url);
+        title = parsedUrl.hostname + (parsedUrl.pathname !== '/' ? parsedUrl.pathname : '');
+      } catch (_) {
+        title = url;
+      }
+    }
+    return { url, title: title.trim() };
+  }
+
   function shouldSearchBookmarks(query) {
     return query.length > 0 && !(query.length === 1 && /^[\x00-\x7F]$/.test(query));
   }
@@ -217,6 +276,7 @@
         draggedNodeId = node.id;
         draggedNode = node;
         event.dataTransfer.setData('text/plain', node.id);
+        event.dataTransfer.setData('application/x-bookmark-id', node.id);
         element.classList.add('dragging');
         event.stopPropagation();
       });
@@ -232,10 +292,15 @@
 
       element.addEventListener('dragover', (event) => {
         if (state.dragProtectionEnabled) return;
-        event.preventDefault();
-        event.stopPropagation();
 
         if (draggedNodeId === node.id) return;
+
+        const isInternal = hasTransferType(event.dataTransfer, 'application/x-bookmark-id');
+        const isExternalLink = hasTransferType(event.dataTransfer, 'text/uri-list') || hasTransferType(event.dataTransfer, 'text/plain');
+        if (!isInternal && !isExternalLink) return;
+
+        event.preventDefault();
+        event.stopPropagation();
 
         const rect = element.getBoundingClientRect();
         const y = event.clientY - rect.top;
@@ -262,16 +327,37 @@
         element.classList.remove('drag-above', 'drag-below', 'drag-over');
         delete element.dataset.dropPosition;
 
-        const draggedId = event.dataTransfer.getData('text/plain') || draggedNodeId;
-        if (!draggedId || draggedId === node.id) return;
+        const isInternal = hasTransferType(event.dataTransfer, 'application/x-bookmark-id');
 
-        const moveDest = computeMoveDestination(draggedNode || { id: draggedId }, node, dropPos);
+        if (isInternal) {
+          const draggedId = event.dataTransfer.getData('application/x-bookmark-id') || draggedNodeId;
+          if (!draggedId || draggedId === node.id) return;
 
-        chromeApi.bookmarks.move(draggedId, moveDest, () => {
-          if (chromeApi.runtime.lastError) {
-            reportChromeError('Error moving bookmark');
-          }
-        });
+          const moveDest = computeMoveDestination(draggedNode || { id: draggedId }, node, dropPos);
+
+          chromeApi.bookmarks.move(draggedId, moveDest, () => {
+            if (chromeApi.runtime.lastError) {
+              reportChromeError('Error moving bookmark');
+            }
+          });
+        } else {
+          // External drag (hyperlink from webpage)
+          const linkInfo = extractLinkInfo(event.dataTransfer);
+          if (!linkInfo) return;
+
+          const dest = computeMoveDestination(null, node, dropPos);
+
+          chromeApi.bookmarks.create({
+            parentId: dest.parentId,
+            index: dest.index,
+            title: linkInfo.title,
+            url: linkInfo.url
+          }, () => {
+            if (chromeApi.runtime.lastError) {
+              reportChromeError('Error creating bookmark from drag');
+            }
+          });
+        }
       });
     }
 
@@ -504,6 +590,7 @@
     findBookmarksBarNode,
     gatherFolderIds,
     determineDropPosition,
+    extractLinkInfo,
     shouldSearchBookmarks,
     sortSearchResults,
     createBookmarkTreeController

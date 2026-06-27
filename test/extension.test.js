@@ -12,6 +12,7 @@ const {
   findBookmarksBarNode,
   gatherFolderIds,
   determineDropPosition,
+  extractLinkInfo,
   shouldSearchBookmarks,
   sortSearchResults
 } = require('../src/bookmark-tree-controller.js');
@@ -204,6 +205,79 @@ test('determineDropPosition - supports folder before inside and after drops', ()
   assert.strictEqual(determineDropPosition(5, 40, true), 'above');
   assert.strictEqual(determineDropPosition(20, 40, true), 'inside');
   assert.strictEqual(determineDropPosition(35, 40, true), 'below');
+});
+
+function createDataTransfer(data) {
+  return {
+    types: Object.keys(data),
+    getData: type => data[type] || ''
+  };
+}
+
+test('extractLinkInfo - reads the first URL from uri-list and uses anchor text as title', () => {
+  const originalDOMParser = global.DOMParser;
+  global.DOMParser = class FakeDOMParser {
+    parseFromString(html) {
+      const match = html.match(/<a\b[^>]*>([\s\S]*?)<\/a>/i);
+      const text = match ? match[1].replace(/<[^>]+>/g, '').trim() : '';
+      return {
+        querySelector: selector => (selector === 'a' && text ? { textContent: text, innerText: text } : null)
+      };
+    }
+  };
+
+  try {
+    assert.deepStrictEqual(extractLinkInfo(createDataTransfer({
+      'text/uri-list': '# dragged link\r\nhttps://example.com/docs\r\nhttps://ignored.example/',
+      'text/html': '<a href="https://example.com/docs"><strong>Example Docs</strong></a>'
+    })), {
+      url: 'https://example.com/docs',
+      title: 'Example Docs'
+    });
+  } finally {
+    global.DOMParser = originalDOMParser;
+  }
+});
+
+test('extractLinkInfo - falls back to a compact URL title for plain URLs', () => {
+  assert.deepStrictEqual(extractLinkInfo(createDataTransfer({
+    'text/plain': ' https://example.com/path/page?utm=1 \nhttps://ignored.example/'
+  })), {
+    url: 'https://example.com/path/page?utm=1',
+    title: 'example.com/path/page'
+  });
+});
+
+test('extractLinkInfo - falls back when dragged anchor text is blank', () => {
+  const originalDOMParser = global.DOMParser;
+  global.DOMParser = class FakeDOMParser {
+    parseFromString() {
+      return {
+        querySelector: () => ({ textContent: '   ', innerText: '   ' })
+      };
+    }
+  };
+
+  try {
+    assert.deepStrictEqual(extractLinkInfo(createDataTransfer({
+      'text/uri-list': 'https://example.com/fallback',
+      'text/html': '<a href="https://example.com/fallback">   </a>'
+    })), {
+      url: 'https://example.com/fallback',
+      title: 'example.com/fallback'
+    });
+  } finally {
+    global.DOMParser = originalDOMParser;
+  }
+});
+
+test('extractLinkInfo - rejects non-web and invalid dropped URLs', () => {
+  assert.strictEqual(extractLinkInfo(createDataTransfer({
+    'text/uri-list': 'javascript:alert(1)'
+  })), null);
+  assert.strictEqual(extractLinkInfo(createDataTransfer({
+    'text/plain': 'not a url'
+  })), null);
 });
 
 test('shouldSearchBookmarks - skips any single ASCII character', () => {
