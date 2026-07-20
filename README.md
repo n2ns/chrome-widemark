@@ -4,13 +4,17 @@ WideMark is a compact Chrome Manifest V3 bookmark manager for the side panel. It
 
 ## Features
 
-- Browse bookmarks in Chrome's side panel.
+- Browse the full bookmark tree — Bookmarks Bar plus Other/Mobile Bookmarks — in Chrome's side panel.
 - Search bookmark titles and URLs.
-- Open bookmarks in the current tab, a foreground tab, or a background tab.
+- Open bookmarks in the current tab, a foreground tab, or a background tab (middle-click supported).
 - Create, edit, delete, reorder, and move bookmarks.
+- Sort a folder's contents by name from the right-click menu.
+- See a collapsible Recently Added section at the top of the tree.
+- Navigate with the keyboard: Alt+B opens the panel, arrow keys walk the tree, `/` focuses search.
 - Customize folder colors and icons.
 - Adjust theme, font size, row spacing, and UI zoom.
 - Find duplicate bookmarks locally, by exact URL or by shared domain.
+- Clean up locally: delete empty folders and merge same-named sibling folders.
 
 ## Privacy And Permissions
 
@@ -81,6 +85,7 @@ chrome-widemark/
 │   ├── context-menu-controller.js
 │   ├── duplicate-finder-controller.js
 │   ├── duplicate-renderer.js
+│   ├── cleanup-controller.js
 │   ├── modal-dialog.js
 │   ├── bookmark-utils.js
 │   ├── ui-icons.js

@@ -28,8 +28,9 @@ WideMark uses bookmark data only to provide user-facing bookmark features:
 - Displaying the bookmark tree in the side panel.
 - Searching bookmarks by title or URL.
 - Opening bookmarks according to user settings.
-- Creating, editing, deleting, reordering, and moving bookmarks.
-- Finding duplicate bookmark URLs locally.
+- Creating, editing, deleting, reordering, sorting, and moving bookmarks.
+- Finding duplicate bookmarks locally (by exact URL or by domain).
+- Cleaning up locally: deleting empty folders and merging same-named sibling folders.
 
 WideMark does not use bookmark data for advertising, profiling, analytics, or unrelated purposes.
 
@@ -37,7 +38,7 @@ WideMark does not use bookmark data for advertising, profiling, analytics, or un
 
 WideMark processes bookmark data locally in the browser.
 
-The duplicate bookmark check reads bookmarks through the Chrome Bookmarks API and groups matching URLs locally. It does not fetch, visit, or scan bookmarked websites.
+The duplicate bookmark check and the cleanup actions read bookmarks through the Chrome Bookmarks API and work entirely locally. They do not fetch, visit, or scan bookmarked websites.
 
 ## Data Sharing
 

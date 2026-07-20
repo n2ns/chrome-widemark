@@ -19,10 +19,23 @@ document.addEventListener('DOMContentLoaded', () => {
     isFoldersExpanded: false,
     leftClickAction: 'current',
     dragProtectionEnabled: false,
-    tooltipEnabled: true
+    tooltipEnabled: true,
+    showOtherBookmarks: true,
+    showRecent: true
   };
   let folderStylesCache = [];
   let bookmarkTree;
+
+  // Batch operations (sort, cleanup) fire one bookmark event per move;
+  // suppress per-event re-renders and refresh once at the end.
+  let batchDepth = 0;
+  function beginBatchUpdates() {
+    batchDepth += 1;
+  }
+  function endBatchUpdates() {
+    batchDepth = Math.max(0, batchDepth - 1);
+    if (batchDepth === 0) bookmarkTree.refreshView();
+  }
 
   function reportChromeError(action) {
     if (chrome.runtime.lastError) {
@@ -53,7 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
     getAssignedStyle: (nodeId) => bookmarkTree.getAssignedStyle(nodeId),
     getFolderIdentity: (nodeId) => bookmarkTree.getFolderIdentity(nodeId),
     refreshRecordMetadata: (records) => bookmarkTree.refreshRecordMetadata(records),
-    replaceFolderStyle
+    replaceFolderStyle,
+    computeSortedChildren: bookmarkUtils.computeSortedChildren,
+    beginBatchUpdates,
+    endBatchUpdates
   });
 
   bookmarkTree = window.WideMarkBookmarkTree.createBookmarkTreeController({
@@ -81,6 +97,26 @@ document.addEventListener('DOMContentLoaded', () => {
         modalDialog.cancelActiveModal();
       }
       hideContextMenu();
+      return;
+    }
+
+    // "/" focuses (and if needed opens) the search box from anywhere in the
+    // main view.
+    if (event.key === '/') {
+      const target = event.target;
+      const isTyping = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+      const modal = document.getElementById('custom-modal');
+      const mainView = document.getElementById('main-view');
+      if (isTyping || (modal && modal.style.display === 'flex') ||
+        (mainView && mainView.style.display === 'none')) {
+        return;
+      }
+      event.preventDefault();
+      if (!appState.isSearchOpen) {
+        searchToggleBtn.click();
+      } else {
+        searchInput.focus();
+      }
     }
   });
 
@@ -112,6 +148,16 @@ document.addEventListener('DOMContentLoaded', () => {
     reportChromeError
   });
 
+  window.WideMarkCleanup.createCleanupController({
+    document,
+    chromeApi: chrome,
+    bookmarkUtils,
+    modalDialog,
+    reportChromeError,
+    beginBatchUpdates,
+    endBatchUpdates
+  });
+
   // During a bookmark import Chrome fires onCreated per node; ignore those
   // and re-render once at the end (per the chrome.bookmarks API guidance).
   let isImportingBookmarks = false;
@@ -120,15 +166,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   chrome.bookmarks.onImportEnded.addListener(() => {
     isImportingBookmarks = false;
-    bookmarkTree.refreshView();
+    if (batchDepth === 0) bookmarkTree.refreshView();
   });
 
   chrome.bookmarks.onCreated.addListener(() => {
-    if (!isImportingBookmarks) bookmarkTree.refreshView();
+    if (!isImportingBookmarks && batchDepth === 0) bookmarkTree.refreshView();
   });
-  chrome.bookmarks.onRemoved.addListener(() => bookmarkTree.refreshView());
-  chrome.bookmarks.onChanged.addListener(() => bookmarkTree.refreshView());
-  chrome.bookmarks.onMoved.addListener(() => bookmarkTree.refreshView());
+  chrome.bookmarks.onRemoved.addListener(() => {
+    if (batchDepth === 0) bookmarkTree.refreshView();
+  });
+  chrome.bookmarks.onChanged.addListener(() => {
+    if (batchDepth === 0) bookmarkTree.refreshView();
+  });
+  chrome.bookmarks.onMoved.addListener(() => {
+    if (batchDepth === 0) bookmarkTree.refreshView();
+  });
 
   // Folder styles edited on another synced device arrive through storage
   // sync; refresh the cache and re-render. Writes made by this panel are
@@ -138,7 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextStyles = normalizeFolderStyleRecords(changes.folderStyles.newValue);
     if (JSON.stringify(nextStyles) === JSON.stringify(folderStylesCache)) return;
     folderStylesCache = nextStyles;
-    bookmarkTree.refreshView();
+    // During a batch the cache update is enough; endBatchUpdates re-renders.
+    if (batchDepth === 0) bookmarkTree.refreshView();
   });
 
   settingsController.initSettings();

@@ -93,6 +93,7 @@ chrome-widemark/
 │   ├── settings-controller.js
 │   ├── duplicate-finder-controller.js
 │   ├── duplicate-renderer.js
+│   ├── cleanup-controller.js
 │   ├── modal-dialog.js
 │   ├── bookmark-utils.js
 │   ├── ui-icons.js
@@ -110,7 +111,9 @@ chrome-widemark/
 Current Node tests cover:
 
 - bookmark helper behavior
-- duplicate grouping
+- duplicate grouping (exact URL and same domain) and chunked scanning
+- folder style record assignment, same-millisecond tie-breaking, and replacement
+- folder sorting order, empty-folder detection, and same-name folder grouping (including managed-bookmark exclusion)
 - drag/drop move destination calculations
 - search thresholds and search result ordering
 - module load order

@@ -11,7 +11,10 @@ const {
   findDuplicateBookmarksByUrl,
   normalizeFolderStyleRecords,
   assignFolderStyles,
-  replaceFolderStyle
+  replaceFolderStyle,
+  computeSortedChildren,
+  findEmptyFolders,
+  findSameNameFolderGroups
 } = require('../src/bookmark-utils.js');
 const { getBookmarkIconSrc, LINK_ICON_DATA_URI } = require('../src/ui-icons.js');
 const {
@@ -548,6 +551,103 @@ test('runChunkedDuplicateScan - stops early when shouldContinue reports supersed
 test('bookmarkDomainKey - lowercases hostnames and rejects non-web URLs', () => {
   assert.strictEqual(bookmarkDomainKey('https://WWW.Example.com/page'), 'www.example.com');
   assert.strictEqual(bookmarkDomainKey('chrome://bookmarks'), null);
+});
+
+test('computeSortedChildren - folders first, then bookmarks, alphabetically and numerically', () => {
+  const sorted = computeSortedChildren([
+    { id: '1', title: 'zeta', url: 'https://z.example' },
+    { id: '2', title: 'Alpha Folder' },
+    { id: '3', title: 'alpha', url: 'https://a.example' },
+    { id: '4', title: 'item 10', url: 'https://ten.example' },
+    { id: '5', title: 'item 2', url: 'https://two.example' },
+    { id: '6', title: 'beta folder' }
+  ]);
+
+  assert.deepStrictEqual(sorted.map(node => node.id), ['2', '6', '3', '5', '4', '1']);
+});
+
+test('findEmptyFolders - reports topmost deep-empty folders and skips permanent roots', () => {
+  const tree = [{
+    id: '0',
+    children: [{
+      id: '1',
+      title: 'Bookmarks Bar',
+      children: [
+        { id: '10', title: 'Full', children: [{ id: '11', title: 'A', url: 'https://a.example' }] },
+        {
+          id: '20',
+          title: 'Hollow',
+          children: [{ id: '21', title: 'Inner', children: [] }]
+        },
+        { id: '30', title: 'Bare', children: [] }
+      ]
+    }, {
+      id: '2',
+      title: 'Other Bookmarks',
+      children: []
+    }]
+  }];
+
+  const empties = findEmptyFolders(tree);
+
+  assert.deepStrictEqual(empties.map(folder => folder.id), ['20', '30']);
+  assert.deepStrictEqual(empties[0].path, ['Bookmarks Bar', 'Hollow']);
+});
+
+test('findEmptyFolders and findSameNameFolderGroups - skip policy-managed subtrees', () => {
+  const tree = [{
+    id: '0',
+    children: [{
+      id: '1',
+      title: 'Bookmarks Bar',
+      children: [
+        { id: '90', title: 'Managed', unmodifiable: 'managed', children: [] },
+        {
+          id: '91',
+          title: 'Managed Parent',
+          unmodifiable: 'managed',
+          children: [
+            { id: '92', title: 'Dup', index: 0, children: [] },
+            { id: '93', title: 'Dup', index: 1, children: [] }
+          ]
+        },
+        { id: '94', title: 'User Empty', children: [] }
+      ]
+    }]
+  }];
+
+  assert.deepStrictEqual(findEmptyFolders(tree).map(folder => folder.id), ['94']);
+  assert.deepStrictEqual(findSameNameFolderGroups(tree), []);
+});
+
+test('findSameNameFolderGroups - groups same-titled siblings only, keeping the lowest index', () => {
+  const tree = [{
+    id: '0',
+    children: [{
+      id: '1',
+      title: 'Bookmarks Bar',
+      children: [
+        { id: '10', title: 'Dev', index: 0, children: [] },
+        { id: '11', title: 'Dev', index: 2, children: [] },
+        { id: '12', title: 'Dev', index: 1, children: [] },
+        {
+          id: '20',
+          title: 'Nested',
+          index: 3,
+          children: [
+            { id: '21', title: 'Dev', index: 0, children: [] }
+          ]
+        }
+      ]
+    }]
+  }];
+
+  const groups = findSameNameFolderGroups(tree);
+
+  assert.strictEqual(groups.length, 1);
+  assert.strictEqual(groups[0].keepId, '10');
+  assert.deepStrictEqual(groups[0].mergeIds, ['12', '11']);
+  assert.deepStrictEqual(groups[0].path, ['Bookmarks Bar', 'Dev']);
 });
 
 test('THEME_CLASSES - includes every selectable theme class', () => {

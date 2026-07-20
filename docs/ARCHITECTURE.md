@@ -5,7 +5,7 @@ WideMark is intentionally lightweight: plain Manifest V3 extension pages, no fro
 ## Runtime Shape
 
 - `manifest.json` declares the side panel page and required permissions.
-- `src/background.js` is the MV3 service worker. It only configures action-click behavior for the side panel.
+- `src/background.js` is the MV3 service worker. It configures action-click behavior for the side panel and handles the keyboard command (default Alt+B) that opens it.
 - `src/sidepanel.html` is the extension page shown in Chrome's side panel.
 - `src/sidepanel.js` is the composition root. It wires together the controllers below.
 
@@ -17,6 +17,7 @@ WideMark is intentionally lightweight: plain Manifest V3 extension pages, no fro
 - `src/modal-dialog.js`: shared custom modal dialogs. Browser-native `alert`, `confirm`, and `prompt` should not be used.
 - `src/duplicate-finder-controller.js`: duplicate bookmark check flow.
 - `src/duplicate-renderer.js`: duplicate result DOM rendering.
+- `src/cleanup-controller.js`: empty-folder deletion and same-named sibling folder merging.
 - `src/bookmark-utils.js`: pure bookmark helpers and move destination calculation.
 - `src/ui-icons.js`: shared SVG and favicon helpers.
 

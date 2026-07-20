@@ -9,6 +9,7 @@
 - Side Panel API: https://developer.chrome.com/docs/extensions/reference/api/sidePanel
 - Bookmarks API: https://developer.chrome.com/docs/extensions/reference/api/bookmarks
 - Storage API: https://developer.chrome.com/docs/extensions/reference/api/storage
+- Commands API (keyboard shortcuts): https://developer.chrome.com/docs/extensions/reference/api/commands
 - Fetching favicons in MV3: https://developer.chrome.com/docs/extensions/how-to/ui/favicons
 - Chrome extension samples: https://developer.chrome.com/docs/extensions/samples
 

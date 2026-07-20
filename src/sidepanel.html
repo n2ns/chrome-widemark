@@ -78,6 +78,16 @@
             <label for="setting-sync-theme">Sync with Chrome / System Theme</label>
           </div>
 
+          <div class="settings-group checkbox-group">
+            <input type="checkbox" id="setting-show-other" checked>
+            <label for="setting-show-other">Show Other Bookmarks</label>
+          </div>
+
+          <div class="settings-group checkbox-group">
+            <input type="checkbox" id="setting-show-recent" checked>
+            <label for="setting-show-recent">Show Recently Added Section</label>
+          </div>
+
           <div class="settings-group">
             <label for="setting-font-size">Font Size</label>
             <select id="setting-font-size">
@@ -171,6 +181,17 @@
 
           <div id="duplicate-results" class="duplicate-results-container"></div>
         </div>
+
+        <div class="settings-card">
+          <div class="actions-header-row">
+            <h3>Cleanup</h3>
+            <div class="actions-buttons-row">
+              <button id="clean-empty-folders-btn" class="modal-btn secondary" title="Find and delete folders containing no bookmarks">Empty Folders</button>
+              <button id="merge-folders-btn" class="modal-btn secondary" title="Merge same-named sibling folders into one">Merge Folders</button>
+            </div>
+          </div>
+          <div id="cleanup-results" class="duplicate-results-container"></div>
+        </div>
       </div>
 
       <div id="help-view" style="display: none;">
@@ -181,14 +202,17 @@
               <h4>Basics</h4>
               <ul>
                 <li>Click a folder to expand or collapse it.</li>
-                <li>Use the search button to filter bookmarks by title or URL.</li>
-                <li>Ctrl-click opens a bookmark in a background tab.</li>
+                <li>Use the search button (or press "/") to filter bookmarks by title or URL.</li>
+                <li>Ctrl-click or middle-click opens a bookmark in a background tab.</li>
+                <li>Arrow keys move through the tree; Enter opens the selected item.</li>
+                <li>Press Alt+B to open WideMark from any page (configurable at chrome://extensions/shortcuts).</li>
               </ul>
             </section>
             <section class="help-item">
               <h4>Organize</h4>
               <ul>
                 <li>Right-click a folder or bookmark to add, rename, edit, or delete items.</li>
+                <li>Right-click a folder and choose "Sort by Name" to order its contents.</li>
                 <li>Drag items to reorder them or move them into another folder.</li>
                 <li>Folder styles are stored separately from Chrome bookmarks.</li>
               </ul>
@@ -197,8 +221,9 @@
               <h4>Actions</h4>
               <ul>
                 <li>Find duplicate bookmark URLs or same-domain bookmarks locally.</li>
+                <li>Delete empty folders and merge same-named sibling folders.</li>
                 <li>Review folder paths before deleting.</li>
-                <li>Deletion requires confirmation.</li>
+                <li>Deletion and merging require confirmation.</li>
               </ul>
             </section>
             <section class="help-item">
@@ -245,6 +270,10 @@
     <button id="menu-add-folder" class="menu-item">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
       Add Folder
+    </button>
+    <button id="menu-sort" class="menu-item">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h13"></path><path d="M3 12h9"></path><path d="M3 18h5"></path><path d="M18 6v12"></path><path d="M15 15l3 3 3-3"></path></svg>
+      Sort by Name
     </button>
     <div class="menu-separator"></div>
     <button id="menu-edit" class="menu-item">
@@ -307,6 +336,7 @@
   <script src="bookmark-tree-controller.js"></script>
   <script src="duplicate-renderer.js"></script>
   <script src="duplicate-finder-controller.js"></script>
+  <script src="cleanup-controller.js"></script>
   <script src="modal-dialog.js"></script>
   <script src="context-menu-controller.js"></script>
   <script src="settings-controller.js"></script>

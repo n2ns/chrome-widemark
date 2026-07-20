@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-07-21
+
+### Added
+- Full bookmark tree: Other Bookmarks and Mobile Bookmarks now render below the Bookmarks Bar (toggleable in Settings).
+- Two duplicate-check modes with separate buttons: exact URL and same domain, with a real chunked progress bar.
+- Cleanup actions: delete empty folders and merge same-named sibling folders, with confirmation and multi-pass merging.
+- "Sort by Name" in the folder right-click menu (folders first, locale- and number-aware).
+- Collapsible "Recently Added" section at the top of the tree (toggleable in Settings).
+- Keyboard support: Alt+B opens the panel (Chrome 116+), arrow keys navigate the tree, Enter opens, "/" focuses search.
+- Middle-click opens bookmarks in a background tab.
+- Manually expanded folders persist across side panel sessions.
+- ISC LICENSE file.
+
+### Changed
+- Folder styles are now identified by the folder's creation time (dateAdded), which Chrome bookmark sync transports verbatim, so styles follow folders across synced devices and survive renames and moves; styles are written only on explicit user edits.
+- Bookmark events, storage sync updates, and import end now refresh an active search in place instead of replacing it with the tree; per-node re-renders are suppressed during imports and batch operations.
+- Policy-managed (enterprise) bookmarks are excluded from cleanup, sorting, editing, and drag and drop.
+
+### Fixed
+- Deleting or merging folders never removes content that appeared after the confirmation dialog or scan snapshot.
+- Opening a dialog while another is open now settles the first one instead of leaving it pending.
+
 ## [1.0.2] - 2026-06-28
 
 ### Added

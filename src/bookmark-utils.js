@@ -91,6 +91,83 @@
     return collectDuplicateGroups(addBookmarksToKeyMap(bookmarks, bookmarkUrlKey));
   }
 
+  // Sort order for one-click folder sorting: folders first, then bookmarks,
+  // each alphabetically (locale-aware, numeric-aware, case-insensitive).
+  function computeSortedChildren(children) {
+    const compare = (a, b) => (a.title || '').localeCompare(b.title || '', undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    });
+    const folders = children.filter((child) => !child.url).sort(compare);
+    const bookmarks = children.filter((child) => child.url).sort(compare);
+    return [...folders, ...bookmarks];
+  }
+
+  const PERMANENT_FOLDER_IDS = ['0', '1', '2', '3'];
+
+  // Top-most folders containing no bookmarks anywhere below them (a folder
+  // whose children are all deep-empty folders counts as empty itself).
+  // Permanent Chrome folders are never reported.
+  function findEmptyFolders(treeNodes) {
+    const empties = [];
+
+    function isDeepEmpty(node) {
+      if (node.url) return false;
+      return (node.children || []).every(isDeepEmpty);
+    }
+
+    function walk(nodes, path) {
+      nodes.forEach((node) => {
+        if (node.url || node.unmodifiable) return;
+        const nodePath = [...path, node.title];
+        if (!PERMANENT_FOLDER_IDS.includes(node.id) && isDeepEmpty(node)) {
+          empties.push({ id: node.id, title: node.title, path: nodePath });
+          return; // topmost only: removing it removes everything below
+        }
+        walk(node.children || [], nodePath);
+      });
+    }
+
+    const rootNode = treeNodes && treeNodes[0];
+    walk(rootNode && rootNode.children ? rootNode.children : [], []);
+    return empties;
+  }
+
+  // Groups of same-titled sibling folders. The lowest-index folder of each
+  // group is kept; the rest are merge candidates.
+  function findSameNameFolderGroups(treeNodes) {
+    const groups = [];
+
+    function walk(nodes, path) {
+      const folders = nodes.filter((node) =>
+        !node.url && !node.unmodifiable && !PERMANENT_FOLDER_IDS.includes(node.id));
+      const byTitle = new Map();
+      folders.forEach((folder) => {
+        if (!byTitle.has(folder.title)) byTitle.set(folder.title, []);
+        byTitle.get(folder.title).push(folder);
+      });
+      byTitle.forEach((sameTitle, title) => {
+        if (sameTitle.length < 2) return;
+        const ordered = sortNodes(sameTitle);
+        groups.push({
+          title,
+          path: [...path, title],
+          keepId: ordered[0].id,
+          mergeIds: ordered.slice(1).map((folder) => folder.id)
+        });
+      });
+      nodes.forEach((node) => {
+        if (!node.url && !node.unmodifiable) {
+          walk(node.children || [], [...path, node.title]);
+        }
+      });
+    }
+
+    const rootNode = treeNodes && treeNodes[0];
+    walk(rootNode && rootNode.children ? rootNode.children : [], []);
+    return groups;
+  }
+
   // Folder styles are stored as an array of records identified by the
   // folder's dateAdded (creation time). Node ids are profile-local, but
   // Chrome bookmark sync transports creation time verbatim
@@ -230,6 +307,9 @@
     collectDuplicateGroups,
     sortNodes,
     computeMoveDestination,
+    computeSortedChildren,
+    findEmptyFolders,
+    findSameNameFolderGroups,
     findDuplicateBookmarks,
     findDuplicateBookmarksByUrl,
     sameFolderPath,

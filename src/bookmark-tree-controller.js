@@ -167,6 +167,11 @@
     assignFolderStyles,
     icons
   }) {
+    const RECENT_SECTION_ID = 'recent-section';
+    const RECENT_COUNT = 10;
+    // Chrome's permanent root folders: Bookmarks Bar, Other, Mobile.
+    const PERMANENT_FOLDER_IDS = ['1', '2', '3'];
+
     let expandedFolderIds = new Set();
     let draggedNodeId = null;
     let draggedNode = null;
@@ -212,11 +217,20 @@
           return;
         }
 
-        renderBookmarkTree(bookmarkTreeNodes);
-        updateToggleAllButton();
+        const finishRender = (recentNodes) => {
+          renderBookmarkTree(bookmarkTreeNodes, recentNodes);
+          updateToggleAllButton();
+          if (contentContainer) {
+            contentContainer.scrollTop = savedScrollTop;
+          }
+        };
 
-        if (contentContainer) {
-          contentContainer.scrollTop = savedScrollTop;
+        if (state.showRecent) {
+          chromeApi.bookmarks.getRecent(RECENT_COUNT, (recent) => {
+            finishRender(chromeApi.runtime.lastError ? [] : (recent || []));
+          });
+        } else {
+          finishRender([]);
         }
       });
     }
@@ -248,25 +262,106 @@
       return records;
     }
 
-    function renderBookmarkTree(nodes) {
+    function renderBookmarkTree(nodes, recentNodes = []) {
       treeContainer.innerHTML = '';
       styleAssignment = new Map();
       folderIdentityById = new Map();
 
+      const rootNode = nodes[0];
+      const topLevel = rootNode && rootNode.children ? rootNode.children : [];
       const bookmarksBarNode = findBookmarksBarNode(nodes);
-      const rootChildren = bookmarksBarNode ? (bookmarksBarNode.children || []) : [];
+      const barChildren = bookmarksBarNode ? (bookmarksBarNode.children || []) : [];
+      const otherRoots = state.showOtherBookmarks
+        ? topLevel.filter((node) => node !== bookmarksBarNode && !node.url)
+        : [];
 
-      if (rootChildren.length === 0) {
+      if (barChildren.length === 0 && otherRoots.length === 0) {
+        const message = state.showOtherBookmarks
+          ? 'No bookmarks yet.'
+          : 'No bookmarks in the Bookmarks Bar.';
         treeContainer.innerHTML = `
           <div class="empty-state">
-            <span>No bookmarks found in Bookmarks Bar.</span>
+            <span>${message}</span>
           </div>
         `;
         return;
       }
 
-      styleAssignment = assignFolderStyles(getFolderStyles(), collectFolders(rootChildren));
-      treeContainer.appendChild(createListNode(rootChildren, true));
+      const folderList = collectFolders(barChildren);
+      otherRoots.forEach((root) => collectFolders([root], [], folderList));
+      styleAssignment = assignFolderStyles(getFolderStyles(), folderList);
+
+      const rootUl = createListNode(barChildren, true);
+      otherRoots.forEach((root) => rootUl.appendChild(createTreeItem(root)));
+      if (state.showRecent && recentNodes.length > 0) {
+        rootUl.insertBefore(createRecentSection(recentNodes), rootUl.firstChild);
+      }
+      treeContainer.appendChild(rootUl);
+      restoreFocusedRow();
+    }
+
+    function createRecentSection(recentNodes) {
+      const li = document.createElement('li');
+
+      const headerDiv = document.createElement('div');
+      headerDiv.classList.add('tree-node', 'recent-section-header');
+      headerDiv.dataset.nodeId = RECENT_SECTION_ID;
+
+      const icon = document.createElement('span');
+      icon.classList.add('node-icon', 'folder-icon');
+      icon.innerHTML = icons.RECENT_ICON;
+
+      const titleSpan = document.createElement('span');
+      titleSpan.classList.add('node-title');
+      titleSpan.textContent = 'Recently Added';
+
+      headerDiv.appendChild(icon);
+      headerDiv.appendChild(titleSpan);
+      headerDiv.addEventListener('click', () => {
+        toggleFolder(RECENT_SECTION_ID);
+      });
+
+      const childrenUl = document.createElement('ul');
+      childrenUl.classList.add('nested-tree', 'folder-children');
+      childrenUl.id = `folder-child-${RECENT_SECTION_ID}`;
+      recentNodes.forEach((node) => {
+        const itemLi = document.createElement('li');
+        itemLi.appendChild(createBookmarkNode(node, { draggable: false }));
+        childrenUl.appendChild(itemLi);
+      });
+
+      if (expandedFolderIds.has(RECENT_SECTION_ID)) {
+        childrenUl.classList.add('visible');
+        headerDiv.classList.add('expanded');
+      }
+
+      li.appendChild(headerDiv);
+      li.appendChild(childrenUl);
+      return li;
+    }
+
+    function createTreeItem(node) {
+      const li = document.createElement('li');
+
+      if (node.url) {
+        li.appendChild(createBookmarkNode(node));
+        return li;
+      }
+
+      const folderDiv = createFolderNode(node);
+      li.appendChild(folderDiv);
+
+      const childrenUl = createListNode(node.children || []);
+      childrenUl.id = `folder-child-${node.id}`;
+      childrenUl.classList.add('folder-children');
+
+      if (expandedFolderIds.has(node.id)) {
+        childrenUl.classList.add('visible');
+        folderDiv.classList.add('expanded');
+      }
+
+      li.appendChild(childrenUl);
+      return li;
     }
 
     function createListNode(nodes, isRoot = false) {
@@ -276,36 +371,25 @@
       }
 
       sortNodes(nodes).forEach((node) => {
-        const li = document.createElement('li');
-
-        if (node.url) {
-          li.appendChild(createBookmarkNode(node));
-        } else {
-          const folderDiv = createFolderNode(node);
-          li.appendChild(folderDiv);
-
-          const childrenUl = createListNode(node.children || []);
-          childrenUl.id = `folder-child-${node.id}`;
-          childrenUl.classList.add('folder-children');
-
-          if (expandedFolderIds.has(node.id)) {
-            childrenUl.classList.add('visible');
-            folderDiv.classList.add('expanded');
-          }
-
-          li.appendChild(childrenUl);
-        }
-        ul.appendChild(li);
+        ul.appendChild(createTreeItem(node));
       });
 
       return ul;
     }
 
     function makeNodeDraggable(element, node) {
-      element.draggable = !state.dragProtectionEnabled;
+      // Managed (policy) nodes reject all bookmarks-API writes: neither
+      // draggable nor a drop target.
+      if (node.unmodifiable) {
+        element.draggable = false;
+        return;
+      }
+
+      const isPermanentFolder = PERMANENT_FOLDER_IDS.includes(node.id);
+      element.draggable = !state.dragProtectionEnabled && !isPermanentFolder;
 
       element.addEventListener('dragstart', (event) => {
-        if (state.dragProtectionEnabled) {
+        if (state.dragProtectionEnabled || isPermanentFolder) {
           event.preventDefault();
           return;
         }
@@ -343,7 +427,11 @@
         const height = rect.height;
         const isFolder = !node.url;
 
-        applyDropIndicator(element, determineDropPosition(y, height, isFolder));
+        // Nothing can sit beside a permanent root folder — only inside it.
+        const dropPosition = isPermanentFolder
+          ? 'inside'
+          : determineDropPosition(y, height, isFolder);
+        applyDropIndicator(element, dropPosition);
       });
 
       element.addEventListener('dragleave', (event) => {
@@ -359,7 +447,9 @@
         event.stopPropagation();
 
         const rect = element.getBoundingClientRect();
-        const dropPos = determineDropPosition(event.clientY - rect.top, rect.height, !node.url);
+        const dropPos = isPermanentFolder
+          ? 'inside'
+          : determineDropPosition(event.clientY - rect.top, rect.height, !node.url);
         element.classList.remove('drag-above', 'drag-below', 'drag-over');
         delete element.dataset.dropPosition;
 
@@ -397,9 +487,10 @@
       });
     }
 
-    function createBookmarkNode(node) {
+    function createBookmarkNode(node, { draggable = true } = {}) {
       const div = document.createElement('div');
       div.classList.add('tree-node', 'bookmark-item');
+      div.dataset.url = node.url;
       if (state.tooltipEnabled) {
         div.title = `${node.title}\n${node.url}`;
       }
@@ -430,7 +521,9 @@
         }
       });
 
-      makeNodeDraggable(div, node);
+      if (draggable) {
+        makeNodeDraggable(div, node);
+      }
       bindContextMenu(div, node);
 
       return div;
@@ -557,6 +650,7 @@
       });
 
       treeContainer.appendChild(ul);
+      restoreFocusedRow();
     }
 
     function updateToggleAllButton() {
@@ -580,7 +674,11 @@
             reportChromeError('Error expanding all bookmarks');
             return;
           }
+          // The Recently Added pseudo-folder is not part of the bookmark
+          // tree; expand-all must not silently collapse it.
+          const recentWasExpanded = expandedFolderIds.has(RECENT_SECTION_ID);
           expandedFolderIds = new Set(gatherFolderIds(bookmarkTreeNodes));
+          if (recentWasExpanded) expandedFolderIds.add(RECENT_SECTION_ID);
           persistExpandedState();
           loadBookmarks(true);
         });
@@ -618,7 +716,108 @@
       });
     }
 
+    let focusedRow = null;
+    let focusedRowKey = null;
+
+    function visibleTreeRows() {
+      return [...treeContainer.querySelectorAll('.tree-node')]
+        .filter((element) => element.offsetParent !== null);
+    }
+
+    function setFocusedRow(row) {
+      if (focusedRow) focusedRow.classList.remove('kb-focus');
+      focusedRow = row;
+      if (focusedRow) {
+        focusedRow.classList.add('kb-focus');
+        focusedRow.scrollIntoView({ block: 'nearest' });
+        focusedRowKey = focusedRow.dataset.nodeId
+          ? { attr: 'data-node-id', value: focusedRow.dataset.nodeId }
+          : { attr: 'data-url', value: focusedRow.dataset.url || '' };
+      } else {
+        focusedRowKey = null;
+      }
+    }
+
+    // Re-renders replace the DOM; re-attach keyboard focus to the row with
+    // the same identity so navigation continues where it was. Only visible
+    // rows qualify, and the copy outside the Recently Added section wins
+    // when a bookmark appears in both places.
+    function restoreFocusedRow() {
+      if (!focusedRowKey) return;
+      const matches = visibleTreeRows().filter(
+        (element) => element.getAttribute(focusedRowKey.attr) === focusedRowKey.value
+      );
+      const row = matches.find(
+        (element) => !element.closest(`#folder-child-${RECENT_SECTION_ID}`)
+      ) || matches[0] || null;
+      focusedRow = row;
+      if (focusedRow) {
+        focusedRow.classList.add('kb-focus');
+      } else {
+        focusedRowKey = null;
+      }
+    }
+
+    function focusedFolderChildren() {
+      if (!focusedRow || focusedRow.dataset.url || !focusedRow.dataset.nodeId) return null;
+      return document.getElementById(`folder-child-${focusedRow.dataset.nodeId}`);
+    }
+
+    function handleTreeKeydown(event) {
+      const target = event.target;
+      const isTyping = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+      const modal = document.getElementById('custom-modal');
+      const mainView = document.getElementById('main-view');
+      if ((modal && modal.style.display === 'flex') ||
+        (mainView && mainView.style.display === 'none')) {
+        return;
+      }
+
+      // ArrowDown inside the search box jumps into the result list.
+      if (isTyping) {
+        if (target === searchInput && event.key === 'ArrowDown') {
+          event.preventDefault();
+          setFocusedRow(visibleTreeRows()[0] || null);
+          searchInput.blur();
+        }
+        return;
+      }
+
+      const rows = visibleTreeRows();
+      if (rows.length === 0) return;
+      const currentIndex = focusedRow ? rows.indexOf(focusedRow) : -1;
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setFocusedRow(rows[Math.min(currentIndex + 1, rows.length - 1)]);
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setFocusedRow(rows[Math.max(currentIndex - 1, 0)]);
+      } else if (event.key === 'Enter' && focusedRow) {
+        event.preventDefault();
+        if (focusedRow.dataset.url) {
+          handleBookmarkClick(focusedRow.dataset.url, event);
+        } else if (focusedRow.dataset.nodeId) {
+          toggleFolder(focusedRow.dataset.nodeId);
+        }
+      } else if (event.key === 'ArrowRight') {
+        const children = focusedFolderChildren();
+        if (children && !children.classList.contains('visible')) {
+          event.preventDefault();
+          toggleFolder(focusedRow.dataset.nodeId);
+        }
+      } else if (event.key === 'ArrowLeft') {
+        const children = focusedFolderChildren();
+        if (children && children.classList.contains('visible')) {
+          event.preventDefault();
+          toggleFolder(focusedRow.dataset.nodeId);
+        }
+      }
+    }
+
     function bindEvents() {
+      document.addEventListener('keydown', handleTreeKeydown);
+
       searchInput.addEventListener('input', (event) => {
         const query = event.target.value.trim();
         if (shouldSearchBookmarks(query)) {

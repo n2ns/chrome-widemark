@@ -20,11 +20,16 @@
     getAssignedStyle,
     getFolderIdentity,
     refreshRecordMetadata,
-    replaceFolderStyle
+    replaceFolderStyle,
+    computeSortedChildren,
+    beginBatchUpdates,
+    endBatchUpdates
   }) {
+    const PERMANENT_FOLDER_IDS = ['1', '2', '3'];
     const contextMenu = document.getElementById('custom-context-menu');
     const menuAddBookmark = document.getElementById('menu-add-bookmark');
     const menuAddFolder = document.getElementById('menu-add-folder');
+    const menuSort = document.getElementById('menu-sort');
     const menuEdit = document.getElementById('menu-edit');
     const menuDelete = document.getElementById('menu-delete');
     const menuFolderStyle = document.getElementById('menu-folder-style');
@@ -45,6 +50,13 @@
     }
 
     function showContextMenu(x, y) {
+      // A managed (policy) bookmark supports no menu action at all — showing
+      // an empty menu frame would be worse than showing nothing.
+      if (contextTargetNode && contextTargetNode.unmodifiable && contextTargetNode.url) {
+        hideContextMenu();
+        return;
+      }
+
       contextMenu.style.display = 'flex';
       const rect = contextMenu.getBoundingClientRect();
       const left = Math.min(x, windowObj.innerWidth - rect.width - 8);
@@ -52,12 +64,24 @@
       contextMenu.style.left = `${Math.max(8, left)}px`;
       contextMenu.style.top = `${Math.max(8, top)}px`;
 
-      if (contextIsRoot || contextTargetNode.id === '1') {
+      const isFolder = !contextTargetNode.url;
+      const isPermanent = PERMANENT_FOLDER_IDS.includes(contextTargetNode.id);
+      // Policy-managed nodes reject every bookmarks-API write.
+      const isManaged = Boolean(contextTargetNode.unmodifiable);
+      setMenuItemVisibility(menuSort, isFolder && !isManaged);
+      setMenuItemVisibility(menuAddBookmark, !isManaged);
+      setMenuItemVisibility(menuAddFolder, !isManaged);
+
+      if (contextIsRoot || isPermanent || isManaged) {
+        // Chrome's permanent folders can be styled and sorted but never
+        // renamed or deleted; managed folders can only be styled; the root
+        // background gets neither.
+        const allowStyle = isFolder && !contextIsRoot;
         setMenuItemVisibility(menuEdit, false);
         setMenuItemVisibility(menuDelete, false);
-        setMenuItemVisibility(menuFolderStyle, false);
+        setMenuItemVisibility(menuFolderStyle, allowStyle);
         showSeparator('.menu-separator', false);
-        showSeparator('.folder-style-sep', false);
+        showSeparator('.folder-style-sep', allowStyle);
         return;
       }
 
@@ -65,7 +89,6 @@
       setMenuItemVisibility(menuDelete, true);
       showSeparator('.menu-separator', true);
 
-      const isFolder = !contextTargetNode.url;
       setMenuItemVisibility(menuFolderStyle, isFolder);
       showSeparator('.folder-style-sep', isFolder);
     }
@@ -131,6 +154,46 @@
             parentId,
             title: data.title
           });
+        }
+      });
+    });
+
+    function runFolderSort(folderId) {
+      chromeApi.bookmarks.getChildren(folderId, (children) => {
+        if (chromeApi.runtime.lastError) {
+          reportChromeError('Error sorting folder');
+          return;
+        }
+        const sorted = computeSortedChildren(children || []);
+        beginBatchUpdates();
+        let index = 0;
+        const moveNext = () => {
+          if (index >= sorted.length) {
+            endBatchUpdates();
+            return;
+          }
+          chromeApi.bookmarks.move(sorted[index].id, { parentId: folderId, index }, () => {
+            reportChromeError('Error sorting folder');
+            index += 1;
+            moveNext();
+          });
+        };
+        moveNext();
+      });
+    }
+
+    menuSort.addEventListener('click', () => {
+      if (!contextTargetNode || contextTargetNode.url) return;
+      const folderId = contextTargetNode.id;
+      const folderTitle = contextTargetNode.title || 'this folder';
+
+      openCustomModal({
+        title: 'Sort by Name',
+        message: `Sort the contents of "${folderTitle}" alphabetically (folders first)? This reorders bookmarks permanently.`,
+        mode: 'confirm',
+        submitLabel: 'Sort',
+        onSubmit: () => {
+          runFolderSort(folderId);
         }
       });
     });

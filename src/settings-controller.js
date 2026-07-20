@@ -58,6 +58,8 @@
     const settingLeftClickAction = document.getElementById('setting-left-click-action');
     const settingDragProtection = document.getElementById('setting-drag-protection');
     const settingTooltipEnabled = document.getElementById('setting-tooltip-enabled');
+    const settingShowOther = document.getElementById('setting-show-other');
+    const settingShowRecent = document.getElementById('setting-show-recent');
     const resetFolderStylesBtn = document.getElementById('reset-folder-styles-btn');
     const restoreDefaultsBtn = document.getElementById('restore-defaults-btn');
     const { showConfirmDialog, showInfoDialog } = modalDialog;
@@ -173,6 +175,8 @@
       settingLeftClickAction.value = state.leftClickAction;
       settingDragProtection.checked = state.dragProtectionEnabled;
       settingTooltipEnabled.checked = state.tooltipEnabled;
+      settingShowOther.checked = state.showOtherBookmarks;
+      settingShowRecent.checked = state.showRecent;
     }
 
     function initSettings() {
@@ -180,7 +184,8 @@
         'fontSize', 'fontFamily', 'theme', 'syncTheme',
         'isSearchOpen', 'isFoldersExpanded',
         'rowSpacing', 'uiZoom', 'leftClickAction',
-        'dragProtectionEnabled', 'tooltipEnabled'
+        'dragProtectionEnabled', 'tooltipEnabled',
+        'showOtherBookmarks', 'showRecent'
       ], (result) => {
         const fontSize = result.fontSize || '14px';
         const fontFamily = result.fontFamily || 'system';
@@ -194,6 +199,8 @@
         state.leftClickAction = result.leftClickAction || 'current';
         state.dragProtectionEnabled = getStoredSetting(result, 'dragProtectionEnabled', false);
         state.tooltipEnabled = getStoredSetting(result, 'tooltipEnabled', true);
+        state.showOtherBookmarks = getStoredSetting(result, 'showOtherBookmarks', true);
+        state.showRecent = getStoredSetting(result, 'showRecent', true);
 
         setFormValues({ fontSize, fontFamily, theme, syncTheme, rowSpacing, uiZoom });
         applySettings({ fontSize, fontFamily, theme, syncTheme, rowSpacing, uiZoom });
@@ -210,12 +217,14 @@
       }
       if (key === 'dragProtectionEnabled') state.dragProtectionEnabled = value;
       if (key === 'tooltipEnabled') state.tooltipEnabled = value;
+      if (key === 'showOtherBookmarks') state.showOtherBookmarks = value;
+      if (key === 'showRecent') state.showRecent = value;
 
       if (UI_SETTING_KEYS.includes(key)) {
         applyCurrentFormSettings();
       }
 
-      if (key === 'dragProtectionEnabled' || key === 'tooltipEnabled') {
+      if (['dragProtectionEnabled', 'tooltipEnabled', 'showOtherBookmarks', 'showRecent'].includes(key)) {
         refreshView();
       }
 
@@ -257,6 +266,8 @@
       settingLeftClickAction.addEventListener('change', (event) => saveSetting('leftClickAction', event.target.value));
       settingDragProtection.addEventListener('change', (event) => saveSetting('dragProtectionEnabled', event.target.checked));
       settingTooltipEnabled.addEventListener('change', (event) => saveSetting('tooltipEnabled', event.target.checked));
+      settingShowOther.addEventListener('change', (event) => saveSetting('showOtherBookmarks', event.target.checked));
+      settingShowRecent.addEventListener('change', (event) => saveSetting('showRecent', event.target.checked));
 
       resetFolderStylesBtn.addEventListener('click', async () => {
         const confirmed = await showConfirmDialog({

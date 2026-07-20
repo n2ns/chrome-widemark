@@ -14,17 +14,20 @@ A compact bookmark manager in Chrome's side panel. Browse, search, organize, sty
 
 ### Long Description
 
-WideMark is a lightweight bookmark manager for Chrome's side panel. It keeps bookmarks visible beside the current tab, so users can browse, search, organize, and clean up duplicate bookmark URLs without opening Chrome's full bookmark manager.
+WideMark is a lightweight bookmark manager for Chrome's side panel. It keeps bookmarks visible beside the current tab, so users can browse, search, organize, and clean up their bookmarks without opening Chrome's full bookmark manager.
 
 Key features:
 
-- Browse bookmarks in a persistent Chrome side panel.
+- Browse the full bookmark tree — Bookmarks Bar plus Other and Mobile Bookmarks — in a persistent Chrome side panel.
 - Search bookmark titles and URLs quickly.
-- Open bookmarks in the current tab, a foreground tab, or a background tab.
-- Create, edit, delete, reorder, and move bookmarks.
-- Customize folder colors and icons.
+- Open bookmarks in the current tab, a foreground tab, or a background tab (middle-click supported).
+- Create, edit, delete, reorder, sort, and move bookmarks.
+- Keyboard support: Alt+B opens the panel, arrow keys navigate, "/" focuses search.
+- Recently Added section at the top of the tree.
+- Customize folder colors and icons, synced across devices.
 - Adjust theme, font size, row spacing, and UI zoom.
-- Find duplicate bookmarks locally without visiting bookmarked websites.
+- Find duplicate bookmarks locally (exact URL or same domain) without visiting bookmarked websites.
+- Delete empty folders and merge same-named sibling folders locally.
 
 WideMark keeps the permission model narrow. It uses Chrome bookmark, storage, side panel, and favicon APIs. It does not request website host permissions and does not scan web pages.
 
@@ -59,4 +62,4 @@ Before publishing, host the privacy policy and add the hosted URL to the Chrome 
 - Add the hosted privacy policy URL to the store listing.
 - Complete the privacy practices form.
 - Verify the packaged extension contains only `manifest.json`, `src/`, `icons/`, `icon.png`, and optional `_locales/`.
-- Reload the unpacked extension and manually test browsing, search, drag/drop, settings, and duplicate checks.
+- Reload the unpacked extension and manually test browsing (including Other Bookmarks), search, drag/drop, sorting, settings, duplicate checks, cleanup actions, and keyboard navigation.

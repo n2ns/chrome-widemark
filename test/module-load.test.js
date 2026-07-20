@@ -33,6 +33,7 @@ test('browser modules load in sidepanel order without missing globals', () => {
     'WideMarkBookmarkTree',
     'BookmarkDuplicateRenderer',
     'WideMarkDuplicateFinder',
+    'WideMarkCleanup',
     'WideMarkModalDialog',
     'WideMarkContextMenu',
     'WideMarkSettings'

@@ -192,3 +192,14 @@ li {
   color: var(--text-muted);
 }
 
+/* Keyboard-navigation focus ring */
+.tree-node.kb-focus {
+  outline: 1.5px solid var(--accent);
+  outline-offset: -1.5px;
+  border-radius: 8px;
+}
+
+.recent-section-header .node-title {
+  font-weight: 600;
+}
+
