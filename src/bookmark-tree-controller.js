@@ -160,19 +160,18 @@
     toggleAllBtn,
     bindContextMenu,
     getFolderStyles,
-    setFolderStyles,
     reportChromeError,
     bookmarkDomain,
     sortNodes,
     computeMoveDestination,
-    resolveFolderStyle,
-    healFolderStyleRecords,
+    assignFolderStyles,
     icons
   }) {
     let expandedFolderIds = new Set();
     let draggedNodeId = null;
     let draggedNode = null;
-    let pendingStyleHeals = new Map();
+    let styleAssignment = new Map();
+    let folderIdentityById = new Map();
 
     function persistExpandedState() {
       chromeApi.storage.local.set({ expandedFolderIds: [...expandedFolderIds] }, () => {
@@ -183,16 +182,6 @@
         chromeApi.storage.local.set({ isFoldersExpanded: false });
         updateToggleAllButton();
       }
-    }
-
-    function flushStyleHeals() {
-      const { styles, changed } = healFolderStyleRecords(getFolderStyles(), pendingStyleHeals);
-      pendingStyleHeals = new Map();
-      if (!changed) return;
-      setFolderStyles(styles);
-      chromeApi.storage.sync.set({ folderStyles: styles }, () => {
-        reportChromeError('Error saving folder styles');
-      });
     }
 
     function showLoading() {
@@ -232,9 +221,37 @@
       });
     }
 
+    function collectFolders(nodes, parentPath = [], out = []) {
+      nodes.forEach((node) => {
+        if (node.url) return;
+        node.stylePath = [...parentPath, node.title];
+        const identity = { id: node.id, dateAdded: node.dateAdded, title: node.title, path: node.stylePath };
+        out.push(identity);
+        folderIdentityById.set(node.id, identity);
+        if (node.children) {
+          collectFolders(node.children, node.stylePath, out);
+        }
+      });
+      return out;
+    }
+
+    // Bring the title/path metadata of every currently assigned record up to
+    // date. Called only from explicit user style edits (the result is
+    // persisted by the caller), so it cannot ping-pong between devices.
+    function refreshRecordMetadata(records) {
+      styleAssignment.forEach((record, nodeId) => {
+        const identity = folderIdentityById.get(nodeId);
+        if (!identity || !records.includes(record)) return;
+        record.title = identity.title;
+        record.path = identity.path;
+      });
+      return records;
+    }
+
     function renderBookmarkTree(nodes) {
       treeContainer.innerHTML = '';
-      pendingStyleHeals = new Map();
+      styleAssignment = new Map();
+      folderIdentityById = new Map();
 
       const bookmarksBarNode = findBookmarksBarNode(nodes);
       const rootChildren = bookmarksBarNode ? (bookmarksBarNode.children || []) : [];
@@ -248,11 +265,11 @@
         return;
       }
 
+      styleAssignment = assignFolderStyles(getFolderStyles(), collectFolders(rootChildren));
       treeContainer.appendChild(createListNode(rootChildren, true));
-      flushStyleHeals();
     }
 
-    function createListNode(nodes, isRoot = false, parentPath = []) {
+    function createListNode(nodes, isRoot = false) {
       const ul = document.createElement('ul');
       if (!isRoot) {
         ul.classList.add('nested-tree');
@@ -264,11 +281,10 @@
         if (node.url) {
           li.appendChild(createBookmarkNode(node));
         } else {
-          node.stylePath = [...parentPath, node.title];
           const folderDiv = createFolderNode(node);
           li.appendChild(folderDiv);
 
-          const childrenUl = createListNode(node.children || [], false, node.stylePath);
+          const childrenUl = createListNode(node.children || []);
           childrenUl.id = `folder-child-${node.id}`;
           childrenUl.classList.add('folder-children');
 
@@ -428,14 +444,7 @@
       const icon = document.createElement('span');
       icon.classList.add('node-icon', 'folder-icon');
 
-      const { record: customStyle, stale } = resolveFolderStyle(getFolderStyles(), {
-        dateAdded: node.dateAdded,
-        title: node.title,
-        path: node.stylePath || [node.title]
-      });
-      if (stale) {
-        pendingStyleHeals.set(customStyle, { title: node.title, path: node.stylePath || [node.title] });
-      }
+      const customStyle = styleAssignment.get(node.id) || null;
       icon.innerHTML = customStyle && customStyle.icon && customStyle.icon !== 'default'
         ? icons.getFolderSvgIcon(customStyle.icon)
         : icons.getFolderSvgIcon('default');
@@ -500,8 +509,10 @@
       }
     }
 
-    function searchBookmarks(query) {
-      showLoading();
+    function searchBookmarks(query, silent = false) {
+      if (!silent) {
+        showLoading();
+      }
       chromeApi.bookmarks.search(query, (results) => {
         if (chromeApi.runtime.lastError) {
           treeContainer.innerHTML = `
@@ -580,6 +591,19 @@
       }
     }
 
+    // Refresh whatever the panel is currently showing: an active search is
+    // re-run in place instead of being replaced by the tree. Text left in a
+    // hidden search box (e.g. after Restore Defaults) must not count as an
+    // active search.
+    function refreshView() {
+      const query = searchInput.value.trim();
+      if (state.isSearchOpen && shouldSearchBookmarks(query)) {
+        searchBookmarks(query, true);
+      } else {
+        loadBookmarks(true);
+      }
+    }
+
     function initTree() {
       chromeApi.storage.local.get(['expandedFolderIds'], (result) => {
         expandedFolderIds = Array.isArray(result.expandedFolderIds)
@@ -628,8 +652,12 @@
     return {
       applyFoldersExpandedState,
       initTree,
+      getAssignedStyle: (nodeId) => styleAssignment.get(nodeId) || null,
+      getFolderIdentity: (nodeId) => folderIdentityById.get(nodeId) || null,
+      refreshRecordMetadata,
       handleBookmarkClick,
       loadBookmarks,
+      refreshView,
       searchBookmarks,
       updateToggleAllButton
     };

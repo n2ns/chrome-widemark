@@ -10,9 +10,8 @@ const {
   findDuplicateBookmarks,
   findDuplicateBookmarksByUrl,
   normalizeFolderStyleRecords,
-  resolveFolderStyle,
-  upsertFolderStyle,
-  healFolderStyleRecords
+  assignFolderStyles,
+  replaceFolderStyle
 } = require('../src/bookmark-utils.js');
 const { getBookmarkIconSrc, LINK_ICON_DATA_URI } = require('../src/ui-icons.js');
 const {
@@ -379,71 +378,115 @@ test('sortSearchResults - sorts by title then URL within the same match group', 
   ]);
 });
 
-test('resolveFolderStyle - identifies folders by dateAdded across rename and move', () => {
-  const records = [
-    { dateAdded: 100, title: 'Dev', path: ['Dev'], color: 'red', icon: 'code' }
+test('assignFolderStyles - follows a uniquely identified folder across rename and move', () => {
+  const record = { dateAdded: 100, title: 'Dev', path: ['Dev'], color: 'red', icon: 'code' };
+  const folder = { id: '10', dateAdded: 100, title: 'Engineering', path: ['Work', 'Engineering'] };
+
+  const byFolderId = assignFolderStyles([record], [folder]);
+
+  assert.strictEqual(byFolderId.get('10'), record);
+});
+
+test('assignFolderStyles - a lone record is never claimed by a same-millisecond twin', () => {
+  // Regression: folders A and B share dateAdded, only B is styled. A must
+  // not receive B's record.
+  const recordB = { dateAdded: 100, title: 'B', path: ['Import', 'B'], color: 'blue', icon: 'heart' };
+  const folders = [
+    { id: 'a', dateAdded: 100, title: 'A', path: ['Import', 'A'] },
+    { id: 'b', dateAdded: 100, title: 'B', path: ['Import', 'B'] }
   ];
 
-  const renamedAndMoved = resolveFolderStyle(records, {
-    dateAdded: 100,
-    title: 'Engineering',
-    path: ['Work', 'Engineering']
-  });
-  assert.strictEqual(renamedAndMoved.record, records[0]);
-  assert.strictEqual(renamedAndMoved.stale, true);
+  const byFolderId = assignFolderStyles([recordB], folders);
 
-  const unrelated = resolveFolderStyle(records, { dateAdded: 200, title: 'Dev', path: ['Dev'] });
-  assert.strictEqual(unrelated.record, null);
+  assert.strictEqual(byFolderId.get('a'), undefined);
+  assert.strictEqual(byFolderId.get('b'), recordB);
 });
 
-test('resolveFolderStyle - breaks same-millisecond ties by title then path, never heals', () => {
-  const twinA = { dateAdded: 100, title: 'A', path: ['Import', 'A'], color: 'red', icon: 'star' };
-  const twinB = { dateAdded: 100, title: 'B', path: ['Import', 'B'], color: 'blue', icon: 'heart' };
-  const records = [twinA, twinB];
+test('assignFolderStyles - matches same-millisecond twins one-to-one by title then path', () => {
+  const recordA = { dateAdded: 100, title: 'Old A', path: ['Import', 'A'], color: 'red', icon: 'star' };
+  const recordB = { dateAdded: 100, title: 'B', path: ['Import', 'B'], color: 'blue', icon: 'heart' };
+  const folders = [
+    { id: 'a', dateAdded: 100, title: 'A', path: ['Import', 'A'] },
+    { id: 'b', dateAdded: 100, title: 'B', path: ['Import', 'B'] }
+  ];
 
-  const byTitle = resolveFolderStyle(records, { dateAdded: 100, title: 'B', path: ['Elsewhere', 'B'] });
-  assert.strictEqual(byTitle.record, twinB);
-  assert.strictEqual(byTitle.stale, false);
+  const byFolderId = assignFolderStyles([recordA, recordB], folders);
 
-  const byPath = resolveFolderStyle(records, { dateAdded: 100, title: 'Renamed', path: ['Import', 'A'] });
-  assert.strictEqual(byPath.record, twinA);
-  assert.strictEqual(byPath.stale, false);
+  assert.strictEqual(byFolderId.get('b'), recordB);
+  assert.strictEqual(byFolderId.get('a'), recordA);
 });
 
-test('upsertFolderStyle - replaces the matching record and drops default styles', () => {
+test('assignFolderStyles - same-titled twins in different parents keep their own styles', () => {
+  // Regression: Work/News and Home/News share dateAdded and title; matching
+  // must compare paths first so the styles do not swap.
+  const homeRecord = { dateAdded: 100, title: 'News', path: ['Home', 'News'], color: 'red', icon: 'star' };
+  const workRecord = { dateAdded: 100, title: 'News', path: ['Work', 'News'], color: 'blue', icon: 'heart' };
+  const folders = [
+    { id: 'work', dateAdded: 100, title: 'News', path: ['Work', 'News'] },
+    { id: 'home', dateAdded: 100, title: 'News', path: ['Home', 'News'] }
+  ];
+
+  const byFolderId = assignFolderStyles([homeRecord, workRecord], folders);
+
+  assert.strictEqual(byFolderId.get('work'), workRecord);
+  assert.strictEqual(byFolderId.get('home'), homeRecord);
+});
+
+test('assignFolderStyles - same-titled twins survive a renamed common ancestor via path suffix', () => {
+  // Regression: ancestor "Stuff" was renamed to "Things" after both twins
+  // were styled, so no record path matches exactly. Record order is the
+  // reverse of render order; the longest-common-suffix rule must still pair
+  // Work/News with the Work record.
+  const homeRecord = { dateAdded: 100, title: 'News', path: ['Stuff', 'Home', 'News'], color: 'red', icon: 'star' };
+  const workRecord = { dateAdded: 100, title: 'News', path: ['Stuff', 'Work', 'News'], color: 'blue', icon: 'heart' };
+  const folders = [
+    { id: 'work', dateAdded: 100, title: 'News', path: ['Things', 'Work', 'News'] },
+    { id: 'home', dateAdded: 100, title: 'News', path: ['Things', 'Home', 'News'] }
+  ];
+
+  const byFolderId = assignFolderStyles([homeRecord, workRecord], folders);
+
+  assert.strictEqual(byFolderId.get('work'), workRecord);
+  assert.strictEqual(byFolderId.get('home'), homeRecord);
+});
+
+test('assignFolderStyles - ignores records whose folder is absent locally', () => {
+  const orphan = { dateAdded: 300, title: 'Remote', path: ['Remote'], color: 'red', icon: 'star' };
+  const byFolderId = assignFolderStyles([orphan], [
+    { id: '1', dateAdded: 100, title: 'Dev', path: ['Dev'] }
+  ]);
+
+  assert.strictEqual(byFolderId.size, 0);
+});
+
+test('replaceFolderStyle - replaces exactly the assigned record and drops default styles', () => {
   const identity = { dateAdded: 100, title: 'Dev', path: ['Dev'] };
-  const records = upsertFolderStyle([], identity, { color: 'red', icon: 'code' });
-  assert.deepStrictEqual(records, [
+  const other = { dateAdded: 100, title: 'Twin', path: ['Twin'], color: 'blue', icon: 'heart' };
+
+  const added = replaceFolderStyle([other], null, identity, { color: 'red', icon: 'code' });
+  assert.deepStrictEqual(added, [
+    other,
     { dateAdded: 100, title: 'Dev', path: ['Dev'], color: 'red', icon: 'code' }
   ]);
 
-  const replaced = upsertFolderStyle(records, identity, { color: 'blue', icon: 'star' });
-  assert.strictEqual(replaced.length, 1);
-  assert.strictEqual(replaced[0].color, 'blue');
+  const replaced = replaceFolderStyle(added, added[1], identity, { color: 'green', icon: 'star' });
+  assert.strictEqual(replaced.length, 2);
+  assert.strictEqual(replaced[0], other);
+  assert.strictEqual(replaced[1].color, 'green');
 
-  const cleared = upsertFolderStyle(replaced, identity, { color: '', icon: 'default' });
-  assert.deepStrictEqual(cleared, []);
+  const cleared = replaceFolderStyle(replaced, replaced[1], identity, { color: '', icon: 'default' });
+  assert.deepStrictEqual(cleared, [other]);
 });
 
-test('healFolderStyleRecords - refreshes stale title and path metadata', () => {
-  const record = { dateAdded: 100, title: 'Dev', path: ['Dev'], color: 'red', icon: 'code' };
-  const untouched = { dateAdded: 200, title: 'Docs', path: ['Docs'], color: 'green', icon: 'document' };
-  const heals = new Map([[record, { title: 'Engineering', path: ['Work', 'Engineering'] }]]);
+test('replaceFolderStyle - also drops a stale-reference record identifying the same folder', () => {
+  const identity = { dateAdded: 100, title: 'Dev', path: ['Dev'] };
+  const staleCopy = { dateAdded: 100, title: 'Dev', path: ['Dev'], color: 'red', icon: 'code' };
 
-  const { styles, changed } = healFolderStyleRecords([record, untouched], heals);
+  const next = replaceFolderStyle([staleCopy], null, identity, { color: 'blue', icon: 'star' });
 
-  assert.strictEqual(changed, true);
-  assert.deepStrictEqual(styles[0], {
-    dateAdded: 100,
-    title: 'Engineering',
-    path: ['Work', 'Engineering'],
-    color: 'red',
-    icon: 'code'
-  });
-  assert.strictEqual(styles[1], untouched);
-
-  const noHeal = healFolderStyleRecords([record], new Map());
-  assert.strictEqual(noHeal.changed, false);
+  assert.deepStrictEqual(next, [
+    { dateAdded: 100, title: 'Dev', path: ['Dev'], color: 'blue', icon: 'star' }
+  ]);
 });
 
 test('normalizeFolderStyleRecords - tolerates missing or malformed stored values', () => {
@@ -473,6 +516,33 @@ test('runChunkedDuplicateScan - reports progress and matches the synchronous res
 
   assert.deepStrictEqual(progress, [[200, 450], [400, 450], [450, 450]]);
   assert.deepStrictEqual(duplicates, findDuplicateBookmarksByUrl(bookmarks));
+});
+
+test('runChunkedDuplicateScan - stops early when shouldContinue reports superseded', async () => {
+  const bookmarks = [];
+  for (let i = 0; i < 450; i++) {
+    bookmarks.push({ id: String(i), title: `B${i}`, url: `https://example.com/p${i}` });
+  }
+
+  let chunks = 0;
+  let doneCalled = false;
+  runChunkedDuplicateScan({
+    bookmarks,
+    keyFn: bookmarkUrlKey,
+    addBookmarksToKeyMap,
+    collectDuplicateGroups,
+    shouldContinue: () => chunks < 1,
+    onProgress: () => {
+      chunks += 1;
+    },
+    onDone: () => {
+      doneCalled = true;
+    }
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.strictEqual(chunks, 1);
+  assert.strictEqual(doneCalled, false);
 });
 
 test('bookmarkDomainKey - lowercases hostnames and rejects non-web URLs', () => {

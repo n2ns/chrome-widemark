@@ -30,7 +30,7 @@ This means duplicate detection is local URL grouping, not dead-link scanning. It
 
 Chrome bookmarks remain Chrome bookmark data. WideMark stores only its own preferences and folder style metadata in Chrome extension storage.
 
-Folder style preferences are stored in `chrome.storage.sync` as records identified by the folder's `dateAdded` timestamp. Bookmark node IDs are profile-local, but creation time is transported verbatim by Chrome bookmark sync (`BookmarkSpecifics.creation_time_us`), so styles follow the same folder on every synced device and survive renames and moves. Each record also carries the folder's title and path, used only to break ties between folders created in the same millisecond and refreshed automatically when they go stale.
+Folder style preferences are stored in `chrome.storage.sync` as records identified by the folder's `dateAdded` timestamp. Bookmark node IDs are profile-local, but creation time is transported verbatim by Chrome bookmark sync (`BookmarkSpecifics.creation_time_us`), so styles follow the same folder on every synced device and survive renames and moves. Each record also carries the folder's title and path, used only to break ties between folders created in the same millisecond (matching by title and path together, then title, then path; ambiguous leftovers are left unstyled rather than guessed). Style records are written only on explicit user edits — never automatically — so devices whose bookmark trees temporarily disagree cannot ping-pong writes at each other.
 
 ## Notes
 

@@ -36,6 +36,7 @@
     updateToggleAllButton,
     initBookmarkTree,
     loadBookmarks,
+    refreshView,
     initFolderStyles,
     modalDialog,
     reportChromeError
@@ -215,7 +216,7 @@
       }
 
       if (key === 'dragProtectionEnabled' || key === 'tooltipEnabled') {
-        loadBookmarks(true);
+        refreshView();
       }
 
       chromeApi.storage.local.set({ [key]: value }, () => {
@@ -271,7 +272,7 @@
             return;
           }
           initFolderStyles(() => {
-            loadBookmarks(true);
+            refreshView();
             showInfoDialog({
               title: 'Folder Styles Reset',
               message: 'Folder styles have been reset to defaults.'
@@ -293,6 +294,8 @@
             reportChromeError('Error clearing local settings');
             return;
           }
+          searchInput.value = '';
+          clearSearchBtn.style.display = 'none';
           initSettings();
           showInfoDialog({
             title: 'Settings Restored',

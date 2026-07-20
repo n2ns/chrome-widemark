@@ -10,6 +10,6 @@
     "assets:store": "node scripts/generate-store-assets.js",
     "test": "node --test test/*.test.js"
   },
-  "author": "",
+  "author": "bugstan",
   "license": "ISC"
 }

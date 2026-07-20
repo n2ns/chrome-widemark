@@ -5,9 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     sortNodes,
     computeMoveDestination,
     normalizeFolderStyleRecords,
-    resolveFolderStyle,
-    upsertFolderStyle,
-    healFolderStyleRecords
+    assignFolderStyles,
+    replaceFolderStyle
   } = bookmarkUtils;
   const treeContainer = document.getElementById('bookmark-tree-root');
   const searchInput = document.getElementById('search-input');
@@ -51,8 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     loadBookmarks: (silent) => bookmarkTree.loadBookmarks(silent),
     reportChromeError,
-    resolveFolderStyle,
-    upsertFolderStyle
+    getAssignedStyle: (nodeId) => bookmarkTree.getAssignedStyle(nodeId),
+    getFolderIdentity: (nodeId) => bookmarkTree.getFolderIdentity(nodeId),
+    refreshRecordMetadata: (records) => bookmarkTree.refreshRecordMetadata(records),
+    replaceFolderStyle
   });
 
   bookmarkTree = window.WideMarkBookmarkTree.createBookmarkTreeController({
@@ -65,15 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleAllBtn,
     bindContextMenu,
     getFolderStyles: () => folderStylesCache,
-    setFolderStyles: (nextStyles) => {
-      folderStylesCache = nextStyles;
-    },
     reportChromeError,
     bookmarkDomain,
     sortNodes,
     computeMoveDestination,
-    resolveFolderStyle,
-    healFolderStyleRecords,
+    assignFolderStyles,
     icons: window.WideMarkIcons
   });
 
@@ -100,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateToggleAllButton: () => bookmarkTree.updateToggleAllButton(),
     initBookmarkTree: () => bookmarkTree.initTree(),
     loadBookmarks: (silent) => bookmarkTree.loadBookmarks(silent),
+    refreshView: () => bookmarkTree.refreshView(),
     initFolderStyles,
     modalDialog,
     reportChromeError
@@ -114,10 +112,34 @@ document.addEventListener('DOMContentLoaded', () => {
     reportChromeError
   });
 
-  chrome.bookmarks.onCreated.addListener(() => bookmarkTree.loadBookmarks(true));
-  chrome.bookmarks.onRemoved.addListener(() => bookmarkTree.loadBookmarks(true));
-  chrome.bookmarks.onChanged.addListener(() => bookmarkTree.loadBookmarks(true));
-  chrome.bookmarks.onMoved.addListener(() => bookmarkTree.loadBookmarks(true));
+  // During a bookmark import Chrome fires onCreated per node; ignore those
+  // and re-render once at the end (per the chrome.bookmarks API guidance).
+  let isImportingBookmarks = false;
+  chrome.bookmarks.onImportBegan.addListener(() => {
+    isImportingBookmarks = true;
+  });
+  chrome.bookmarks.onImportEnded.addListener(() => {
+    isImportingBookmarks = false;
+    bookmarkTree.refreshView();
+  });
+
+  chrome.bookmarks.onCreated.addListener(() => {
+    if (!isImportingBookmarks) bookmarkTree.refreshView();
+  });
+  chrome.bookmarks.onRemoved.addListener(() => bookmarkTree.refreshView());
+  chrome.bookmarks.onChanged.addListener(() => bookmarkTree.refreshView());
+  chrome.bookmarks.onMoved.addListener(() => bookmarkTree.refreshView());
+
+  // Folder styles edited on another synced device arrive through storage
+  // sync; refresh the cache and re-render. Writes made by this panel are
+  // already in the cache and are skipped.
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'sync' || !changes.folderStyles) return;
+    const nextStyles = normalizeFolderStyleRecords(changes.folderStyles.newValue);
+    if (JSON.stringify(nextStyles) === JSON.stringify(folderStylesCache)) return;
+    folderStylesCache = nextStyles;
+    bookmarkTree.refreshView();
+  });
 
   settingsController.initSettings();
 });

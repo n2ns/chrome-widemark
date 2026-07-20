@@ -36,11 +36,12 @@
 
   const SCAN_CHUNK_SIZE = 200;
 
-  function runChunkedDuplicateScan({ bookmarks, keyFn, addBookmarksToKeyMap, collectDuplicateGroups, onProgress, onDone }) {
+  function runChunkedDuplicateScan({ bookmarks, keyFn, addBookmarksToKeyMap, collectDuplicateGroups, onProgress, onDone, shouldContinue }) {
     const keyMap = new Map();
     let index = 0;
 
     function step() {
+      if (shouldContinue && !shouldContinue()) return;
       const chunk = bookmarks.slice(index, index + SCAN_CHUNK_SIZE);
       addBookmarksToKeyMap(chunk, keyFn, keyMap);
       index += chunk.length;
@@ -84,6 +85,7 @@
     };
 
     let lastCheckMode = 'url';
+    let activeScanId = 0;
 
     const { renderDuplicates } = root.BookmarkDuplicateRenderer.createDuplicateRenderer({
       documentRef: document,
@@ -119,9 +121,13 @@
     function startDuplicateCheck(mode = 'url') {
       const checkMode = CHECK_MODES[mode] || CHECK_MODES.url;
       lastCheckMode = CHECK_MODES[mode] ? mode : 'url';
+      // A newer scan supersedes any still-running one (e.g. two quick
+      // deletions from the results list each restart the scan).
+      const scanId = ++activeScanId;
       resetProgress();
 
       chromeApi.bookmarks.getTree((bookmarkTreeNodes) => {
+        if (scanId !== activeScanId) return;
         if (chromeApi.runtime.lastError) {
           showLoadError();
           return;
@@ -141,11 +147,14 @@
           keyFn: checkMode.keyFn,
           addBookmarksToKeyMap: bookmarkUtils.addBookmarksToKeyMap,
           collectDuplicateGroups: bookmarkUtils.collectDuplicateGroups,
+          shouldContinue: () => scanId === activeScanId,
           onProgress: (checked, total) => {
+            if (scanId !== activeScanId) return;
             duplicateProgressBar.style.width = `${Math.round((checked / total) * 100)}%`;
             duplicateProgressText.textContent = `Checking ${checkMode.progressLabel} (${checked}/${total})...`;
           },
           onDone: (duplicates) => {
+            if (scanId !== activeScanId) return;
             renderDuplicates(duplicates, checkMode.sectionLabel);
             duplicateProgressText.textContent = `Duplicate check complete. Checked ${totalCount} bookmark(s).`;
             if (duplicates.length === 0) {

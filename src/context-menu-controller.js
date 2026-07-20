@@ -17,8 +17,10 @@
     setFolderStyles,
     loadBookmarks,
     reportChromeError,
-    resolveFolderStyle,
-    upsertFolderStyle
+    getAssignedStyle,
+    getFolderIdentity,
+    refreshRecordMetadata,
+    replaceFolderStyle
   }) {
     const contextMenu = document.getElementById('custom-context-menu');
     const menuAddBookmark = document.getElementById('menu-add-bookmark');
@@ -193,7 +195,7 @@
         title: contextTargetNode.title,
         path: contextTargetNode.stylePath || [contextTargetNode.title]
       };
-      const { record } = resolveFolderStyle(getFolderStyles(), folderIdentity);
+      const record = getAssignedStyle(contextTargetNode.id);
       const currentStyle = record
         ? { color: record.color || '', icon: record.icon || 'default' }
         : { color: '', icon: 'default' };
@@ -203,7 +205,13 @@
         showFields: ['folderStyle'],
         fieldsVal: currentStyle,
         onSubmit: (data) => {
-          const nextStyles = upsertFolderStyle(getFolderStyles(), folderIdentity, data);
+          // Re-resolve at submit time: the styles array (or the folder's
+          // title/path) may have changed while the dialog was open.
+          const currentRecord = getAssignedStyle(contextTargetNode.id) || record;
+          const currentIdentity = getFolderIdentity(contextTargetNode.id) || folderIdentity;
+          const nextStyles = refreshRecordMetadata(
+            replaceFolderStyle(getFolderStyles(), currentRecord, currentIdentity, data)
+          );
           setFolderStyles(nextStyles);
           chromeApi.storage.sync.set({ folderStyles: nextStyles }, () => {
             if (chromeApi.runtime.lastError) {

@@ -10,7 +10,7 @@ WideMark is a compact Chrome Manifest V3 bookmark manager for the side panel. It
 - Create, edit, delete, reorder, and move bookmarks.
 - Customize folder colors and icons.
 - Adjust theme, font size, row spacing, and UI zoom.
-- Find duplicate bookmarks locally.
+- Find duplicate bookmarks locally, by exact URL or by shared domain.
 
 ## Privacy And Permissions
 
