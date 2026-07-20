@@ -34,7 +34,7 @@
     searchBarContainer,
     toggleAllBtn,
     updateToggleAllButton,
-    applyFoldersExpandedState,
+    initBookmarkTree,
     loadBookmarks,
     initFolderStyles,
     modalDialog,
@@ -198,7 +198,7 @@
         applySettings({ fontSize, fontFamily, theme, syncTheme, rowSpacing, uiZoom });
         updateSearchBoxState();
         initFolderStyles(() => {
-          applyFoldersExpandedState();
+          initBookmarkTree();
         });
       });
     }

@@ -73,6 +73,11 @@
       cancelLabel,
       onSubmit
     }) {
+      // Settle any modal that is still open so its promise never dangles.
+      if (activeModalCancel) {
+        activeModalCancel();
+      }
+
       const modal = documentRef.getElementById('custom-modal');
       const modalTitle = documentRef.getElementById('modal-title');
       const fieldTitle = documentRef.getElementById('field-group-title');

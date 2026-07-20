@@ -33,6 +33,7 @@ test('side panel wires the actions page and split modules', () => {
     'id="help-toggle-btn"',
     'id="help-view"',
     'id="find-duplicates-btn"',
+    'id="find-domain-duplicates-btn"',
     'id="duplicate-results"',
     'ui-icons.js',
     'bookmark-tree-controller.js',

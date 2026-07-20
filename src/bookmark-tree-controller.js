@@ -160,22 +160,39 @@
     toggleAllBtn,
     bindContextMenu,
     getFolderStyles,
+    setFolderStyles,
     reportChromeError,
     bookmarkDomain,
     sortNodes,
     computeMoveDestination,
+    resolveFolderStyle,
+    healFolderStyleRecords,
     icons
   }) {
     let expandedFolderIds = new Set();
     let draggedNodeId = null;
     let draggedNode = null;
+    let pendingStyleHeals = new Map();
 
-    function saveExpandedState() {
+    function persistExpandedState() {
+      chromeApi.storage.local.set({ expandedFolderIds: [...expandedFolderIds] }, () => {
+        reportChromeError('Error saving expanded folders');
+      });
       if (expandedFolderIds.size === 0 && state.isFoldersExpanded) {
         state.isFoldersExpanded = false;
         chromeApi.storage.local.set({ isFoldersExpanded: false });
         updateToggleAllButton();
       }
+    }
+
+    function flushStyleHeals() {
+      const { styles, changed } = healFolderStyleRecords(getFolderStyles(), pendingStyleHeals);
+      pendingStyleHeals = new Map();
+      if (!changed) return;
+      setFolderStyles(styles);
+      chromeApi.storage.sync.set({ folderStyles: styles }, () => {
+        reportChromeError('Error saving folder styles');
+      });
     }
 
     function showLoading() {
@@ -217,6 +234,7 @@
 
     function renderBookmarkTree(nodes) {
       treeContainer.innerHTML = '';
+      pendingStyleHeals = new Map();
 
       const bookmarksBarNode = findBookmarksBarNode(nodes);
       const rootChildren = bookmarksBarNode ? (bookmarksBarNode.children || []) : [];
@@ -231,9 +249,10 @@
       }
 
       treeContainer.appendChild(createListNode(rootChildren, true));
+      flushStyleHeals();
     }
 
-    function createListNode(nodes, isRoot = false) {
+    function createListNode(nodes, isRoot = false, parentPath = []) {
       const ul = document.createElement('ul');
       if (!isRoot) {
         ul.classList.add('nested-tree');
@@ -245,10 +264,11 @@
         if (node.url) {
           li.appendChild(createBookmarkNode(node));
         } else {
+          node.stylePath = [...parentPath, node.title];
           const folderDiv = createFolderNode(node);
           li.appendChild(folderDiv);
 
-          const childrenUl = createListNode(node.children || []);
+          const childrenUl = createListNode(node.children || [], false, node.stylePath);
           childrenUl.id = `folder-child-${node.id}`;
           childrenUl.classList.add('folder-children');
 
@@ -387,6 +407,13 @@
         handleBookmarkClick(node.url, event);
       });
 
+      // Middle clicks fire 'auxclick', not 'click', in Chrome.
+      div.addEventListener('auxclick', (event) => {
+        if (event.button === 1) {
+          handleBookmarkClick(node.url, event);
+        }
+      });
+
       makeNodeDraggable(div, node);
       bindContextMenu(div, node);
 
@@ -401,7 +428,14 @@
       const icon = document.createElement('span');
       icon.classList.add('node-icon', 'folder-icon');
 
-      const customStyle = getFolderStyles()[node.id];
+      const { record: customStyle, stale } = resolveFolderStyle(getFolderStyles(), {
+        dateAdded: node.dateAdded,
+        title: node.title,
+        path: node.stylePath || [node.title]
+      });
+      if (stale) {
+        pendingStyleHeals.set(customStyle, { title: node.title, path: node.stylePath || [node.title] });
+      }
       icon.innerHTML = customStyle && customStyle.icon && customStyle.icon !== 'default'
         ? icons.getFolderSvgIcon(customStyle.icon)
         : icons.getFolderSvgIcon('default');
@@ -443,7 +477,7 @@
         expandedFolderIds.add(folderId);
       }
 
-      saveExpandedState();
+      persistExpandedState();
       updateToggleAllButton();
     }
 
@@ -497,9 +531,7 @@
       }
 
       const searchResultsHeader = document.createElement('div');
-      searchResultsHeader.style.padding = '4px 10px 8px 10px';
-      searchResultsHeader.style.fontSize = '0.8rem';
-      searchResultsHeader.style.color = 'var(--text-muted)';
+      searchResultsHeader.classList.add('search-results-header');
       searchResultsHeader.textContent = `Found ${linkResults.length} bookmark(s):`;
       treeContainer.appendChild(searchResultsHeader);
 
@@ -538,12 +570,28 @@
             return;
           }
           expandedFolderIds = new Set(gatherFolderIds(bookmarkTreeNodes));
+          persistExpandedState();
           loadBookmarks(true);
         });
       } else {
         expandedFolderIds.clear();
+        persistExpandedState();
         loadBookmarks(true);
       }
+    }
+
+    function initTree() {
+      chromeApi.storage.local.get(['expandedFolderIds'], (result) => {
+        expandedFolderIds = Array.isArray(result.expandedFolderIds)
+          ? new Set(result.expandedFolderIds)
+          : new Set();
+        updateToggleAllButton();
+        if (state.isFoldersExpanded) {
+          applyFoldersExpandedState();
+        } else {
+          loadBookmarks(true);
+        }
+      });
     }
 
     function bindEvents() {
@@ -579,6 +627,7 @@
 
     return {
       applyFoldersExpandedState,
+      initTree,
       handleBookmarkClick,
       loadBookmarks,
       searchBookmarks,

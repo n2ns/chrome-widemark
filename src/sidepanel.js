@@ -1,5 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const { bookmarkDomain, sortNodes, computeMoveDestination, findDuplicateBookmarks } = window.BookmarkSidebarUtils;
+  const bookmarkUtils = window.BookmarkSidebarUtils;
+  const {
+    bookmarkDomain,
+    sortNodes,
+    computeMoveDestination,
+    normalizeFolderStyleRecords,
+    resolveFolderStyle,
+    upsertFolderStyle,
+    healFolderStyleRecords
+  } = bookmarkUtils;
   const treeContainer = document.getElementById('bookmark-tree-root');
   const searchInput = document.getElementById('search-input');
   const clearSearchBtn = document.getElementById('clear-search');
@@ -13,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dragProtectionEnabled: false,
     tooltipEnabled: true
   };
-  let folderStylesCache = {};
+  let folderStylesCache = [];
   let bookmarkTree;
 
   function reportChromeError(action) {
@@ -24,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initFolderStyles(callback) {
     chrome.storage.sync.get(['folderStyles'], (result) => {
-      folderStylesCache = result.folderStyles || {};
+      folderStylesCache = normalizeFolderStyleRecords(result.folderStyles);
       if (callback) callback();
     });
   }
@@ -41,7 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
       folderStylesCache = nextStyles;
     },
     loadBookmarks: (silent) => bookmarkTree.loadBookmarks(silent),
-    reportChromeError
+    reportChromeError,
+    resolveFolderStyle,
+    upsertFolderStyle
   });
 
   bookmarkTree = window.WideMarkBookmarkTree.createBookmarkTreeController({
@@ -54,10 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleAllBtn,
     bindContextMenu,
     getFolderStyles: () => folderStylesCache,
+    setFolderStyles: (nextStyles) => {
+      folderStylesCache = nextStyles;
+    },
     reportChromeError,
     bookmarkDomain,
     sortNodes,
     computeMoveDestination,
+    resolveFolderStyle,
+    healFolderStyleRecords,
     icons: window.WideMarkIcons
   });
 
@@ -82,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchBarContainer,
     toggleAllBtn,
     updateToggleAllButton: () => bookmarkTree.updateToggleAllButton(),
-    applyFoldersExpandedState: () => bookmarkTree.applyFoldersExpandedState(),
+    initBookmarkTree: () => bookmarkTree.initTree(),
     loadBookmarks: (silent) => bookmarkTree.loadBookmarks(silent),
     initFolderStyles,
     modalDialog,
@@ -92,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.WideMarkDuplicateFinder.createDuplicateFinderController({
     document,
     chromeApi: chrome,
-    findDuplicateBookmarks,
+    bookmarkUtils,
     handleBookmarkClick: (url, event) => bookmarkTree.handleBookmarkClick(url, event),
     modalDialog,
     reportChromeError

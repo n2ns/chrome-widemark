@@ -16,7 +16,9 @@
     getFolderStyles,
     setFolderStyles,
     loadBookmarks,
-    reportChromeError
+    reportChromeError,
+    resolveFolderStyle,
+    upsertFolderStyle
   }) {
     const contextMenu = document.getElementById('custom-context-menu');
     const menuAddBookmark = document.getElementById('menu-add-bookmark');
@@ -186,18 +188,22 @@
     menuFolderStyle.addEventListener('click', () => {
       if (!contextTargetNode || contextIsRoot) return;
 
-      const currentStyles = getFolderStyles();
-      const currentStyle = currentStyles[contextTargetNode.id] || { color: '', icon: 'default' };
+      const folderIdentity = {
+        dateAdded: contextTargetNode.dateAdded,
+        title: contextTargetNode.title,
+        path: contextTargetNode.stylePath || [contextTargetNode.title]
+      };
+      const { record } = resolveFolderStyle(getFolderStyles(), folderIdentity);
+      const currentStyle = record
+        ? { color: record.color || '', icon: record.icon || 'default' }
+        : { color: '', icon: 'default' };
 
       openCustomModal({
         title: 'Folder Style',
         showFields: ['folderStyle'],
         fieldsVal: currentStyle,
         onSubmit: (data) => {
-          const nextStyles = {
-            ...getFolderStyles(),
-            [contextTargetNode.id]: data
-          };
+          const nextStyles = upsertFolderStyle(getFolderStyles(), folderIdentity, data);
           setFolderStyles(nextStyles);
           chromeApi.storage.sync.set({ folderStyles: nextStyles }, () => {
             if (chromeApi.runtime.lastError) {

@@ -3,9 +3,16 @@ const assert = require('node:assert');
 
 const {
   bookmarkDomain,
+  bookmarkUrlKey,
+  bookmarkDomainKey,
   sortNodes,
   computeMoveDestination,
-  findDuplicateBookmarks
+  findDuplicateBookmarks,
+  findDuplicateBookmarksByUrl,
+  normalizeFolderStyleRecords,
+  resolveFolderStyle,
+  upsertFolderStyle,
+  healFolderStyleRecords
 } = require('../src/bookmark-utils.js');
 const { getBookmarkIconSrc, LINK_ICON_DATA_URI } = require('../src/ui-icons.js');
 const {
@@ -16,7 +23,8 @@ const {
   shouldSearchBookmarks,
   sortSearchResults
 } = require('../src/bookmark-tree-controller.js');
-const { gatherAllBookmarks } = require('../src/duplicate-finder-controller.js');
+const { gatherAllBookmarks, runChunkedDuplicateScan } = require('../src/duplicate-finder-controller.js');
+const { addBookmarksToKeyMap, collectDuplicateGroups } = require('../src/bookmark-utils.js');
 const { THEME_CLASSES } = require('../src/settings-controller.js');
 
 test('bookmarkDomain - extracts hostname correctly', () => {
@@ -125,6 +133,35 @@ test('findDuplicateBookmarks - ignores unique and folder-only entries', () => {
     { id: '1', title: 'A', url: 'https://a.example.com/' },
     { id: '2', title: 'B', url: 'https://b.example.com/' },
     { id: '3', title: 'Folder' }
+  ]);
+
+  assert.deepStrictEqual(duplicates, []);
+});
+
+test('bookmarkUrlKey - normalizes host case and whitespace, rejects invalid URLs', () => {
+  assert.strictEqual(bookmarkUrlKey(' https://EXAMPLE.com/Page?a=1 '), 'https://example.com/Page?a=1');
+  assert.strictEqual(bookmarkUrlKey('chrome://bookmarks'), 'chrome://bookmarks');
+  assert.strictEqual(bookmarkUrlKey('not a url'), null);
+});
+
+test('findDuplicateBookmarksByUrl - groups only exact URL matches', () => {
+  const duplicates = findDuplicateBookmarksByUrl([
+    { id: '1', title: 'A', url: 'https://example.com/page' },
+    { id: '2', title: 'B', url: ' https://EXAMPLE.com/page ' },
+    { id: '3', title: 'C', url: 'https://example.com/other' },
+    { id: '4', title: 'Folder' }
+  ]);
+
+  assert.strictEqual(duplicates.length, 1);
+  assert.strictEqual(duplicates[0].url, 'https://example.com/page');
+  assert.deepStrictEqual(duplicates[0].items.map(item => item.id), ['1', '2']);
+});
+
+test('findDuplicateBookmarksByUrl - keeps different paths and queries separate', () => {
+  const duplicates = findDuplicateBookmarksByUrl([
+    { id: '1', title: 'A', url: 'https://example.com/page?a=1' },
+    { id: '2', title: 'B', url: 'https://example.com/page?a=2' },
+    { id: '3', title: 'C', url: 'https://example.com/page' }
   ]);
 
   assert.deepStrictEqual(duplicates, []);
@@ -340,6 +377,107 @@ test('sortSearchResults - sorts by title then URL within the same match group', 
     'https://z.example.com',
     'https://b.example.com'
   ]);
+});
+
+test('resolveFolderStyle - identifies folders by dateAdded across rename and move', () => {
+  const records = [
+    { dateAdded: 100, title: 'Dev', path: ['Dev'], color: 'red', icon: 'code' }
+  ];
+
+  const renamedAndMoved = resolveFolderStyle(records, {
+    dateAdded: 100,
+    title: 'Engineering',
+    path: ['Work', 'Engineering']
+  });
+  assert.strictEqual(renamedAndMoved.record, records[0]);
+  assert.strictEqual(renamedAndMoved.stale, true);
+
+  const unrelated = resolveFolderStyle(records, { dateAdded: 200, title: 'Dev', path: ['Dev'] });
+  assert.strictEqual(unrelated.record, null);
+});
+
+test('resolveFolderStyle - breaks same-millisecond ties by title then path, never heals', () => {
+  const twinA = { dateAdded: 100, title: 'A', path: ['Import', 'A'], color: 'red', icon: 'star' };
+  const twinB = { dateAdded: 100, title: 'B', path: ['Import', 'B'], color: 'blue', icon: 'heart' };
+  const records = [twinA, twinB];
+
+  const byTitle = resolveFolderStyle(records, { dateAdded: 100, title: 'B', path: ['Elsewhere', 'B'] });
+  assert.strictEqual(byTitle.record, twinB);
+  assert.strictEqual(byTitle.stale, false);
+
+  const byPath = resolveFolderStyle(records, { dateAdded: 100, title: 'Renamed', path: ['Import', 'A'] });
+  assert.strictEqual(byPath.record, twinA);
+  assert.strictEqual(byPath.stale, false);
+});
+
+test('upsertFolderStyle - replaces the matching record and drops default styles', () => {
+  const identity = { dateAdded: 100, title: 'Dev', path: ['Dev'] };
+  const records = upsertFolderStyle([], identity, { color: 'red', icon: 'code' });
+  assert.deepStrictEqual(records, [
+    { dateAdded: 100, title: 'Dev', path: ['Dev'], color: 'red', icon: 'code' }
+  ]);
+
+  const replaced = upsertFolderStyle(records, identity, { color: 'blue', icon: 'star' });
+  assert.strictEqual(replaced.length, 1);
+  assert.strictEqual(replaced[0].color, 'blue');
+
+  const cleared = upsertFolderStyle(replaced, identity, { color: '', icon: 'default' });
+  assert.deepStrictEqual(cleared, []);
+});
+
+test('healFolderStyleRecords - refreshes stale title and path metadata', () => {
+  const record = { dateAdded: 100, title: 'Dev', path: ['Dev'], color: 'red', icon: 'code' };
+  const untouched = { dateAdded: 200, title: 'Docs', path: ['Docs'], color: 'green', icon: 'document' };
+  const heals = new Map([[record, { title: 'Engineering', path: ['Work', 'Engineering'] }]]);
+
+  const { styles, changed } = healFolderStyleRecords([record, untouched], heals);
+
+  assert.strictEqual(changed, true);
+  assert.deepStrictEqual(styles[0], {
+    dateAdded: 100,
+    title: 'Engineering',
+    path: ['Work', 'Engineering'],
+    color: 'red',
+    icon: 'code'
+  });
+  assert.strictEqual(styles[1], untouched);
+
+  const noHeal = healFolderStyleRecords([record], new Map());
+  assert.strictEqual(noHeal.changed, false);
+});
+
+test('normalizeFolderStyleRecords - tolerates missing or malformed stored values', () => {
+  assert.deepStrictEqual(normalizeFolderStyleRecords(undefined), []);
+  assert.deepStrictEqual(normalizeFolderStyleRecords({ legacy: true }), []);
+  const records = [{ dateAdded: 1, title: 'A', path: ['A'], color: '', icon: 'star' }];
+  assert.strictEqual(normalizeFolderStyleRecords(records), records);
+});
+
+test('runChunkedDuplicateScan - reports progress and matches the synchronous result', async () => {
+  const bookmarks = [];
+  for (let i = 0; i < 450; i++) {
+    bookmarks.push({ id: String(i), title: `B${i}`, url: `https://example.com/page${i % 100}` });
+  }
+
+  const progress = [];
+  const duplicates = await new Promise((resolve) => {
+    runChunkedDuplicateScan({
+      bookmarks,
+      keyFn: bookmarkUrlKey,
+      addBookmarksToKeyMap,
+      collectDuplicateGroups,
+      onProgress: (checked, total) => progress.push([checked, total]),
+      onDone: resolve
+    });
+  });
+
+  assert.deepStrictEqual(progress, [[200, 450], [400, 450], [450, 450]]);
+  assert.deepStrictEqual(duplicates, findDuplicateBookmarksByUrl(bookmarks));
+});
+
+test('bookmarkDomainKey - lowercases hostnames and rejects non-web URLs', () => {
+  assert.strictEqual(bookmarkDomainKey('https://WWW.Example.com/page'), 'www.example.com');
+  assert.strictEqual(bookmarkDomainKey('chrome://bookmarks'), null);
 });
 
 test('THEME_CLASSES - includes every selectable theme class', () => {

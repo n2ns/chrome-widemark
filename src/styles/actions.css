@@ -1,6 +1,7 @@
 /* Duplicate finder view */
 .actions-header-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border);
@@ -16,7 +17,8 @@
 
 .actions-buttons-row {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
 }
 
@@ -81,6 +83,39 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.duplicate-item-title:hover {
+  text-decoration: underline;
+  color: var(--accent);
+}
+
+.duplicate-empty-message {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 4px 8px;
+}
+
+.no-duplicates-state {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-secondary);
+}
+
+.no-duplicates-state svg {
+  margin-bottom: 8px;
+}
+
+.no-duplicates-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.no-duplicates-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
 }
 
 .duplicate-item-content {
