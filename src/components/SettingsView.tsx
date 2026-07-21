@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useSettingsStore } from '../stores/settings.ts';
 import { useFolderStylesStore } from '../stores/folderStyles.ts';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
+import { useModalStore } from '../stores/modal.ts';
 
 const THEME_OPTIONS = [
   ['light', 'Light'],
@@ -103,13 +104,25 @@ export function SettingsView() {
   const s = useSettingsStore();
   const set = s.setSetting;
 
-  const resetFolderStyles = () => {
+  const resetFolderStyles = async () => {
+    const ok = await useModalStore.getState().showConfirmDialog({
+      title: 'Reset Folder Styles',
+      message: 'Remove all custom folder colors and icons? This cannot be undone.',
+      confirmLabel: 'Reset',
+    });
+    if (!ok) return;
     chrome.storage.sync.remove('folderStyles', () => {
       useFolderStylesStore.getState().setStyles([]);
     });
   };
 
-  const restoreDefaults = () => {
+  const restoreDefaults = async () => {
+    const ok = await useModalStore.getState().showConfirmDialog({
+      title: 'Restore Defaults',
+      message: 'Reset all settings to their defaults?',
+      confirmLabel: 'Restore',
+    });
+    if (!ok) return;
     chrome.storage.local.clear(() => {
       void useSettingsStore.getState().hydrate();
       void useBookmarksStore.getState().reload();

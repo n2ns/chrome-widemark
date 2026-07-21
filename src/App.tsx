@@ -8,6 +8,7 @@ import { useApplySettings } from './hooks/useApplySettings.ts';
 import { Toolbar } from './components/Toolbar.tsx';
 import { BookmarkTree } from './components/BookmarkTree.tsx';
 import { SettingsView } from './components/SettingsView.tsx';
+import { ModalHost } from './components/ModalHost.tsx';
 
 export default function App() {
   useApplySettings();
@@ -42,6 +43,7 @@ export default function App() {
         {view === 'actions' && <div id="actions-view" className="secondary-view">Actions — coming soon</div>}
         {view === 'help' && <div id="help-view" className="secondary-view">Help — coming soon</div>}
       </main>
+      <ModalHost />
     </div>
   );
 }

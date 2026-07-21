@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { SettingsView } from './SettingsView.tsx';
+import { ModalHost } from './ModalHost.tsx';
 import { useSettingsStore, SETTINGS_DEFAULTS } from '../stores/settings.ts';
+import { useModalStore } from '../stores/modal.ts';
 
 beforeEach(() => {
   useSettingsStore.setState({ ...SETTINGS_DEFAULTS, hydrated: true });
+  useModalStore.setState({ active: null });
   vi.stubGlobal('chrome', {
     storage: { local: { set: vi.fn(), clear: vi.fn() }, sync: { remove: vi.fn() } },
   });
@@ -40,9 +43,16 @@ describe('SettingsView', () => {
     expect(chrome.storage.local.set).toHaveBeenCalledWith({ showOtherBookmarks: false });
   });
 
-  it('Restore Defaults clears local storage', () => {
-    render(<SettingsView />);
+  it('Restore Defaults asks for confirmation, then clears local storage', async () => {
+    render(
+      <>
+        <SettingsView />
+        <ModalHost />
+      </>
+    );
     fireEvent.click(screen.getByText('Restore Defaults'));
-    expect(chrome.storage.local.clear).toHaveBeenCalled();
+    // Confirmation dialog (not a native confirm) appears; confirm it.
+    fireEvent.click(await screen.findByText('Restore'));
+    await vi.waitFor(() => expect(chrome.storage.local.clear).toHaveBeenCalled());
   });
 });
