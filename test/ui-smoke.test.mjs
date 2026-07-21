@@ -121,10 +121,10 @@ test('help page has separate about card and branded footer links', () => {
 
 test('release package command creates a minimal Web Store bundle', () => {
   const packageJson = JSON.parse(readProjectFile('package.json'));
-  const script = readProjectFile('scripts/package-extension.cjs');
+  const script = readProjectFile('scripts/package-extension.ts');
   const gitignore = readProjectFile('.gitignore');
 
-  assert.match(packageJson.scripts.package, /scripts\/package-extension\.cjs/);
+  assert.match(packageJson.scripts.package, /scripts\/package-extension\.ts/);
   assert.match(script, /copyRequired\('manifest\.json'\)/);
   assert.match(script, /copyRequired\('src'\)/);
   assert.match(script, /copyRequired\('icons'\)/);
@@ -135,7 +135,7 @@ test('release package command creates a minimal Web Store bundle', () => {
 
 test('build assembles the manifest-referenced files into build/', () => {
   const manifest = JSON.parse(readProjectFile('manifest.json'));
-  const buildScript = readProjectFile('scripts/build-extension.cjs');
+  const buildScript = readProjectFile('scripts/build-extension.ts');
   const tsconfig = JSON.parse(readProjectFile('tsconfig.json'));
 
   // tsc compiles src/*.ts into build/src/*.js, covering the service worker and

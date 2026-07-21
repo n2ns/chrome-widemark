@@ -1,13 +1,51 @@
-const { execFileSync } = require('node:child_process');
-const fs = require('node:fs');
-const path = require('node:path');
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const rootDir = path.resolve(__dirname, '..');
+interface TextOptions {
+  size?: number;
+  weight?: number;
+  fill?: string;
+  anchor?: string;
+  opacity?: number;
+}
+
+interface RectOptions {
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  radius?: number;
+  opacity?: number;
+}
+
+interface CircleOptions {
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  opacity?: number;
+}
+
+interface BrowserBaseOptions {
+  width?: number;
+  height?: number;
+  theme?: string;
+}
+
+interface SidePanelOptions {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  theme?: string;
+  view?: string;
+}
+
+const rootDir = path.resolve(import.meta.dirname, '..');
 const outDir = path.join(rootDir, 'store-assets');
 
 fs.mkdirSync(outDir, { recursive: true });
 
-function esc(value) {
+function esc(value: string | number): string {
   return String(value)
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -15,7 +53,7 @@ function esc(value) {
     .replaceAll('"', '&quot;');
 }
 
-function text(x, y, value, options = {}) {
+function text(x: number, y: number, value: string, options: TextOptions = {}): string {
   const {
     size = 18,
     weight = 500,
@@ -26,7 +64,7 @@ function text(x, y, value, options = {}) {
   return `<text x="${x}" y="${y}" font-family="Inter, Arial, sans-serif" font-size="${size}" font-weight="${weight}" fill="${fill}" text-anchor="${anchor}" opacity="${opacity}">${esc(value)}</text>`;
 }
 
-function rect(x, y, width, height, options = {}) {
+function rect(x: number, y: number, width: number, height: number, options: RectOptions = {}): string {
   const {
     fill = 'none',
     stroke = 'none',
@@ -37,12 +75,12 @@ function rect(x, y, width, height, options = {}) {
   return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" opacity="${opacity}"/>`;
 }
 
-function circle(cx, cy, r, options = {}) {
+function circle(cx: number, cy: number, r: number, options: CircleOptions = {}): string {
   const { fill = 'none', stroke = 'none', strokeWidth = 1, opacity = 1 } = options;
   return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" opacity="${opacity}"/>`;
 }
 
-function bookmarkIcon(x, y, size, color = '#e8ded3') {
+function bookmarkIcon(x: number, y: number, size: number, color: string = '#e8ded3'): string {
   const w = size * 0.72;
   const h = size;
   const left = x + (size - w) / 2;
@@ -53,7 +91,7 @@ function bookmarkIcon(x, y, size, color = '#e8ded3') {
   ].join('');
 }
 
-function appIcon(x, y, size) {
+function appIcon(x: number, y: number, size: number): string {
   const scale = size / 512;
   return [
     `<g transform="translate(${x} ${y}) scale(${scale})">`,
@@ -69,21 +107,21 @@ function appIcon(x, y, size) {
   ].join('');
 }
 
-function folderIcon(x, y, color = '#c69b5d') {
+function folderIcon(x: number, y: number, color: string = '#c69b5d'): string {
   return [
     rect(x, y + 4, 16, 11, { fill: color, radius: 2 }),
     rect(x, y + 2, 8, 5, { fill: color, radius: 2 })
   ].join('');
 }
 
-function smallFavicon(x, y, label, color) {
+function smallFavicon(x: number, y: number, label: string, color: string): string {
   return [
     circle(x + 8, y + 8, 8, { fill: color }),
     text(x + 8, y + 12, label.slice(0, 1), { size: 10, weight: 800, fill: '#ffffff', anchor: 'middle' })
   ].join('');
 }
 
-function browserBase({ width = 1280, height = 800, theme = 'dark' } = {}) {
+function browserBase({ width = 1280, height = 800, theme = 'dark' }: BrowserBaseOptions = {}): string {
   const bg = theme === 'light' ? '#f5f1ec' : '#22252b';
   const top = theme === 'light' ? '#efe8df' : '#2a2624';
   const page = theme === 'light' ? '#f7f3ee' : '#202329';
@@ -99,7 +137,7 @@ function browserBase({ width = 1280, height = 800, theme = 'dark' } = {}) {
   ].join('');
 }
 
-function newTabCenter(theme = 'dark') {
+function newTabCenter(theme: string = 'dark'): string {
   const muted = theme === 'light' ? '#75685f' : '#bcb6ae';
   const strong = theme === 'light' ? '#4b3f37' : '#f4ece3';
   return [
@@ -114,7 +152,7 @@ function newTabCenter(theme = 'dark') {
   ].join('');
 }
 
-function sidePanel({ x = 1020, y = 34, width = 260, height = 766, theme = 'dark', view = 'tree' } = {}) {
+function sidePanel({ x = 1020, y = 34, width = 260, height = 766, theme = 'dark', view = 'tree' }: SidePanelOptions = {}): string {
   const dark = theme === 'dark';
   const bg = dark ? '#151113' : '#fbf7f3';
   const surface = dark ? '#211d1f' : '#f1ebe5';
@@ -220,8 +258,8 @@ function sidePanel({ x = 1020, y = 34, width = 260, height = 766, theme = 'dark'
   return parts.join('');
 }
 
-function folderRows(x, y, rows, textMain, textMuted, accent) {
-  const parts = [];
+function folderRows(x: number, y: number, rows: ReadonlyArray<readonly [string, boolean?]>, textMain: string, textMuted: string, accent: string): string[] {
+  const parts: string[] = [];
   rows.forEach(([label], index) => {
     const yy = y + index * 24;
     parts.push(folderIcon(x + 24, yy, accent));
@@ -230,8 +268,8 @@ function folderRows(x, y, rows, textMain, textMuted, accent) {
   return parts;
 }
 
-function bookmarkRows(x, y, rows, textMain, textMuted, card = false) {
-  const parts = [];
+function bookmarkRows(x: number, y: number, rows: ReadonlyArray<readonly [string, string, string]>, textMain: string, textMuted: string, card: boolean = false): string[] {
+  const parts: string[] = [];
   rows.forEach(([label, initial, color], index) => {
     const yy = y + index * 24;
     if (card === true) {
@@ -243,7 +281,7 @@ function bookmarkRows(x, y, rows, textMain, textMuted, card = false) {
   return parts;
 }
 
-function settingsCard(x, y, width, height, title, rows, textMain, textMuted, border, surface) {
+function settingsCard(x: number, y: number, width: number, height: number, title: string, rows: ReadonlyArray<readonly [string, string]>, textMain: string, textMuted: string, border: string, surface: string): string {
   const parts = [
     rect(x, y, width, height, { fill: surface, stroke: border, radius: 8 }),
     text(x + 12, y + 24, title, { size: 12, weight: 800, fill: textMain })
@@ -257,7 +295,7 @@ function settingsCard(x, y, width, height, title, rows, textMain, textMuted, bor
   return parts.join('');
 }
 
-function duplicateGroup(x, y, width, url, rows, textMain, textMuted, border, surface) {
+function duplicateGroup(x: number, y: number, width: number, url: string, rows: ReadonlyArray<readonly [string, string]>, textMain: string, textMuted: string, border: string, surface: string): string {
   const parts = [
     rect(x, y, width, 26 + rows.length * 25, { fill: '#ffffff', stroke: border, radius: 7 }),
     rect(x, y, 3, 26 + rows.length * 25, { fill: '#f59e0b', radius: 2 }),
@@ -272,7 +310,7 @@ function duplicateGroup(x, y, width, url, rows, textMain, textMuted, border, sur
   return parts.join('');
 }
 
-function callout(x, y, title, subtitle, width = 300) {
+function callout(x: number, y: number, title: string, subtitle: string, width: number = 300): string {
   return [
     rect(x, y, width, 84, { fill: '#fff7ed', stroke: '#d8b486', radius: 12 }),
     text(x + 20, y + 30, title, { size: 22, weight: 850, fill: '#34271f' }),
@@ -280,7 +318,7 @@ function callout(x, y, title, subtitle, width = 300) {
   ].join('');
 }
 
-function screenshotMain() {
+function screenshotMain(): string {
   const w = 1280;
   const h = 800;
   return svg(w, h, [
@@ -291,7 +329,7 @@ function screenshotMain() {
   ].join(''));
 }
 
-function screenshotSearch() {
+function screenshotSearch(): string {
   const w = 1280;
   const h = 800;
   return svg(w, h, [
@@ -302,7 +340,7 @@ function screenshotSearch() {
   ].join(''));
 }
 
-function screenshotSettings() {
+function screenshotSettings(): string {
   const w = 1280;
   const h = 800;
   return svg(w, h, [
@@ -313,7 +351,7 @@ function screenshotSettings() {
   ].join(''));
 }
 
-function screenshotDuplicates() {
+function screenshotDuplicates(): string {
   const w = 1280;
   const h = 800;
   return svg(w, h, [
@@ -324,7 +362,7 @@ function screenshotDuplicates() {
   ].join(''));
 }
 
-function smallTile() {
+function smallTile(): string {
   const w = 440;
   const h = 280;
   return svg(w, h, [
@@ -344,7 +382,7 @@ function smallTile() {
   ].join(''));
 }
 
-function marqueeTile() {
+function marqueeTile(): string {
   const w = 1400;
   const h = 560;
   return svg(w, h, [
@@ -364,7 +402,7 @@ function marqueeTile() {
   ].join(''));
 }
 
-function svg(width, height, content) {
+function svg(width: number, height: number, content: string): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   ${rect(0, 0, width, height, { fill: '#ffffff' })}
@@ -372,7 +410,7 @@ function svg(width, height, content) {
 </svg>`;
 }
 
-const assets = [
+const assets: Array<[string, number, number, string]> = [
   ['screenshot-01-main-side-panel', 1280, 800, screenshotMain()],
   ['screenshot-02-search', 1280, 800, screenshotSearch()],
   ['screenshot-03-settings', 1280, 800, screenshotSettings()],

@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `noUncheckedIndexedAccess`, and the `noUnused*`/`noImplicitReturns`/
   `noFallthroughCasesInSwitch`/`noImplicitOverride` flags. Requires Node >=24
   (`engines`). No user-facing behavior change.
+- The build/packaging scripts (`scripts/*.ts`) are TypeScript too, type-checked
+  by a separate Node-targeted `tsconfig.scripts.json` and run directly via
+  Node's `.ts` execution. A `ci.yml` workflow type-checks and tests on push/PR.
 - Development now loads the compiled `build/` directory as the unpacked
   extension (`npm run compile`); the packaged zip ships transpiled JS. See
   [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) and

@@ -8,7 +8,8 @@ npm install
 
 ## Commands
 
-Type-check and lint syntax (`tsc` over `src/`, plus `node --check` on the build scripts):
+Type-check both TypeScript projects — the extension (`src/`) and the build
+scripts (`scripts/`):
 
 ```bash
 npm run check
@@ -107,7 +108,8 @@ Upload the zip file to the Chrome Web Store. `dist/` is generated output and sho
 ```text
 chrome-widemark/
 ├── manifest.json
-├── tsconfig.json
+├── tsconfig.json           # extension (src/), DOM + chrome-types
+├── tsconfig.scripts.json   # build scripts (scripts/), Node
 ├── src/
 │   ├── background.ts
 │   ├── sidepanel.html
@@ -129,7 +131,7 @@ chrome-widemark/
 ├── icons/
 ├── store-assets/
 ├── design/
-├── scripts/                # .cjs build/asset tooling
+├── scripts/                # .ts build/asset tooling (run via node type-strip)
 ├── test/                   # *.test.mjs (Node runs the .ts source directly)
 └── docs/
 ```

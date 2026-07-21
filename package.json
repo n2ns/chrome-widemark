@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "validate": "node --check scripts/build-extension.cjs && node --check scripts/package-extension.cjs && node --check scripts/generate-store-assets.cjs",
-    "check": "npm run validate && npm run typecheck",
-    "compile": "node scripts/build-extension.cjs",
+    "typecheck:scripts": "tsc -p tsconfig.scripts.json --noEmit",
+    "check": "npm run typecheck && npm run typecheck:scripts",
+    "compile": "node scripts/build-extension.ts",
     "watch": "tsc -p tsconfig.json --watch",
     "build": "echo 'Building Chrome Extension...' && npm run package && ./scripts/sync-to-windows.sh",
-    "package": "npm run check && npm test && npm run compile && node scripts/package-extension.cjs",
-    "assets:store": "node scripts/generate-store-assets.cjs",
+    "package": "npm run check && npm test && npm run compile && node scripts/package-extension.ts",
+    "assets:store": "node scripts/generate-store-assets.ts",
     "test": "node --test test/*.test.mjs"
   },
   "author": "bugstan",
@@ -20,6 +20,7 @@
     "node": ">=24"
   },
   "devDependencies": {
+    "@types/node": "^26.1.1",
     "chrome-types": "^0.1.435",
     "typescript": "^7.0.2"
   }

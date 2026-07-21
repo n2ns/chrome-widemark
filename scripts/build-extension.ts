@@ -1,8 +1,8 @@
-const { execFileSync } = require('node:child_process');
-const fs = require('node:fs');
-const path = require('node:path');
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.resolve(import.meta.dirname, '..');
 const buildDir = path.join(rootDir, 'build');
 
 // Static inputs that tsc does not emit. Copied verbatim so that `build/` is a
@@ -18,7 +18,7 @@ const staticInputs = [
 
 const optionalInputs = ['_locales'];
 
-function copyInto(relativePath) {
+function copyInto(relativePath: string): void {
   const from = path.join(rootDir, relativePath);
   const to = path.join(buildDir, relativePath);
   fs.mkdirSync(path.dirname(to), { recursive: true });
@@ -40,7 +40,7 @@ for (const rel of optionalInputs) {
   if (fs.existsSync(path.join(rootDir, rel))) copyInto(rel);
 }
 
-// Compile src/*.js -> build/src/*.js (import specifiers keep their .js suffix).
+// Compile src/*.ts -> build/src/*.js (import specifiers rewritten to .js).
 execFileSync('npx', ['tsc', '-p', 'tsconfig.json'], { cwd: rootDir, stdio: 'inherit' });
 
 console.log('Built extension into build/');

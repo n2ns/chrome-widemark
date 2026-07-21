@@ -1,11 +1,11 @@
-const { execFileSync } = require('node:child_process');
-const fs = require('node:fs');
-const path = require('node:path');
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.resolve(import.meta.dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
-const version = packageJson.version;
-// Package inputs come from the compiled build/ tree (see build-extension.cjs),
+const version: string = packageJson.version;
+// Package inputs come from the compiled build/ tree (see build-extension.ts),
 // not the repo source, so the zip ships transpiled JS plus static assets.
 const buildDir = path.join(rootDir, 'build');
 const distDir = path.join(rootDir, 'dist');
@@ -13,7 +13,7 @@ const bundleDir = path.join(distDir, 'widemark');
 const zipName = `widemark-v${version}.zip`;
 const zipPath = path.join(distDir, zipName);
 
-function copyRequired(relativePath) {
+function copyRequired(relativePath: string): void {
   const from = path.join(buildDir, relativePath);
   const to = path.join(bundleDir, relativePath);
 
@@ -25,7 +25,7 @@ function copyRequired(relativePath) {
   console.log(`Packaged: ${relativePath}`);
 }
 
-function copyOptional(relativePath) {
+function copyOptional(relativePath: string): void {
   const from = path.join(buildDir, relativePath);
   if (!fs.existsSync(from)) return;
 
