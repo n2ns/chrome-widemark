@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Internal
+- Rewrote the UI on **React 19 + Zustand**, bundled by **Vite** with
+  `@crxjs/vite-plugin` (replacing the vanilla-DOM controllers and the
+  `tsc`-only build). Bookmark logic stays framework-agnostic in `src/lib/` and
+  is unit-tested independently. Tests run on **Vitest** (happy-dom). The shipped
+  bundle carries no source maps. No user-facing behavior change intended. See
+  [docs/REACT_MIGRATION.md](docs/REACT_MIGRATION.md).
 - Migrated the source from vanilla ES5-style UMD scripts to TypeScript. Modules
   are now native ES modules (a single `type="module"` panel entry) compiled by
   `tsc` into `build/` — no bundler. Type checking runs under `strict`,

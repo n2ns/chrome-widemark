@@ -1,47 +1,51 @@
 # Architecture
 
-WideMark is intentionally lightweight: plain Manifest V3 extension pages and no frontend framework. The source is TypeScript compiled by `tsc` (no bundler); the only build step transpiles `src/**/*.ts` into `build/` and copies the static assets alongside it (see [DEVELOPMENT.md](DEVELOPMENT.md) and `tsconfig.json`).
+WideMark is a Manifest V3 side-panel bookmark manager built with **React 19 + TypeScript**, bundled by **Vite** with **@crxjs/vite-plugin**. UI state is held in small **Zustand** stores; all bookmark logic is framework-agnostic and unit-tested independently of React.
 
-## Module System
+## Build
 
-The panel scripts are native ES modules. `src/sidepanel.html` loads a single entry, `<script type="module" src="sidepanel.js">`; every other module is pulled in through the import graph rather than ordered `<script>` tags. Each module uses `export`/`import` and is dependency-injected by the composition root — controllers receive their collaborators as a parameter bag instead of reaching for globals.
+`vite build` (via `@crxjs/vite-plugin`, which reads `manifest.json`) emits a loadable unpacked extension into `build/`. There is no separate `tsc` emit step — TypeScript runs only as a type checker (`tsc --noEmit`). See [DEVELOPMENT.md](DEVELOPMENT.md).
 
-Shared types live in two declaration files that emit no JavaScript:
+## Layers
 
-- `src/types.d.ts`: shared domain types (`BookmarkNode`, `FolderStyleRecord`, `DropPosition`, `AppState`, `DuplicateGroup`, …).
-- `src/chrome-shims.d.ts`: augments `chrome-types` with `chrome.runtime.lastError`, which the generated API schema omits.
+```
+manifest.json ──▶ @crxjs ──▶ build/  (loadable extension)
+                    ├── src/background.ts     MV3 service worker (no React)
+                    └── src/sidepanel.html ──▶ src/main.tsx ──▶ <App/>
 
-## Runtime Shape
+<App/>
+ ├── Toolbar               brand + view routing + search toggle / expand-all
+ ├── BookmarkTree          tree render, folders/bookmarks, search, drag/drop
+ ├── SettingsView          display/behavior settings + reset actions
+ ├── ActionsView           duplicate finder + cleanup (empty / merge)
+ ├── HelpView              help + about
+ ├── ModalHost (portal)    confirm / alert / input / folder-style dialogs
+ └── ContextMenu (portal)  right-click add/edit/delete/sort/style
+```
 
-- `manifest.json` declares the side panel page and required permissions. Its asset paths (`src/background.js`, `src/sidepanel.html`) point at the compiled `build/` tree.
-- `src/background.ts` is the MV3 service worker. It configures action-click behavior for the side panel and handles the keyboard command (default Alt+B) that opens it.
-- `src/sidepanel.html` is the extension page shown in Chrome's side panel.
-- `src/sidepanel.ts` is the composition root. It imports and wires together the controllers below.
+## State — Zustand stores (`src/stores/`)
 
-## Main Modules
+- `settings` — display + behavior settings and view flags, persisted to `chrome.storage.local`.
+- `folderStyles` — folder color/icon records, cached from `chrome.storage.sync`; external changes are de-duplicated.
+- `bookmarks` — the bookmark tree, recently-added list, and expansion state. Chrome bookmark events reload the tree, with per-event reloads suppressed during a bulk import or an explicit batch (sort/cleanup).
+- `ui` — ephemeral view/search/focus state.
+- `modal` / `contextMenu` — the currently open dialog (promise-based) and right-click target.
+- `subscriptions.ts` wires `chrome.bookmarks.on*` and `chrome.storage.onChanged` into the stores at startup.
 
-- `src/bookmark-tree-controller.ts`: bookmark tree loading, rendering, search results, folder expansion, bookmark clicks, and drag/drop moves.
-- `src/settings-controller.ts`: settings form, toolbar view routing, search toggle state, reset actions, and footer text.
-- `src/context-menu-controller.ts`: custom right-click menu state and bookmark actions.
-- `src/modal-dialog.ts`: shared custom modal dialogs. Browser-native `alert`, `confirm`, and `prompt` should not be used.
-- `src/duplicate-finder-controller.ts`: duplicate bookmark check flow.
-- `src/duplicate-renderer.ts`: duplicate result DOM rendering.
-- `src/cleanup-controller.ts`: empty-folder deletion and same-named sibling folder merging.
-- `src/bookmark-utils.ts`: pure bookmark helpers and move destination calculation.
-- `src/ui-icons.ts`: shared SVG and favicon helpers.
+## Framework-agnostic logic (`src/lib/`)
+
+The bookmark algorithms carry no DOM/React dependency and are covered by their own tests: `bookmark-utils` (domain/keys, duplicates, sorting, folder-style matching), `tree-logic` (bookmarks-bar lookup, drop-position math, dropped-link parsing, search ranking), `duplicate-scan`, `folder-style-assignment`, `cleanup`, `search`, `visible-nodes`, `bookmark-click`, `theme`, `ui-icons`.
+
+Type-only declaration files (`src/types.d.ts`, `src/chrome-shims.d.ts`) emit no JavaScript; the latter augments `chrome-types` with `chrome.runtime.lastError`.
 
 ## Permission Boundary
 
-WideMark deliberately avoids `host_permissions`. The extension works with Chrome's Bookmarks, Storage, Side Panel, and Favicon APIs only.
-
-This means duplicate detection is local URL grouping, not dead-link scanning. It does not fetch bookmarked websites, open hidden tabs, or request website access.
+WideMark deliberately avoids `host_permissions`. It uses only Chrome's Bookmarks, Storage, Side Panel, and Favicon APIs. Duplicate detection is local URL/domain grouping — it never fetches bookmarked sites, opens hidden tabs, or requests website access.
 
 ## Data Boundary
 
-Chrome bookmarks remain Chrome bookmark data. WideMark stores only its own preferences and folder style metadata in Chrome extension storage.
-
-Folder style preferences are stored in `chrome.storage.sync` as records identified by the folder's `dateAdded` timestamp. Bookmark node IDs are profile-local, but creation time is transported verbatim by Chrome bookmark sync (`BookmarkSpecifics.creation_time_us`), so styles follow the same folder on every synced device and survive renames and moves. Each record also carries the folder's title and path, used only to break ties between folders created in the same millisecond (matching by title and path together, then title, then path; ambiguous leftovers are left unstyled rather than guessed). Style records are written only on explicit user edits — never automatically — so devices whose bookmark trees temporarily disagree cannot ping-pong writes at each other.
+Chrome bookmarks remain Chrome bookmark data. WideMark stores only its own preferences and folder-style metadata in extension storage. Folder styles live in `chrome.storage.sync` as records identified by the folder's `dateAdded` creation time (transported verbatim by Chrome bookmark sync), so a style follows the same folder across synced devices and survives renames and moves. Title/path on each record only break ties between folders created in the same millisecond. Style records are written only on explicit user edits.
 
 ## Notes
 
-`src/bookmark-tree-controller.ts` is the largest module by design. Tree rendering and drag/drop are kept together because drag/drop depends directly on the rendered node geometry, node type, parent/index metadata, and expansion state.
+`BookmarkTree.tsx` keeps tree rendering and drag/drop together because drag/drop depends on rendered node geometry, node type, parent/index metadata, and expansion state.
