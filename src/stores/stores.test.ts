@@ -61,7 +61,8 @@ describe('folderStyles store', () => {
 describe('bookmarks store', () => {
   it('reloads on events, but suppresses during batch and import', () => {
     const getTree = vi.fn((cb: (nodes: unknown[]) => void) => cb([{ id: '0', title: '', children: [] }]));
-    vi.stubGlobal('chrome', { bookmarks: { getTree } });
+    const getRecent = vi.fn((_count: number, cb: (nodes: unknown[]) => void) => cb([]));
+    vi.stubGlobal('chrome', { bookmarks: { getTree, getRecent }, runtime: { lastError: undefined } });
     const store = useBookmarksStore;
 
     store.getState().onBookmarkEvent();
@@ -81,6 +82,7 @@ describe('bookmarks store', () => {
   });
 
   it('setExpanded adds and removes folder ids immutably', () => {
+    vi.stubGlobal('chrome', { storage: { local: { set: vi.fn() } } });
     const store = useBookmarksStore;
     store.getState().setExpanded('a', true);
     store.getState().setExpanded('b', true);

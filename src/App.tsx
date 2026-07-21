@@ -1,8 +1,46 @@
+import { useEffect } from 'react';
+import { useSettingsStore } from './stores/settings.ts';
+import { useFolderStylesStore } from './stores/folderStyles.ts';
+import { useBookmarksStore } from './stores/bookmarks.ts';
+import { useUiStore } from './stores/ui.ts';
+import { initChromeSubscriptions } from './stores/subscriptions.ts';
+import { useApplySettings } from './hooks/useApplySettings.ts';
+import { Toolbar } from './components/Toolbar.tsx';
+import { BookmarkTree } from './components/BookmarkTree.tsx';
+
 export default function App() {
+  useApplySettings();
+  const view = useUiStore((s) => s.view);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      useSettingsStore.getState().hydrate(),
+      useFolderStylesStore.getState().hydrate(),
+      useBookmarksStore.getState().hydrateExpanded(),
+    ]).then(() => {
+      if (cancelled) return;
+      initChromeSubscriptions();
+      void useBookmarksStore.getState().reload();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
-    <div className="wm-scaffold">
-      <h1>WideMark</h1>
-      <p>React scaffold — UI migration in progress.</p>
+    <div className="sidebar-container">
+      <Toolbar />
+      <main className="content">
+        {view === 'main' && (
+          <div id="main-view">
+            <BookmarkTree />
+          </div>
+        )}
+        {view === 'settings' && <div id="settings-view" className="secondary-view">Settings — coming soon</div>}
+        {view === 'actions' && <div id="actions-view" className="secondary-view">Actions — coming soon</div>}
+        {view === 'help' && <div id="help-view" className="secondary-view">Help — coming soon</div>}
+      </main>
     </div>
   );
 }

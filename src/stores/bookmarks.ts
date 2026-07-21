@@ -1,17 +1,22 @@
 import { create } from 'zustand';
+import { gatherFolderIds } from '../lib/tree-logic.ts';
 import type { BookmarkNode } from '../types.ts';
 
-// The bookmark tree plus expansion state. Chrome bookmark events reload the
-// tree, but per-event reloads are suppressed during a bulk import or an
-// explicit batch (sort/cleanup) — the batch/import boundary reloads once.
+const RECENT_COUNT = 10;
+
+// The bookmark tree, recently-added list, and expansion state. Chrome bookmark
+// events reload the tree, but per-event reloads are suppressed during a bulk
+// import or an explicit batch (sort/cleanup) — the boundary reloads once.
 interface BookmarksStore {
   tree: BookmarkNode[];
+  recent: BookmarkNode[];
   expandedFolderIds: Set<string>;
   loaded: boolean;
   batchDepth: number;
   isImporting: boolean;
 
   reload: () => Promise<void>;
+  hydrateExpanded: () => Promise<void>;
   onBookmarkEvent: () => void;
   beginBatch: () => void;
   endBatch: () => void;
@@ -19,11 +24,17 @@ interface BookmarksStore {
   onImportEnded: () => void;
 
   setExpanded: (id: string, expanded: boolean) => void;
-  setExpandedIds: (ids: Iterable<string>) => void;
+  expandAll: () => void;
+  collapseAll: () => void;
+}
+
+function persistExpanded(ids: Set<string>) {
+  chrome.storage.local.set({ expandedFolderIds: [...ids] });
 }
 
 export const useBookmarksStore = create<BookmarksStore>((set, get) => ({
   tree: [],
+  recent: [],
   expandedFolderIds: new Set<string>(),
   loaded: false,
   batchDepth: 0,
@@ -32,7 +43,18 @@ export const useBookmarksStore = create<BookmarksStore>((set, get) => ({
   reload: () =>
     new Promise((resolve) => {
       chrome.bookmarks.getTree((nodes) => {
-        set({ tree: nodes, loaded: true });
+        chrome.bookmarks.getRecent(RECENT_COUNT, (recent) => {
+          set({ tree: nodes, recent: chrome.runtime.lastError ? [] : recent || [], loaded: true });
+          resolve();
+        });
+      });
+    }),
+
+  hydrateExpanded: () =>
+    new Promise((resolve) => {
+      chrome.storage.local.get(['expandedFolderIds'], (result) => {
+        const ids: string[] = Array.isArray(result.expandedFolderIds) ? result.expandedFolderIds : [];
+        set({ expandedFolderIds: new Set(ids) });
         resolve();
       });
     }),
@@ -57,13 +79,23 @@ export const useBookmarksStore = create<BookmarksStore>((set, get) => ({
     if (get().batchDepth === 0) get().reload();
   },
 
-  setExpanded: (id, expanded) =>
-    set((s) => {
-      const nextIds = new Set(s.expandedFolderIds);
-      if (expanded) nextIds.add(id);
-      else nextIds.delete(id);
-      return { expandedFolderIds: nextIds };
-    }),
+  setExpanded: (id, expanded) => {
+    const nextIds = new Set(get().expandedFolderIds);
+    if (expanded) nextIds.add(id);
+    else nextIds.delete(id);
+    set({ expandedFolderIds: nextIds });
+    persistExpanded(nextIds);
+  },
 
-  setExpandedIds: (ids) => set({ expandedFolderIds: new Set(ids) }),
+  expandAll: () => {
+    const ids = new Set(gatherFolderIds(get().tree));
+    set({ expandedFolderIds: ids });
+    persistExpanded(ids);
+  },
+
+  collapseAll: () => {
+    const ids = new Set<string>();
+    set({ expandedFolderIds: ids });
+    persistExpanded(ids);
+  },
 }));
