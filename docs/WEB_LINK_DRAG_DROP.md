@@ -26,7 +26,7 @@ The extension does not request `host_permissions`, fetch dragged URLs, inspect p
 
 ## Implementation
 
-The implementation lives in `src/bookmark-tree-controller.js`.
+The implementation lives in `src/bookmark-tree-controller.ts`.
 
 Internal bookmark drag starts set `application/x-bookmark-id` so existing bookmark reordering can be distinguished from external webpage link drops.
 
@@ -42,7 +42,7 @@ The drop target is resolved with the existing `computeMoveDestination` helper. E
 
 ## Verification
 
-Automated tests in `test/extension.test.js` cover:
+Automated tests in `test/extension.test.mjs` cover:
 
 - `text/uri-list` parsing with comments and multiple URLs.
 - Anchor text title extraction.

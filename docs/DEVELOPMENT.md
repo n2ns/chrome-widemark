@@ -104,26 +104,30 @@ Upload the zip file to the Chrome Web Store. `dist/` is generated output and sho
 ```text
 chrome-widemark/
 ├── manifest.json
+├── tsconfig.json
 ├── src/
-│   ├── background.js
+│   ├── background.ts
 │   ├── sidepanel.html
 │   ├── sidepanel.css
-│   ├── sidepanel.js
-│   ├── bookmark-tree-controller.js
-│   ├── context-menu-controller.js
-│   ├── settings-controller.js
-│   ├── duplicate-finder-controller.js
-│   ├── duplicate-renderer.js
-│   ├── cleanup-controller.js
-│   ├── modal-dialog.js
-│   ├── bookmark-utils.js
-│   ├── ui-icons.js
+│   ├── sidepanel.ts
+│   ├── bookmark-tree-controller.ts
+│   ├── context-menu-controller.ts
+│   ├── settings-controller.ts
+│   ├── duplicate-finder-controller.ts
+│   ├── duplicate-renderer.ts
+│   ├── cleanup-controller.ts
+│   ├── modal-dialog.ts
+│   ├── bookmark-utils.ts
+│   ├── ui-icons.ts
+│   ├── types.d.ts          # shared domain types (emits no JS)
+│   ├── chrome-shims.d.ts   # chrome-types augmentation (emits no JS)
 │   └── styles/
+├── build/                  # tsc output — loadable unpacked extension (git-ignored)
 ├── icons/
 ├── store-assets/
 ├── design/
-├── scripts/
-├── test/
+├── scripts/                # .cjs build/asset tooling
+├── test/                   # *.test.mjs (Node runs the .ts source directly)
 └── docs/
 ```
 

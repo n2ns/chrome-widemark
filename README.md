@@ -75,21 +75,25 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for details.
 ```text
 chrome-widemark/
 ├── manifest.json
-├── src/
-│   ├── background.js
+├── tsconfig.json
+├── src/                     # TypeScript source (compiled by tsc)
+│   ├── background.ts
 │   ├── sidepanel.html
 │   ├── sidepanel.css
-│   ├── sidepanel.js
-│   ├── bookmark-tree-controller.js
-│   ├── settings-controller.js
-│   ├── context-menu-controller.js
-│   ├── duplicate-finder-controller.js
-│   ├── duplicate-renderer.js
-│   ├── cleanup-controller.js
-│   ├── modal-dialog.js
-│   ├── bookmark-utils.js
-│   ├── ui-icons.js
+│   ├── sidepanel.ts
+│   ├── bookmark-tree-controller.ts
+│   ├── settings-controller.ts
+│   ├── context-menu-controller.ts
+│   ├── duplicate-finder-controller.ts
+│   ├── duplicate-renderer.ts
+│   ├── cleanup-controller.ts
+│   ├── modal-dialog.ts
+│   ├── bookmark-utils.ts
+│   ├── ui-icons.ts
+│   ├── types.d.ts
+│   ├── chrome-shims.d.ts
 │   └── styles/
+├── build/                   # tsc output, git-ignored (Load unpacked here)
 ├── icons/
 ├── store-assets/
 ├── design/

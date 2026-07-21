@@ -1,25 +1,34 @@
 # Architecture
 
-WideMark is intentionally lightweight: plain Manifest V3 extension pages, no frontend framework, and no build step beyond copying the unpacked extension bundle for local Chrome testing.
+WideMark is intentionally lightweight: plain Manifest V3 extension pages and no frontend framework. The source is TypeScript compiled by `tsc` (no bundler); the only build step transpiles `src/**/*.ts` into `build/` and copies the static assets alongside it (see [DEVELOPMENT.md](DEVELOPMENT.md) and `tsconfig.json`).
+
+## Module System
+
+The panel scripts are native ES modules. `src/sidepanel.html` loads a single entry, `<script type="module" src="sidepanel.js">`; every other module is pulled in through the import graph rather than ordered `<script>` tags. Each module uses `export`/`import` and is dependency-injected by the composition root — controllers receive their collaborators as a parameter bag instead of reaching for globals.
+
+Shared types live in two declaration files that emit no JavaScript:
+
+- `src/types.d.ts`: shared domain types (`BookmarkNode`, `FolderStyleRecord`, `DropPosition`, `AppState`, `DuplicateGroup`, …).
+- `src/chrome-shims.d.ts`: augments `chrome-types` with `chrome.runtime.lastError`, which the generated API schema omits.
 
 ## Runtime Shape
 
-- `manifest.json` declares the side panel page and required permissions.
-- `src/background.js` is the MV3 service worker. It configures action-click behavior for the side panel and handles the keyboard command (default Alt+B) that opens it.
+- `manifest.json` declares the side panel page and required permissions. Its asset paths (`src/background.js`, `src/sidepanel.html`) point at the compiled `build/` tree.
+- `src/background.ts` is the MV3 service worker. It configures action-click behavior for the side panel and handles the keyboard command (default Alt+B) that opens it.
 - `src/sidepanel.html` is the extension page shown in Chrome's side panel.
-- `src/sidepanel.js` is the composition root. It wires together the controllers below.
+- `src/sidepanel.ts` is the composition root. It imports and wires together the controllers below.
 
 ## Main Modules
 
-- `src/bookmark-tree-controller.js`: bookmark tree loading, rendering, search results, folder expansion, bookmark clicks, and drag/drop moves.
-- `src/settings-controller.js`: settings form, toolbar view routing, search toggle state, reset actions, and footer text.
-- `src/context-menu-controller.js`: custom right-click menu state and bookmark actions.
-- `src/modal-dialog.js`: shared custom modal dialogs. Browser-native `alert`, `confirm`, and `prompt` should not be used.
-- `src/duplicate-finder-controller.js`: duplicate bookmark check flow.
-- `src/duplicate-renderer.js`: duplicate result DOM rendering.
-- `src/cleanup-controller.js`: empty-folder deletion and same-named sibling folder merging.
-- `src/bookmark-utils.js`: pure bookmark helpers and move destination calculation.
-- `src/ui-icons.js`: shared SVG and favicon helpers.
+- `src/bookmark-tree-controller.ts`: bookmark tree loading, rendering, search results, folder expansion, bookmark clicks, and drag/drop moves.
+- `src/settings-controller.ts`: settings form, toolbar view routing, search toggle state, reset actions, and footer text.
+- `src/context-menu-controller.ts`: custom right-click menu state and bookmark actions.
+- `src/modal-dialog.ts`: shared custom modal dialogs. Browser-native `alert`, `confirm`, and `prompt` should not be used.
+- `src/duplicate-finder-controller.ts`: duplicate bookmark check flow.
+- `src/duplicate-renderer.ts`: duplicate result DOM rendering.
+- `src/cleanup-controller.ts`: empty-folder deletion and same-named sibling folder merging.
+- `src/bookmark-utils.ts`: pure bookmark helpers and move destination calculation.
+- `src/ui-icons.ts`: shared SVG and favicon helpers.
 
 ## Permission Boundary
 
@@ -35,4 +44,4 @@ Folder style preferences are stored in `chrome.storage.sync` as records identifi
 
 ## Notes
 
-`src/bookmark-tree-controller.js` is the largest module by design. Tree rendering and drag/drop are kept together because drag/drop depends directly on the rendered node geometry, node type, parent/index metadata, and expansion state.
+`src/bookmark-tree-controller.ts` is the largest module by design. Tree rendering and drag/drop are kept together because drag/drop depends directly on the rendered node geometry, node type, parent/index metadata, and expansion state.
