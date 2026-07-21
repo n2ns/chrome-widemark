@@ -4,11 +4,12 @@
   "description": "Compact Chrome bookmark side panel extension for browsing, search, organization, styling, and local duplicate checks.",
   "type": "module",
   "scripts": {
-    "typecheck": "tsc -p jsconfig.json",
-    "validate": "node --check src/background.js && node --check src/bookmark-utils.js && node --check src/ui-icons.js && node --check src/bookmark-tree-controller.js && node --check src/duplicate-renderer.js && node --check src/duplicate-finder-controller.js && node --check src/cleanup-controller.js && node --check src/modal-dialog.js && node --check src/context-menu-controller.js && node --check src/settings-controller.js && node --check src/sidepanel.js && node --check scripts/package-extension.cjs && node --check scripts/generate-store-assets.cjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "validate": "node --check scripts/build-extension.cjs && node --check scripts/package-extension.cjs && node --check scripts/generate-store-assets.cjs",
     "check": "npm run validate && npm run typecheck",
+    "compile": "node scripts/build-extension.cjs",
     "build": "echo 'Building Chrome Extension...' && npm run package && ./scripts/sync-to-windows.sh",
-    "package": "npm run check && npm test && node scripts/package-extension.cjs",
+    "package": "npm run check && npm test && npm run compile && node scripts/package-extension.cjs",
     "assets:store": "node scripts/generate-store-assets.cjs",
     "test": "node --test test/*.test.mjs"
   },

@@ -5,17 +5,20 @@ const path = require('node:path');
 const rootDir = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 const version = packageJson.version;
+// Package inputs come from the compiled build/ tree (see build-extension.cjs),
+// not the repo source, so the zip ships transpiled JS plus static assets.
+const buildDir = path.join(rootDir, 'build');
 const distDir = path.join(rootDir, 'dist');
 const bundleDir = path.join(distDir, 'widemark');
 const zipName = `widemark-v${version}.zip`;
 const zipPath = path.join(distDir, zipName);
 
 function copyRequired(relativePath) {
-  const from = path.join(rootDir, relativePath);
+  const from = path.join(buildDir, relativePath);
   const to = path.join(bundleDir, relativePath);
 
   if (!fs.existsSync(from)) {
-    throw new Error(`Required package input is missing: ${relativePath}`);
+    throw new Error(`Required package input is missing from build/: ${relativePath}. Run \`npm run compile\` first.`);
   }
 
   fs.cpSync(from, to, { recursive: true });
@@ -23,7 +26,7 @@ function copyRequired(relativePath) {
 }
 
 function copyOptional(relativePath) {
-  const from = path.join(rootDir, relativePath);
+  const from = path.join(buildDir, relativePath);
   if (!fs.existsSync(from)) return;
 
   const to = path.join(bundleDir, relativePath);

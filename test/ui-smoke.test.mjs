@@ -133,6 +133,32 @@ test('release package command creates a minimal Web Store bundle', () => {
   assert.match(gitignore, /^dist\/$/m);
 });
 
+test('build assembles the manifest-referenced files into build/', () => {
+  const manifest = JSON.parse(readProjectFile('manifest.json'));
+  const buildScript = readProjectFile('scripts/build-extension.cjs');
+  const tsconfig = JSON.parse(readProjectFile('tsconfig.json'));
+
+  // tsc compiles src/*.js into build/src, covering the service worker and the
+  // panel scripts referenced by the manifest / html.
+  assert.strictEqual(tsconfig.compilerOptions.rootDir, 'src');
+  assert.strictEqual(tsconfig.compilerOptions.outDir, 'build/src');
+  assert.match(manifest.background.service_worker, /^src\//);
+  assert.match(manifest.side_panel.default_path, /^src\//);
+
+  // Static assets tsc does not emit must be copied verbatim, or the packaged
+  // extension fails to load. Guards against the copy list silently shrinking.
+  [
+    'manifest.json',
+    'icons',
+    'icon.png',
+    'src/sidepanel.html',
+    'src/sidepanel.css',
+    'src/styles'
+  ].forEach(input => {
+    assert.match(buildScript, new RegExp(`'${input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`));
+  });
+});
+
 test('side panel css is split into focused local style modules', () => {
   const css = readProjectFile('src/sidepanel.css');
   const modules = [

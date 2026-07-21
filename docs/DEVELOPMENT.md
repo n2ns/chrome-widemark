@@ -8,7 +8,7 @@ npm install
 
 ## Commands
 
-Validate JavaScript syntax:
+Type-check and lint syntax (`tsc` over `src/`, plus `node --check` on the build scripts):
 
 ```bash
 npm run check
@@ -18,6 +18,12 @@ Run tests:
 
 ```bash
 npm test
+```
+
+Compile `src/` into the loadable `build/` directory:
+
+```bash
+npm run compile
 ```
 
 Build the packaged extension and sync it to the configured Windows Chrome test directory:
@@ -31,6 +37,21 @@ Create a Chrome Web Store upload package:
 ```bash
 npm run package
 ```
+
+## Loading the extension for development
+
+The source in `src/` is compiled by `tsc` (see `tsconfig.json`) into `build/`.
+Chrome loads the **compiled** tree, not the repo source:
+
+1. Run `npm run compile` (or `npx tsc -p tsconfig.json --watch` to rebuild on save).
+2. In `chrome://extensions`, enable Developer mode and **Load unpacked** the
+   `build/` directory.
+3. After changing a source file, re-run the compile (or rely on `--watch`) and
+   click the extension's reload button.
+
+`build/` mirrors the repo layout (`build/manifest.json`, `build/src/…`,
+`build/icons/…`), so the manifest's relative paths are unchanged. `build/` is
+generated output and is git-ignored.
 
 ## Local Build Sync
 
@@ -116,8 +137,8 @@ Current Node tests cover:
 - folder sorting order, empty-folder detection, and same-name folder grouping (including managed-bookmark exclusion)
 - drag/drop move destination calculations
 - search thresholds and search result ordering
-- module load order
+- ES module exports resolve and the panel loads a single module entry
 - manifest permission surface
-- build sync file coverage
+- build assembly and sync file coverage
 
 Real browser smoke tests are still a future improvement.
