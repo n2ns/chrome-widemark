@@ -17,8 +17,8 @@ import {
   findSameNameFolderGroups,
   addBookmarksToKeyMap,
   collectDuplicateGroups
-} from '../src/bookmark-utils.ts';
-import { getBookmarkIconSrc, LINK_ICON_DATA_URI } from '../src/ui-icons.ts';
+} from '../src/lib/bookmark-utils.ts';
+import { getBookmarkIconSrc, LINK_ICON_DATA_URI } from '../src/lib/ui-icons.ts';
 import {
   findBookmarksBarNode,
   gatherFolderIds,
@@ -26,9 +26,9 @@ import {
   extractLinkInfo,
   shouldSearchBookmarks,
   sortSearchResults
-} from '../src/bookmark-tree-controller.ts';
-import { gatherAllBookmarks, runChunkedDuplicateScan } from '../src/duplicate-finder-controller.ts';
-import { THEME_CLASSES } from '../src/settings-controller.ts';
+} from '../src/lib/tree-logic.ts';
+import { gatherAllBookmarks, runChunkedDuplicateScan } from '../src/lib/duplicate-scan.ts';
+import { THEME_CLASSES } from '../src/lib/theme.ts';
 
 test('bookmarkDomain - extracts hostname correctly', () => {
   assert.strictEqual(bookmarkDomain('https://www.google.com/search?q=test'), 'www.google.com');

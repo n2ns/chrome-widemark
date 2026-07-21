@@ -8,7 +8,7 @@
     DuplicateGroup,
     EmptyFolder,
     SameNameFolderGroup
-  } from './types.ts';
+  } from '../types.ts';
 
   // A live folder node carrying the path metadata the panel attaches before
   // matching it against a style record.

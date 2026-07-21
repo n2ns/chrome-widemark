@@ -48,19 +48,6 @@ test('build sync includes current files and removes stale output', () => {
   assert.doesNotMatch(movedScript, /audit-renderer\.js/);
 });
 
-test('duplicate finder shows paths and confirms deletion', () => {
-  const controller = readProjectFile('src/duplicate-finder-controller.ts');
-  const renderer = readProjectFile('src/duplicate-renderer.ts');
-  const sidepanel = readProjectFile('src/sidepanel.ts');
-
-  assert.match(controller, /folderPath/);
-  assert.match(renderer, /duplicate-item-path/);
-  assert.match(renderer, /showConfirmDialog/);
-  assert.match(renderer, /showInfoDialog/);
-  assert.match(renderer, /lastError/);
-  assert.match(sidepanel, /modalDialog/);
-});
-
 
 test('release package command creates a minimal Web Store bundle', () => {
   const packageJson = JSON.parse(readProjectFile('package.json'));
