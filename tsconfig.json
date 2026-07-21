@@ -6,6 +6,7 @@
     "lib": ["es2022", "dom", "dom.iterable"],
     "types": ["chrome-types"],
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "erasableSyntaxOnly": true,
     "rewriteRelativeImportExtensions": true,
     "rootDir": "src",

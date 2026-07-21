@@ -167,7 +167,7 @@
         groups.push({
           title,
           path: [...path, title],
-          keepId: ordered[0].id,
+          keepId: ordered[0]!.id,
           mergeIds: ordered.slice(1).map((folder) => folder.id)
         });
       });
@@ -250,7 +250,7 @@
       if (dateFolders.length === 1 && records.length === 1) {
         // Unique on both sides: dateAdded alone identifies the folder, no
         // matter how stale the record's title/path metadata is.
-        byFolderId.set(dateFolders[0].id, records[0]);
+        byFolderId.set(dateFolders[0]!.id, records[0]!);
         return;
       }
 
@@ -285,7 +285,7 @@
         unmatchedFolders = unmatchedFolders.filter((folder) => {
           const recordIndex = selectRecord(folder, unmatchedRecords);
           if (recordIndex === -1) return true;
-          byFolderId.set(folder.id, unmatchedRecords[recordIndex]);
+          byFolderId.set(folder.id, unmatchedRecords[recordIndex]!);
           unmatchedRecords.splice(recordIndex, 1);
           return false;
         });

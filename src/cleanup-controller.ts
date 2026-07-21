@@ -59,7 +59,7 @@
           onDone(removedCount);
           return;
         }
-        chromeApi.bookmarks.removeTree(ids[index], () => {
+        chromeApi.bookmarks.removeTree(ids[index]!, () => {
           if (chromeApi.runtime.lastError) {
             reportChromeError('Error removing folder');
           } else {
@@ -132,7 +132,7 @@
           onGroupsDone(mergedCount);
           return;
         }
-        const group = groups[groupIndex];
+        const group = groups[groupIndex]!;
         let mergeIndex = 0;
 
         const nextSource = () => {
@@ -141,7 +141,7 @@
             nextGroup();
             return;
           }
-          const sourceId = group.mergeIds[mergeIndex];
+          const sourceId = group.mergeIds[mergeIndex]!;
           chromeApi.bookmarks.getChildren(sourceId, (children) => {
             if (chromeApi.runtime.lastError) {
               // The folder may have been removed by an earlier merge in this
@@ -177,7 +177,7 @@
                 });
                 return;
               }
-              chromeApi.bookmarks.move(items[itemIndex].id, { parentId: group.keepId }, () => {
+              chromeApi.bookmarks.move(items[itemIndex]!.id, { parentId: group.keepId }, () => {
                 if (chromeApi.runtime.lastError) {
                   reportChromeError('Error merging folder contents');
                   anyMoveFailed = true;

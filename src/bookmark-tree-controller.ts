@@ -829,10 +829,10 @@
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setFocusedRow(rows[Math.min(currentIndex + 1, rows.length - 1)]);
+        setFocusedRow(rows[Math.min(currentIndex + 1, rows.length - 1)]!);
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
-        setFocusedRow(rows[Math.max(currentIndex - 1, 0)]);
+        setFocusedRow(rows[Math.max(currentIndex - 1, 0)]!);
       } else if (event.key === 'Enter' && focusedRow) {
         event.preventDefault();
         if (focusedRow.dataset.url) {

@@ -215,7 +215,7 @@
             endBatchUpdates();
             return;
           }
-          chromeApi.bookmarks.move(sorted[index].id, { parentId: folderId, index }, () => {
+          chromeApi.bookmarks.move(sorted[index]!.id, { parentId: folderId, index }, () => {
             reportChromeError('Error sorting folder');
             index += 1;
             moveNext();

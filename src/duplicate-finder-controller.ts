@@ -156,7 +156,7 @@ import type { BookmarkNode, ScannedBookmark, DuplicateGroup, ReportChromeError }
     }
 
     function startDuplicateCheck(mode: string = 'url') {
-      const checkMode = CHECK_MODES[mode] || CHECK_MODES.url;
+      const checkMode = CHECK_MODES[mode] || CHECK_MODES.url!;
       lastCheckMode = CHECK_MODES[mode] ? mode : 'url';
       // A newer scan supersedes any still-running one (e.g. two quick
       // deletions from the results list each restart the scan).
