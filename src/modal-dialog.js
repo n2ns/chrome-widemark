@@ -1,12 +1,3 @@
-(function attachWideMarkModalDialog(root, factory) {
-  const api = factory();
-
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = api;
-  }
-
-  root.WideMarkModalDialog = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function createWideMarkModalDialogApi() {
   function createModalDialog(documentRef = document) {
     let activeModalCancel = null;
     let selectedModalColor = '';
@@ -258,7 +249,6 @@
     };
   }
 
-  return {
+  export {
     createModalDialog
   };
-});

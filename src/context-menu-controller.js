@@ -1,12 +1,3 @@
-(function attachWideMarkContextMenu(root, factory) {
-  const api = factory();
-
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = api;
-  }
-
-  root.WideMarkContextMenu = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function createWideMarkContextMenuApi() {
   function createContextMenuController({
     document,
     windowObj,
@@ -293,7 +284,6 @@
     };
   }
 
-  return {
+  export {
     createContextMenuController
   };
-});

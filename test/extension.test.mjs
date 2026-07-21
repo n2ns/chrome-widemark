@@ -1,7 +1,7 @@
-const test = require('node:test');
-const assert = require('node:assert');
+import test from 'node:test';
+import assert from 'node:assert';
 
-const {
+import {
   bookmarkDomain,
   bookmarkUrlKey,
   bookmarkDomainKey,
@@ -14,20 +14,21 @@ const {
   replaceFolderStyle,
   computeSortedChildren,
   findEmptyFolders,
-  findSameNameFolderGroups
-} = require('../src/bookmark-utils.js');
-const { getBookmarkIconSrc, LINK_ICON_DATA_URI } = require('../src/ui-icons.js');
-const {
+  findSameNameFolderGroups,
+  addBookmarksToKeyMap,
+  collectDuplicateGroups
+} from '../src/bookmark-utils.js';
+import { getBookmarkIconSrc, LINK_ICON_DATA_URI } from '../src/ui-icons.js';
+import {
   findBookmarksBarNode,
   gatherFolderIds,
   determineDropPosition,
   extractLinkInfo,
   shouldSearchBookmarks,
   sortSearchResults
-} = require('../src/bookmark-tree-controller.js');
-const { gatherAllBookmarks, runChunkedDuplicateScan } = require('../src/duplicate-finder-controller.js');
-const { addBookmarksToKeyMap, collectDuplicateGroups } = require('../src/bookmark-utils.js');
-const { THEME_CLASSES } = require('../src/settings-controller.js');
+} from '../src/bookmark-tree-controller.js';
+import { gatherAllBookmarks, runChunkedDuplicateScan } from '../src/duplicate-finder-controller.js';
+import { THEME_CLASSES } from '../src/settings-controller.js';
 
 test('bookmarkDomain - extracts hostname correctly', () => {
   assert.strictEqual(bookmarkDomain('https://www.google.com/search?q=test'), 'www.google.com');

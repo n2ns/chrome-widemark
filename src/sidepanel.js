@@ -1,5 +1,13 @@
+import * as bookmarkUtils from './bookmark-utils.js';
+import * as WideMarkIcons from './ui-icons.js';
+import { createBookmarkTreeController } from './bookmark-tree-controller.js';
+import { createDuplicateFinderController } from './duplicate-finder-controller.js';
+import { createCleanupController } from './cleanup-controller.js';
+import { createModalDialog } from './modal-dialog.js';
+import { createContextMenuController } from './context-menu-controller.js';
+import { createSettingsController } from './settings-controller.js';
+
 document.addEventListener('DOMContentLoaded', () => {
-  const bookmarkUtils = window.BookmarkSidebarUtils;
   const {
     bookmarkDomain,
     sortNodes,
@@ -50,8 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const modalDialog = window.WideMarkModalDialog.createModalDialog(document);
-  const { bindContextMenu, hideContextMenu } = window.WideMarkContextMenu.createContextMenuController({
+  const modalDialog = createModalDialog(document);
+  const { bindContextMenu, hideContextMenu } = createContextMenuController({
     document,
     windowObj: window,
     chromeApi: chrome,
@@ -72,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     endBatchUpdates
   });
 
-  bookmarkTree = window.WideMarkBookmarkTree.createBookmarkTreeController({
+  bookmarkTree = createBookmarkTreeController({
     document,
     chromeApi: chrome,
     state: appState,
@@ -87,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sortNodes,
     computeMoveDestination,
     assignFolderStyles,
-    icons: window.WideMarkIcons
+    icons: WideMarkIcons
   });
 
   document.addEventListener('keydown', (event) => {
@@ -120,11 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const settingsController = window.WideMarkSettings.createSettingsController({
+  const settingsController = createSettingsController({
     document,
     chromeApi: chrome,
     state: appState,
-    toolbarIcons: window.WideMarkIcons.toolbarIcons,
+    toolbarIcons: WideMarkIcons.toolbarIcons,
     searchInput,
     clearSearchBtn,
     searchToggleBtn,
@@ -139,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reportChromeError
   });
 
-  window.WideMarkDuplicateFinder.createDuplicateFinderController({
+  createDuplicateFinderController({
     document,
     chromeApi: chrome,
     bookmarkUtils,
@@ -148,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reportChromeError
   });
 
-  window.WideMarkCleanup.createCleanupController({
+  createCleanupController({
     document,
     chromeApi: chrome,
     bookmarkUtils,

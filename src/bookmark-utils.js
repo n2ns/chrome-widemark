@@ -1,12 +1,3 @@
-(function attachBookmarkSidebarUtils(root, factory) {
-  const api = factory();
-
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = api;
-  }
-
-  root.BookmarkSidebarUtils = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function createBookmarkSidebarUtils() {
   function bookmarkDomain(url) {
     try {
       const parsed = new URL(url);
@@ -299,7 +290,7 @@
     return next;
   }
 
-  return {
+  export {
     bookmarkDomain,
     bookmarkUrlKey,
     bookmarkDomainKey,
@@ -318,4 +309,3 @@
     assignFolderStyles,
     replaceFolderStyle
   };
-});

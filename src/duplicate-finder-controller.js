@@ -1,12 +1,5 @@
-(function attachWideMarkDuplicateFinder(root, factory) {
-  const api = factory(root);
+import { createDuplicateRenderer } from './duplicate-renderer.js';
 
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = api;
-  }
-
-  root.WideMarkDuplicateFinder = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function createWideMarkDuplicateFinderApi(root) {
   function gatherAllBookmarks(nodes, bookmarksList = [], folderPath = []) {
     nodes.forEach(node => {
       if (node.url) {
@@ -87,7 +80,7 @@
     let lastCheckMode = 'url';
     let activeScanId = 0;
 
-    const { renderDuplicates } = root.BookmarkDuplicateRenderer.createDuplicateRenderer({
+    const { renderDuplicates } = createDuplicateRenderer({
       documentRef: document,
       duplicateResults,
       handleBookmarkClick,
@@ -176,9 +169,8 @@
     };
   }
 
-  return {
+  export {
     gatherAllBookmarks,
     runChunkedDuplicateScan,
     createDuplicateFinderController
   };
-});

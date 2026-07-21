@@ -1,12 +1,3 @@
-(function attachWideMarkBookmarkTree(root, factory) {
-  const api = factory();
-
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = api;
-  }
-
-  root.WideMarkBookmarkTree = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function createWideMarkBookmarkTreeApi() {
   function findBookmarksBarNode(nodes) {
     const rootNode = nodes[0];
     if (!rootNode || !rootNode.children) {
@@ -862,7 +853,7 @@
     };
   }
 
-  return {
+  export {
     findBookmarksBarNode,
     gatherFolderIds,
     determineDropPosition,
@@ -871,4 +862,3 @@
     sortSearchResults,
     createBookmarkTreeController
   };
-});

@@ -1,9 +1,9 @@
-const test = require('node:test');
-const assert = require('node:assert');
-const fs = require('node:fs');
-const path = require('node:path');
+import test from 'node:test';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.resolve(import.meta.dirname, '..');
 
 function readProjectFile(relativePath) {
   return fs.readFileSync(path.join(rootDir, relativePath), 'utf8');
@@ -40,16 +40,7 @@ test('side panel wires the actions page and split modules', () => {
     'id="cleanup-results"',
     'id="menu-sort"',
     'id="setting-show-other"',
-    'id="setting-show-recent"',
-    'cleanup-controller.js',
-    'ui-icons.js',
-    'bookmark-tree-controller.js',
-    'duplicate-renderer.js',
-    'duplicate-finder-controller.js',
-    'modal-dialog.js',
-    'context-menu-controller.js',
-    'settings-controller.js',
-    'sidepanel.js'
+    'id="setting-show-recent"'
   ].forEach(fragment => {
     assert.match(html, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   });
@@ -64,46 +55,22 @@ test('side panel wires the actions page and split modules', () => {
     assert.doesNotMatch(html, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   });
 
-  assert.ok(
-    html.indexOf('ui-icons.js') < html.indexOf('sidepanel.js'),
-    'icon module should load before the main side panel script'
-  );
-  assert.ok(
-    html.indexOf('bookmark-utils.js') < html.indexOf('bookmark-tree-controller.js'),
-    'bookmark utilities should load before the bookmark tree controller'
-  );
-  assert.ok(
-    html.indexOf('ui-icons.js') < html.indexOf('bookmark-tree-controller.js'),
-    'icon module should load before the bookmark tree controller'
-  );
-  assert.ok(
-    html.indexOf('bookmark-tree-controller.js') < html.indexOf('sidepanel.js'),
-    'bookmark tree controller should load before the main side panel script'
-  );
-  assert.ok(
-    html.indexOf('duplicate-renderer.js') < html.indexOf('sidepanel.js'),
-    'duplicate renderer should load before the main side panel script'
-  );
-  assert.ok(
-    html.indexOf('duplicate-renderer.js') < html.indexOf('duplicate-finder-controller.js'),
-    'duplicate renderer should load before the duplicate finder controller'
-  );
-  assert.ok(
-    html.indexOf('duplicate-finder-controller.js') < html.indexOf('sidepanel.js'),
-    'duplicate finder controller should load before the main side panel script'
-  );
-  assert.ok(
-    html.indexOf('modal-dialog.js') < html.indexOf('sidepanel.js'),
-    'modal dialog module should load before the main side panel script'
-  );
-  assert.ok(
-    html.indexOf('context-menu-controller.js') < html.indexOf('sidepanel.js'),
-    'context menu controller should load before the main side panel script'
-  );
-  assert.ok(
-    html.indexOf('settings-controller.js') < html.indexOf('sidepanel.js'),
-    'settings controller should load before the main side panel script'
-  );
+  // The panel now loads a single ES module entry; the split modules are wired
+  // through its import graph rather than ordered <script> tags.
+  assert.match(html, /<script type="module" src="sidepanel\.js"><\/script>/);
+  [
+    'src="bookmark-utils.js"',
+    'src="ui-icons.js"',
+    'src="bookmark-tree-controller.js"',
+    'src="duplicate-renderer.js"',
+    'src="duplicate-finder-controller.js"',
+    'src="cleanup-controller.js"',
+    'src="modal-dialog.js"',
+    'src="context-menu-controller.js"',
+    'src="settings-controller.js"'
+  ].forEach(fragment => {
+    assert.doesNotMatch(html, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  });
 });
 
 test('build sync includes current files and removes stale output', () => {
@@ -154,10 +121,10 @@ test('help page has separate about card and branded footer links', () => {
 
 test('release package command creates a minimal Web Store bundle', () => {
   const packageJson = JSON.parse(readProjectFile('package.json'));
-  const script = readProjectFile('scripts/package-extension.js');
+  const script = readProjectFile('scripts/package-extension.cjs');
   const gitignore = readProjectFile('.gitignore');
 
-  assert.match(packageJson.scripts.package, /scripts\/package-extension\.js/);
+  assert.match(packageJson.scripts.package, /scripts\/package-extension\.cjs/);
   assert.match(script, /copyRequired\('manifest\.json'\)/);
   assert.match(script, /copyRequired\('src'\)/);
   assert.match(script, /copyRequired\('icons'\)/);

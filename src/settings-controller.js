@@ -1,12 +1,3 @@
-(function attachWideMarkSettings(root, factory) {
-  const api = factory();
-
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = api;
-  }
-
-  root.WideMarkSettings = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function createWideMarkSettingsApi() {
   const THEME_CLASSES = [
     'theme-light',
     'theme-dark',
@@ -325,8 +316,7 @@
     };
   }
 
-  return {
+  export {
     THEME_CLASSES,
     createSettingsController
   };
-});

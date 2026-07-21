@@ -1,12 +1,3 @@
-(function attachWideMarkCleanup(root, factory) {
-  const api = factory();
-
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = api;
-  }
-
-  root.WideMarkCleanup = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function createWideMarkCleanupApi() {
   const MAX_MERGE_PASSES = 10;
 
   function createCleanupController({
@@ -245,7 +236,6 @@
     };
   }
 
-  return {
+  export {
     createCleanupController
   };
-});
