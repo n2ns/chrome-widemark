@@ -43,11 +43,14 @@ npm run package
 The source in `src/` is compiled by `tsc` (see `tsconfig.json`) into `build/`.
 Chrome loads the **compiled** tree, not the repo source:
 
-1. Run `npm run compile` (or `npx tsc -p tsconfig.json --watch` to rebuild on save).
+1. Run `npm run compile` once to assemble `build/` (compiles TS and copies the
+   static assets — html/css/icons/manifest).
 2. In `chrome://extensions`, enable Developer mode and **Load unpacked** the
    `build/` directory.
-3. After changing a source file, re-run the compile (or rely on `--watch`) and
-   click the extension's reload button.
+3. While iterating, `npm run watch` recompiles `src/*.ts` into `build/src` on
+   save. After a change, click the extension's reload button. Re-run
+   `npm run compile` if you touch a static asset (html/css/manifest/icons),
+   since `watch` only recompiles TypeScript.
 
 `build/` mirrors the repo layout (`build/manifest.json`, `build/src/…`,
 `build/icons/…`), so the manifest's relative paths are unchanged. `build/` is

@@ -8,6 +8,7 @@
     "validate": "node --check scripts/build-extension.cjs && node --check scripts/package-extension.cjs && node --check scripts/generate-store-assets.cjs",
     "check": "npm run validate && npm run typecheck",
     "compile": "node scripts/build-extension.cjs",
+    "watch": "tsc -p tsconfig.json --watch",
     "build": "echo 'Building Chrome Extension...' && npm run package && ./scripts/sync-to-windows.sh",
     "package": "npm run check && npm test && npm run compile && node scripts/package-extension.cjs",
     "assets:store": "node scripts/generate-store-assets.cjs",
