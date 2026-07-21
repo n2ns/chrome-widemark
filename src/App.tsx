@@ -5,6 +5,7 @@ import { useBookmarksStore } from './stores/bookmarks.ts';
 import { useUiStore } from './stores/ui.ts';
 import { initChromeSubscriptions } from './stores/subscriptions.ts';
 import { useApplySettings } from './hooks/useApplySettings.ts';
+import { useKeyboardNav } from './hooks/useKeyboardNav.ts';
 import { Toolbar } from './components/Toolbar.tsx';
 import { BookmarkTree } from './components/BookmarkTree.tsx';
 import { SettingsView } from './components/SettingsView.tsx';
@@ -15,6 +16,7 @@ import { ContextMenu } from './components/ContextMenu.tsx';
 
 export default function App() {
   useApplySettings();
+  useKeyboardNav();
   const view = useUiStore((s) => s.view);
 
   useEffect(() => {
