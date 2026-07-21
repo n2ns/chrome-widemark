@@ -1,6 +1,6 @@
 {
   "name": "widemark",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Compact Chrome bookmark side panel extension for browsing, search, organization, styling, and local duplicate checks.",
   "type": "module",
   "scripts": {
