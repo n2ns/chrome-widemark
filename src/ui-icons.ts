@@ -11,7 +11,13 @@
 
   const RECENT_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15.5 14"></polyline></svg>';
 
-  function getBookmarkIconSrc({ chromeApi, bookmarkDomain, url }) {
+  interface GetBookmarkIconSrcArgs {
+    chromeApi: typeof chrome;
+    bookmarkDomain: (url: string) => string | null | undefined;
+    url: string;
+  }
+
+  function getBookmarkIconSrc({ chromeApi, bookmarkDomain, url }: GetBookmarkIconSrcArgs): string {
     const domain = bookmarkDomain(url);
     if (!domain) {
       return LINK_ICON_DATA_URI;
@@ -19,7 +25,7 @@
     return `${chromeApi.runtime.getURL('/_favicon/')}?pageUrl=${encodeURIComponent(url)}&size=32`;
   }
 
-  function getFolderSvgIcon(iconName) {
+  function getFolderSvgIcon(iconName: string | undefined): string {
     const bgPath = '<path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="currentColor" fill-opacity="0.65"/>';
     switch (iconName) {
       case 'code':

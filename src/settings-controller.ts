@@ -1,3 +1,59 @@
+  import type { AppState, ReportChromeError } from './types.ts';
+
+  /** The subset of persisted values that drive the panel's visual appearance. */
+  interface UiSettings {
+    fontSize: string;
+    fontFamily: string;
+    theme: string;
+    syncTheme: boolean;
+    rowSpacing: string;
+    uiZoom: string;
+  }
+
+  /** Toolbar button glyphs injected by the host page. */
+  interface ToolbarIcons {
+    settings: string;
+    actions: string;
+    help: string;
+    close: string;
+  }
+
+  interface ConfirmDialogOptions {
+    title: string;
+    message: string;
+    confirmLabel?: string;
+  }
+
+  interface InfoDialogOptions {
+    title: string;
+    message: string;
+  }
+
+  interface ModalDialog {
+    showConfirmDialog: (options: ConfirmDialogOptions) => Promise<boolean>;
+    showInfoDialog: (options: InfoDialogOptions) => void | Promise<void>;
+  }
+
+  /** Dependencies injected into {@link createSettingsController}. */
+  interface SettingsControllerDeps {
+    document: Document;
+    chromeApi: typeof chrome;
+    state: AppState;
+    toolbarIcons: ToolbarIcons;
+    searchInput: HTMLInputElement;
+    clearSearchBtn: HTMLElement;
+    searchToggleBtn: HTMLElement;
+    searchBarContainer: HTMLElement;
+    toggleAllBtn: HTMLElement;
+    updateToggleAllButton: () => void;
+    initBookmarkTree: () => void;
+    loadBookmarks: (force?: boolean) => void;
+    refreshView: () => void;
+    initFolderStyles: (callback: () => void) => void;
+    modalDialog: ModalDialog;
+    reportChromeError: ReportChromeError;
+  }
+
   const THEME_CLASSES = [
     'theme-light',
     'theme-dark',
@@ -10,7 +66,7 @@
 
   const UI_SETTING_KEYS = ['fontSize', 'fontFamily', 'theme', 'syncTheme', 'rowSpacing', 'uiZoom'];
 
-  function getStoredSetting(result, key, defaultValue) {
+  function getStoredSetting(result: Record<string, any>, key: string, defaultValue: any) {
     return result[key] !== undefined ? result[key] : defaultValue;
   }
 
@@ -31,28 +87,28 @@
     initFolderStyles,
     modalDialog,
     reportChromeError
-  }) {
-    const settingsToggleBtn = document.getElementById('settings-toggle-btn');
-    const actionsToggleBtn = document.getElementById('actions-toggle-btn');
-    const helpToggleBtn = document.getElementById('help-toggle-btn');
-    const mainView = document.getElementById('main-view');
-    const settingsView = document.getElementById('settings-view');
-    const actionsView = document.getElementById('actions-view');
-    const helpView = document.getElementById('help-view');
+  }: SettingsControllerDeps) {
+    const settingsToggleBtn = document.getElementById('settings-toggle-btn') as HTMLElement;
+    const actionsToggleBtn = document.getElementById('actions-toggle-btn') as HTMLElement;
+    const helpToggleBtn = document.getElementById('help-toggle-btn') as HTMLElement;
+    const mainView = document.getElementById('main-view') as HTMLElement;
+    const settingsView = document.getElementById('settings-view') as HTMLElement;
+    const actionsView = document.getElementById('actions-view') as HTMLElement;
+    const helpView = document.getElementById('help-view') as HTMLElement;
 
-    const settingFontSize = document.getElementById('setting-font-size');
-    const settingFontFamily = document.getElementById('setting-font-family');
-    const settingTheme = document.getElementById('setting-theme');
-    const settingSyncTheme = document.getElementById('setting-sync-theme');
-    const settingRowSpacing = document.getElementById('setting-row-spacing');
-    const settingUiZoom = document.getElementById('setting-ui-zoom');
-    const settingLeftClickAction = document.getElementById('setting-left-click-action');
-    const settingDragProtection = document.getElementById('setting-drag-protection');
-    const settingTooltipEnabled = document.getElementById('setting-tooltip-enabled');
-    const settingShowOther = document.getElementById('setting-show-other');
-    const settingShowRecent = document.getElementById('setting-show-recent');
-    const resetFolderStylesBtn = document.getElementById('reset-folder-styles-btn');
-    const restoreDefaultsBtn = document.getElementById('restore-defaults-btn');
+    const settingFontSize = document.getElementById('setting-font-size') as HTMLSelectElement;
+    const settingFontFamily = document.getElementById('setting-font-family') as HTMLSelectElement;
+    const settingTheme = document.getElementById('setting-theme') as HTMLSelectElement;
+    const settingSyncTheme = document.getElementById('setting-sync-theme') as HTMLInputElement;
+    const settingRowSpacing = document.getElementById('setting-row-spacing') as HTMLSelectElement;
+    const settingUiZoom = document.getElementById('setting-ui-zoom') as HTMLSelectElement;
+    const settingLeftClickAction = document.getElementById('setting-left-click-action') as HTMLSelectElement;
+    const settingDragProtection = document.getElementById('setting-drag-protection') as HTMLInputElement;
+    const settingTooltipEnabled = document.getElementById('setting-tooltip-enabled') as HTMLInputElement;
+    const settingShowOther = document.getElementById('setting-show-other') as HTMLInputElement;
+    const settingShowRecent = document.getElementById('setting-show-recent') as HTMLInputElement;
+    const resetFolderStylesBtn = document.getElementById('reset-folder-styles-btn') as HTMLElement;
+    const restoreDefaultsBtn = document.getElementById('restore-defaults-btn') as HTMLElement;
     const { showConfirmDialog, showInfoDialog } = modalDialog;
 
     let currentView = 'main';
@@ -88,7 +144,7 @@
       updateSearchBoxState();
     }
 
-    function showSecondaryView(viewName) {
+    function showSecondaryView(viewName: string) {
       if (viewName === 'settings') {
         settingsView.style.display = 'block';
         settingsToggleBtn.title = 'Back to bookmarks';
@@ -111,7 +167,7 @@
       searchBarContainer.style.display = 'none';
     }
 
-    function switchView(viewName) {
+    function switchView(viewName: string) {
       currentView = viewName;
       mainView.style.display = 'none';
       settingsView.style.display = 'none';
@@ -125,7 +181,7 @@
       }
     }
 
-    function applySettings({ fontSize, fontFamily, theme, syncTheme, rowSpacing, uiZoom }) {
+    function applySettings({ fontSize, fontFamily, theme, syncTheme, rowSpacing, uiZoom }: UiSettings) {
       document.documentElement.style.setProperty('--bookmark-font-size', fontSize);
       document.documentElement.style.setProperty('--bookmark-font-family', `var(--font-family-${fontFamily})`);
 
@@ -156,7 +212,7 @@
       });
     }
 
-    function setFormValues({ fontSize, fontFamily, theme, syncTheme, rowSpacing, uiZoom }) {
+    function setFormValues({ fontSize, fontFamily, theme, syncTheme, rowSpacing, uiZoom }: UiSettings) {
       settingFontSize.value = fontSize;
       settingFontFamily.value = fontFamily;
       settingTheme.value = theme;
@@ -202,7 +258,7 @@
       });
     }
 
-    function saveSetting(key, value) {
+    function saveSetting(key: string, value: any) {
       if (key === 'leftClickAction') {
         state.leftClickAction = value;
       }
@@ -226,7 +282,7 @@
       });
     }
 
-    function toggleNamedView(viewName) {
+    function toggleNamedView(viewName: string) {
       switchView(currentView === viewName ? 'main' : viewName);
     }
 
@@ -248,17 +304,17 @@
         }
       });
 
-      settingFontSize.addEventListener('change', (event) => saveSetting('fontSize', event.target.value));
-      settingFontFamily.addEventListener('change', (event) => saveSetting('fontFamily', event.target.value));
-      settingTheme.addEventListener('change', (event) => saveSetting('theme', event.target.value));
-      settingSyncTheme.addEventListener('change', (event) => saveSetting('syncTheme', event.target.checked));
-      settingRowSpacing.addEventListener('change', (event) => saveSetting('rowSpacing', event.target.value));
-      settingUiZoom.addEventListener('change', (event) => saveSetting('uiZoom', event.target.value));
-      settingLeftClickAction.addEventListener('change', (event) => saveSetting('leftClickAction', event.target.value));
-      settingDragProtection.addEventListener('change', (event) => saveSetting('dragProtectionEnabled', event.target.checked));
-      settingTooltipEnabled.addEventListener('change', (event) => saveSetting('tooltipEnabled', event.target.checked));
-      settingShowOther.addEventListener('change', (event) => saveSetting('showOtherBookmarks', event.target.checked));
-      settingShowRecent.addEventListener('change', (event) => saveSetting('showRecent', event.target.checked));
+      settingFontSize.addEventListener('change', (event) => saveSetting('fontSize', (event.target as HTMLSelectElement).value));
+      settingFontFamily.addEventListener('change', (event) => saveSetting('fontFamily', (event.target as HTMLSelectElement).value));
+      settingTheme.addEventListener('change', (event) => saveSetting('theme', (event.target as HTMLSelectElement).value));
+      settingSyncTheme.addEventListener('change', (event) => saveSetting('syncTheme', (event.target as HTMLInputElement).checked));
+      settingRowSpacing.addEventListener('change', (event) => saveSetting('rowSpacing', (event.target as HTMLSelectElement).value));
+      settingUiZoom.addEventListener('change', (event) => saveSetting('uiZoom', (event.target as HTMLSelectElement).value));
+      settingLeftClickAction.addEventListener('change', (event) => saveSetting('leftClickAction', (event.target as HTMLSelectElement).value));
+      settingDragProtection.addEventListener('change', (event) => saveSetting('dragProtectionEnabled', (event.target as HTMLInputElement).checked));
+      settingTooltipEnabled.addEventListener('change', (event) => saveSetting('tooltipEnabled', (event.target as HTMLInputElement).checked));
+      settingShowOther.addEventListener('change', (event) => saveSetting('showOtherBookmarks', (event.target as HTMLInputElement).checked));
+      settingShowRecent.addEventListener('change', (event) => saveSetting('showRecent', (event.target as HTMLInputElement).checked));
 
       resetFolderStylesBtn.addEventListener('click', async () => {
         const confirmed = await showConfirmDialog({

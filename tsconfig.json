@@ -5,7 +5,7 @@
     "moduleResolution": "bundler",
     "lib": ["es2022", "dom", "dom.iterable"],
     "types": ["chrome-types"],
-    "strict": false,
+    "strict": true,
     "erasableSyntaxOnly": true,
     "rewriteRelativeImportExtensions": true,
     "rootDir": "src",

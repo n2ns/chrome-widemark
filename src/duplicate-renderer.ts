@@ -1,6 +1,26 @@
+import type { ScannedBookmark, DuplicateGroup } from './types.ts';
+
+  interface ModalDialog {
+    showInfoDialog(options: { title: string; message: string; confirmLabel?: string }): void;
+    showConfirmDialog(options: { title: string; message: string; confirmLabel?: string; cancelLabel?: string }): Promise<boolean>;
+  }
+
+  // Runtime shape produced by gatherAllBookmarks: a flattened bookmark whose
+  // folderPath is the joined display string (not ScannedBookmark's string[]).
+  type DuplicateBookmark = Omit<ScannedBookmark, 'folderPath'> & { folderPath: string };
+
+  interface DuplicateRendererDeps {
+    documentRef?: Document;
+    duplicateResults: HTMLElement;
+    handleBookmarkClick: (url: string, event: Event) => void;
+    restartDuplicateCheck: () => void;
+    chromeApi?: typeof chrome | null;
+    modalDialog?: ModalDialog | null;
+  }
+
   const DELETE_ICON = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
 
-  function createEmptySection(documentRef, section, title, message) {
+  function createEmptySection(documentRef: Document, section: HTMLElement, title: string, message: string) {
     section.innerHTML = '';
 
     const header = documentRef.createElement('div');
@@ -18,7 +38,7 @@
     section.appendChild(messageEl);
   }
 
-  function getOrCreateSection(documentRef, duplicateResults, id) {
+  function getOrCreateSection(documentRef: Document, duplicateResults: HTMLElement, id: string) {
     let section = documentRef.getElementById(id);
     if (!section) {
       section = documentRef.createElement('div');
@@ -30,10 +50,10 @@
     return section;
   }
 
-  function createDuplicateRenderer({ documentRef = document, duplicateResults, handleBookmarkClick, restartDuplicateCheck, chromeApi, modalDialog }) {
+  function createDuplicateRenderer({ documentRef = document, duplicateResults, handleBookmarkClick, restartDuplicateCheck, chromeApi, modalDialog }: DuplicateRendererDeps) {
     const chromeRuntime = chromeApi || chrome;
 
-    function removeBookmark(id, item, callback) {
+    function removeBookmark(id: string, item: DuplicateBookmark, callback: () => void) {
       chromeRuntime.bookmarks.remove(id, () => {
         if (chromeRuntime.runtime?.lastError) {
           if (modalDialog) {
@@ -50,7 +70,7 @@
       });
     }
 
-    function renderDuplicates(duplicates, sectionLabel = 'Duplicates') {
+    function renderDuplicates(duplicates: DuplicateGroup<DuplicateBookmark>[], sectionLabel: string = 'Duplicates') {
       const dupSection = getOrCreateSection(documentRef, duplicateResults, 'dup-section');
 
       if (duplicates.length === 0) {

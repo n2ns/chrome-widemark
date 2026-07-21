@@ -1,3 +1,55 @@
+  import type {
+    BookmarkNode,
+    FolderStyle,
+    FolderStyleRecord,
+    FolderIdentity,
+    ReportChromeError
+  } from './types.ts';
+
+  // The context target may be a live bookmark node carrying an extra
+  // `stylePath` the tree controller stamps on, or the synthetic root stand-in.
+  interface ContextTargetNode extends BookmarkNode {
+    stylePath?: string[];
+  }
+
+  interface ContextMenuModalOptions {
+    title: string;
+    showFields?: string[];
+    fieldsVal?: { title?: string; url?: string; color?: string; icon?: string };
+    message?: string;
+    mode?: string;
+    submitLabel?: string;
+    onSubmit?: (data?: any) => void;
+  }
+
+  interface ContextMenuModalDialog {
+    openCustomModal: (options: ContextMenuModalOptions) => void;
+  }
+
+  interface ContextMenuControllerDeps {
+    document: Document;
+    windowObj: Window;
+    chromeApi: typeof chrome;
+    treeContainer: HTMLElement;
+    modalDialog: ContextMenuModalDialog;
+    getFolderStyles: () => FolderStyleRecord[];
+    setFolderStyles: (styles: FolderStyleRecord[]) => void;
+    loadBookmarks: (force?: boolean) => void;
+    reportChromeError: ReportChromeError;
+    getAssignedStyle: (nodeId: string) => FolderStyleRecord | null;
+    getFolderIdentity: (nodeId: string) => FolderIdentity | null;
+    refreshRecordMetadata: (records: FolderStyleRecord[]) => FolderStyleRecord[];
+    replaceFolderStyle: (
+      records: FolderStyleRecord[],
+      existingRecord: FolderStyleRecord | null,
+      identity: { dateAdded?: number; title?: string; path?: string[] },
+      style: FolderStyle
+    ) => FolderStyleRecord[];
+    computeSortedChildren: (children: BookmarkNode[]) => BookmarkNode[];
+    beginBatchUpdates: () => void;
+    endBatchUpdates: () => void;
+  }
+
   function createContextMenuController({
     document,
     windowObj,
@@ -15,32 +67,32 @@
     computeSortedChildren,
     beginBatchUpdates,
     endBatchUpdates
-  }) {
+  }: ContextMenuControllerDeps) {
     const PERMANENT_FOLDER_IDS = ['1', '2', '3'];
-    const contextMenu = document.getElementById('custom-context-menu');
-    const menuAddBookmark = document.getElementById('menu-add-bookmark');
-    const menuAddFolder = document.getElementById('menu-add-folder');
-    const menuSort = document.getElementById('menu-sort');
-    const menuEdit = document.getElementById('menu-edit');
-    const menuDelete = document.getElementById('menu-delete');
-    const menuFolderStyle = document.getElementById('menu-folder-style');
+    const contextMenu = document.getElementById('custom-context-menu') as HTMLElement;
+    const menuAddBookmark = document.getElementById('menu-add-bookmark') as HTMLElement;
+    const menuAddFolder = document.getElementById('menu-add-folder') as HTMLElement;
+    const menuSort = document.getElementById('menu-sort') as HTMLElement;
+    const menuEdit = document.getElementById('menu-edit') as HTMLElement;
+    const menuDelete = document.getElementById('menu-delete') as HTMLElement;
+    const menuFolderStyle = document.getElementById('menu-folder-style') as HTMLElement;
     const { openCustomModal } = modalDialog;
 
-    let contextTargetNode = null;
+    let contextTargetNode: ContextTargetNode | null = null;
     let contextIsRoot = false;
 
-    function setMenuItemVisibility(item, visible) {
+    function setMenuItemVisibility(item: HTMLElement, visible: boolean) {
       item.style.display = visible ? 'flex' : 'none';
     }
 
-    function showSeparator(selector, visible) {
+    function showSeparator(selector: string, visible: boolean) {
       const separator = document.querySelector(selector);
       if (separator) {
-        separator.style.display = visible ? 'block' : 'none';
+        (separator as HTMLElement).style.display = visible ? 'block' : 'none';
       }
     }
 
-    function showContextMenu(x, y) {
+    function showContextMenu(x: number, y: number) {
       // A managed (policy) bookmark supports no menu action at all — showing
       // an empty menu frame would be worse than showing nothing.
       if (contextTargetNode && contextTargetNode.unmodifiable && contextTargetNode.url) {
@@ -55,10 +107,10 @@
       contextMenu.style.left = `${Math.max(8, left)}px`;
       contextMenu.style.top = `${Math.max(8, top)}px`;
 
-      const isFolder = !contextTargetNode.url;
-      const isPermanent = PERMANENT_FOLDER_IDS.includes(contextTargetNode.id);
+      const isFolder = !contextTargetNode!.url;
+      const isPermanent = PERMANENT_FOLDER_IDS.includes(contextTargetNode!.id);
       // Policy-managed nodes reject every bookmarks-API write.
-      const isManaged = Boolean(contextTargetNode.unmodifiable);
+      const isManaged = Boolean(contextTargetNode!.unmodifiable);
       setMenuItemVisibility(menuSort, isFolder && !isManaged);
       setMenuItemVisibility(menuAddBookmark, !isManaged);
       setMenuItemVisibility(menuAddFolder, !isManaged);
@@ -88,7 +140,7 @@
       contextMenu.style.display = 'none';
     }
 
-    function bindContextMenu(element, node) {
+    function bindContextMenu(element: HTMLElement, node: ContextTargetNode) {
       element.addEventListener('contextmenu', (event) => {
         event.preventDefault();
         contextTargetNode = node;
@@ -99,9 +151,9 @@
     }
 
     treeContainer.addEventListener('contextmenu', (event) => {
-      if (event.target === treeContainer || event.target.tagName === 'UL') {
+      if (event.target === treeContainer || (event.target as HTMLElement).tagName === 'UL') {
         event.preventDefault();
-        contextTargetNode = { id: '1', title: 'Bookmarks Bar' };
+        contextTargetNode = { id: '1', title: 'Bookmarks Bar' } as ContextTargetNode;
         contextIsRoot = true;
         showContextMenu(event.clientX, event.clientY);
       }
@@ -149,7 +201,7 @@
       });
     });
 
-    function runFolderSort(folderId) {
+    function runFolderSort(folderId: string) {
       chromeApi.bookmarks.getChildren(folderId, (children) => {
         if (chromeApi.runtime.lastError) {
           reportChromeError('Error sorting folder');
@@ -198,7 +250,7 @@
           showFields: ['title', 'url'],
           fieldsVal: { title: contextTargetNode.title, url: contextTargetNode.url },
           onSubmit: (data) => {
-            chromeApi.bookmarks.update(contextTargetNode.id, {
+            chromeApi.bookmarks.update(contextTargetNode!.id, {
               title: data.title,
               url: data.url
             });
@@ -212,7 +264,7 @@
         showFields: ['title'],
         fieldsVal: { title: contextTargetNode.title },
         onSubmit: (data) => {
-          chromeApi.bookmarks.update(contextTargetNode.id, {
+          chromeApi.bookmarks.update(contextTargetNode!.id, {
             title: data.title
           });
         }
@@ -232,10 +284,10 @@
         mode: 'confirm',
         submitLabel: 'Delete',
         onSubmit: () => {
-          if (contextTargetNode.url) {
-            chromeApi.bookmarks.remove(contextTargetNode.id);
+          if (contextTargetNode!.url) {
+            chromeApi.bookmarks.remove(contextTargetNode!.id);
           } else {
-            chromeApi.bookmarks.removeTree(contextTargetNode.id);
+            chromeApi.bookmarks.removeTree(contextTargetNode!.id);
           }
         }
       });
@@ -261,8 +313,8 @@
         onSubmit: (data) => {
           // Re-resolve at submit time: the styles array (or the folder's
           // title/path) may have changed while the dialog was open.
-          const currentRecord = getAssignedStyle(contextTargetNode.id) || record;
-          const currentIdentity = getFolderIdentity(contextTargetNode.id) || folderIdentity;
+          const currentRecord = getAssignedStyle(contextTargetNode!.id) || record;
+          const currentIdentity = getFolderIdentity(contextTargetNode!.id) || folderIdentity;
           const nextStyles = refreshRecordMetadata(
             replaceFolderStyle(getFolderStyles(), currentRecord, currentIdentity, data)
           );

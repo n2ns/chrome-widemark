@@ -1,5 +1,7 @@
+  import type { FolderStyle } from './types.ts';
+
   function createModalDialog(documentRef = document) {
-    let activeModalCancel = null;
+    let activeModalCancel: (() => void) | null = null;
     let selectedModalColor = '';
     let selectedModalIcon = 'default';
 
@@ -34,7 +36,12 @@
       return false;
     }
 
-    function showConfirmDialog({ title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel' }) {
+    function showConfirmDialog({ title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel' }: {
+      title: string;
+      message: string;
+      confirmLabel?: string;
+      cancelLabel?: string;
+    }) {
       return openCustomModal({
         title,
         message,
@@ -44,7 +51,11 @@
       });
     }
 
-    function showInfoDialog({ title, message, confirmLabel = 'OK' }) {
+    function showInfoDialog({ title, message, confirmLabel = 'OK' }: {
+      title: string;
+      message: string;
+      confirmLabel?: string;
+    }) {
       return openCustomModal({
         title,
         message,
@@ -79,13 +90,13 @@
         activeModalCancel();
       }
 
-      const modal = documentRef.getElementById('custom-modal');
-      const modalTitle = documentRef.getElementById('modal-title');
-      const fieldTitle = documentRef.getElementById('field-group-title');
-      const fieldUrl = documentRef.getElementById('field-group-url');
-      const inputTitle = documentRef.getElementById('modal-input-title');
-      const inputUrl = documentRef.getElementById('modal-input-url');
-      const modalFieldsContainer = documentRef.querySelector('.modal-fields');
+      const modal = documentRef.getElementById('custom-modal')!;
+      const modalTitle = documentRef.getElementById('modal-title')!;
+      const fieldTitle = documentRef.getElementById('field-group-title')!;
+      const fieldUrl = documentRef.getElementById('field-group-url')!;
+      const inputTitle = documentRef.getElementById('modal-input-title')!;
+      const inputUrl = documentRef.getElementById('modal-input-url')!;
+      const modalFieldsContainer = documentRef.querySelector('.modal-fields')!;
 
       const oldMsg = documentRef.getElementById('modal-confirm-msg');
       if (oldMsg) oldMsg.remove();
@@ -150,8 +161,8 @@
         newInputTitle.focus();
       }
 
-      const submitBtn = documentRef.getElementById('modal-submit-btn');
-      const cancelBtn = documentRef.getElementById('modal-cancel-btn');
+      const submitBtn = documentRef.getElementById('modal-submit-btn')!;
+      const cancelBtn = documentRef.getElementById('modal-cancel-btn')!;
 
       const newSubmitBtn = (submitBtn.cloneNode(true) as HTMLElement);
       const newCancelBtn = (cancelBtn.cloneNode(true) as HTMLElement);
@@ -161,7 +172,7 @@
       newCancelBtn.textContent = cancelLabel || 'Cancel';
       newCancelBtn.style.display = dialogMode === 'alert' ? 'none' : 'inline-flex';
 
-      function showModalError(messageText) {
+      function showModalError(messageText: string) {
         let errorEl = documentRef.getElementById('modal-error-msg');
         if (!errorEl) {
           errorEl = documentRef.createElement('p');
@@ -172,7 +183,7 @@
         errorEl.textContent = messageText;
       }
 
-      const handleEnterSubmit = (e) => {
+      const handleEnterSubmit = (e: KeyboardEvent) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           newSubmitBtn.click();
@@ -181,10 +192,10 @@
       newInputTitle.addEventListener('keydown', handleEnterSubmit);
       newInputUrl.addEventListener('keydown', handleEnterSubmit);
 
-      return new Promise((resolve) => {
+      return new Promise<any>((resolve) => {
         let settled = false;
 
-        function closeModal(result) {
+        function closeModal(result: any) {
           if (settled) return;
           settled = true;
           modal.style.display = 'none';
@@ -209,7 +220,7 @@
           }
 
           if (showFields.includes('folderStyle')) {
-            const data = { color: selectedModalColor, icon: selectedModalIcon };
+            const data: FolderStyle = { color: selectedModalColor, icon: selectedModalIcon };
             if (onSubmit) onSubmit(data);
             closeModal(data);
             return;

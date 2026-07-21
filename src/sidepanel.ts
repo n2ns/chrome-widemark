@@ -1,3 +1,4 @@
+import type { FolderStyleRecord } from './types.ts';
 import * as bookmarkUtils from './bookmark-utils.ts';
 import * as WideMarkIcons from './ui-icons.ts';
 import { createBookmarkTreeController } from './bookmark-tree-controller.ts';
@@ -16,12 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
     assignFolderStyles,
     replaceFolderStyle
   } = bookmarkUtils;
-  const treeContainer = document.getElementById('bookmark-tree-root');
-  const searchInput = document.getElementById('search-input');
-  const clearSearchBtn = document.getElementById('clear-search');
-  const toggleAllBtn = document.getElementById('toggle-all-btn');
-  const searchToggleBtn = document.getElementById('search-toggle-btn');
-  const searchBarContainer = document.querySelector('.search-bar-container');
+  const treeContainer = document.getElementById('bookmark-tree-root') as HTMLElement;
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const clearSearchBtn = document.getElementById('clear-search') as HTMLElement;
+  const toggleAllBtn = document.getElementById('toggle-all-btn') as HTMLElement;
+  const searchToggleBtn = document.getElementById('search-toggle-btn') as HTMLElement;
+  const searchBarContainer = document.querySelector('.search-bar-container') as HTMLElement;
   const appState = {
     isSearchOpen: false,
     isFoldersExpanded: false,
@@ -31,8 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     showOtherBookmarks: true,
     showRecent: true
   };
-  let folderStylesCache = [];
-  let bookmarkTree;
+  let folderStylesCache: FolderStyleRecord[] = [];
+  let bookmarkTree: ReturnType<typeof createBookmarkTreeController>;
 
   // Batch operations (sort, cleanup) fire one bookmark event per move;
   // suppress per-event re-renders and refresh once at the end.
@@ -45,13 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (batchDepth === 0) bookmarkTree.refreshView();
   }
 
-  function reportChromeError(action) {
+  function reportChromeError(action: string) {
     if (chrome.runtime.lastError) {
       console.error(`${action}:`, chrome.runtime.lastError.message);
     }
   }
 
-  function initFolderStyles(callback) {
+  function initFolderStyles(callback?: () => void) {
     chrome.storage.sync.get(['folderStyles'], (result) => {
       folderStylesCache = normalizeFolderStyleRecords(result.folderStyles);
       if (callback) callback();
@@ -151,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document,
     chromeApi: chrome,
     bookmarkUtils,
-    handleBookmarkClick: (url, event) => bookmarkTree.handleBookmarkClick(url, event),
+    handleBookmarkClick: (url, event) => bookmarkTree.handleBookmarkClick(url, event as MouseEvent),
     modalDialog,
     reportChromeError
   });

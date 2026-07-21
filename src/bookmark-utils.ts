@@ -1,4 +1,20 @@
-  function bookmarkDomain(url) {
+  import type {
+    BookmarkNode,
+    FolderStyleRecord,
+    FolderStyle,
+    FolderIdentity,
+    DropPosition,
+    MoveDestination,
+    DuplicateGroup,
+    EmptyFolder,
+    SameNameFolderGroup
+  } from './types.ts';
+
+  // A live folder node carrying the path metadata the panel attaches before
+  // matching it against a style record.
+
+
+  function bookmarkDomain(url: string): string | null {
     try {
       const parsed = new URL(url);
       return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.hostname : null;
@@ -7,7 +23,7 @@
     }
   }
 
-  function sortNodes(nodesList) {
+  function sortNodes<T extends { index?: number }>(nodesList: T[]): T[] {
     return [...nodesList].sort((a, b) => {
       const aIndex = typeof a.index === 'number' ? a.index : 0;
       const bIndex = typeof b.index === 'number' ? b.index : 0;
@@ -15,22 +31,26 @@
     });
   }
 
-  function computeMoveDestination(draggedNode, targetNode, dropPosition) {
+  function computeMoveDestination(
+    draggedNode: BookmarkNode | null | undefined,
+    targetNode: BookmarkNode,
+    dropPosition: DropPosition
+  ): MoveDestination {
     if (dropPosition === 'inside') {
       return { parentId: targetNode.id };
     }
 
-    const targetParentId = targetNode.parentId;
+    const targetParentId = targetNode.parentId!;
     let targetIndex = dropPosition === 'below'
-      ? targetNode.index + 1
-      : targetNode.index;
+      ? targetNode.index! + 1
+      : targetNode.index!;
 
     if (
       dropPosition === 'above' &&
       draggedNode &&
       draggedNode.parentId === targetParentId &&
       Number.isInteger(draggedNode.index) &&
-      draggedNode.index < targetIndex
+      draggedNode.index! < targetIndex
     ) {
       targetIndex -= 1;
     }
@@ -38,7 +58,7 @@
     return { parentId: targetParentId, index: targetIndex };
   }
 
-  function bookmarkUrlKey(url) {
+  function bookmarkUrlKey(url: string): string | null {
     try {
       return new URL(String(url).trim()).href;
     } catch (error) {
@@ -46,12 +66,16 @@
     }
   }
 
-  function bookmarkDomainKey(url) {
+  function bookmarkDomainKey(url: string): string | null {
     const domain = bookmarkDomain(url);
     return domain ? domain.trim().toLowerCase() : null;
   }
 
-  function addBookmarksToKeyMap(bookmarks, keyFn, keyMap = new Map()) {
+  function addBookmarksToKeyMap<T extends { url?: string }>(
+    bookmarks: T[],
+    keyFn: (url: string) => string | null,
+    keyMap: Map<string, T[]> = new Map()
+  ): Map<string, T[]> {
     bookmarks.forEach((bookmark) => {
       if (!bookmark || !bookmark.url) return;
       const key = keyFn(bookmark.url);
@@ -59,13 +83,13 @@
       if (!keyMap.has(key)) {
         keyMap.set(key, []);
       }
-      keyMap.get(key).push(bookmark);
+      keyMap.get(key)!.push(bookmark);
     });
     return keyMap;
   }
 
-  function collectDuplicateGroups(keyMap) {
-    const duplicates = [];
+  function collectDuplicateGroups<T>(keyMap: Map<string, T[]>): DuplicateGroup<T>[] {
+    const duplicates: DuplicateGroup<T>[] = [];
     keyMap.forEach((items, key) => {
       if (items.length > 1) {
         duplicates.push({ url: key, items });
@@ -74,18 +98,18 @@
     return duplicates;
   }
 
-  function findDuplicateBookmarks(bookmarks) {
+  function findDuplicateBookmarks(bookmarks: BookmarkNode[]): DuplicateGroup<BookmarkNode>[] {
     return collectDuplicateGroups(addBookmarksToKeyMap(bookmarks, bookmarkDomainKey));
   }
 
-  function findDuplicateBookmarksByUrl(bookmarks) {
+  function findDuplicateBookmarksByUrl(bookmarks: BookmarkNode[]): DuplicateGroup<BookmarkNode>[] {
     return collectDuplicateGroups(addBookmarksToKeyMap(bookmarks, bookmarkUrlKey));
   }
 
   // Sort order for one-click folder sorting: folders first, then bookmarks,
   // each alphabetically (locale-aware, numeric-aware, case-insensitive).
-  function computeSortedChildren(children) {
-    const compare = (a, b) => (a.title || '').localeCompare(b.title || '', undefined, {
+  function computeSortedChildren(children: BookmarkNode[]): BookmarkNode[] {
+    const compare = (a: BookmarkNode, b: BookmarkNode) => (a.title || '').localeCompare(b.title || '', undefined, {
       numeric: true,
       sensitivity: 'base'
     });
@@ -99,15 +123,15 @@
   // Top-most folders containing no bookmarks anywhere below them (a folder
   // whose children are all deep-empty folders counts as empty itself).
   // Permanent Chrome folders are never reported.
-  function findEmptyFolders(treeNodes) {
-    const empties = [];
+  function findEmptyFolders(treeNodes: BookmarkNode[]): EmptyFolder[] {
+    const empties: EmptyFolder[] = [];
 
-    function isDeepEmpty(node) {
+    function isDeepEmpty(node: BookmarkNode): boolean {
       if (node.url) return false;
       return (node.children || []).every(isDeepEmpty);
     }
 
-    function walk(nodes, path) {
+    function walk(nodes: BookmarkNode[], path: string[]): void {
       nodes.forEach((node) => {
         if (node.url || node.unmodifiable) return;
         const nodePath = [...path, node.title];
@@ -126,16 +150,16 @@
 
   // Groups of same-titled sibling folders. The lowest-index folder of each
   // group is kept; the rest are merge candidates.
-  function findSameNameFolderGroups(treeNodes) {
-    const groups = [];
+  function findSameNameFolderGroups(treeNodes: BookmarkNode[]): SameNameFolderGroup[] {
+    const groups: SameNameFolderGroup[] = [];
 
-    function walk(nodes, path) {
+    function walk(nodes: BookmarkNode[], path: string[]): void {
       const folders = nodes.filter((node) =>
         !node.url && !node.unmodifiable && !PERMANENT_FOLDER_IDS.includes(node.id));
-      const byTitle = new Map();
+      const byTitle = new Map<string, BookmarkNode[]>();
       folders.forEach((folder) => {
         if (!byTitle.has(folder.title)) byTitle.set(folder.title, []);
-        byTitle.get(folder.title).push(folder);
+        byTitle.get(folder.title)!.push(folder);
       });
       byTitle.forEach((sameTitle, title) => {
         if (sameTitle.length < 2) return;
@@ -166,13 +190,13 @@
   // synced device and survives renames and moves. title/path only break ties
   // between folders created in the same millisecond (e.g. bulk imports) and
   // are refreshed ("healed") whenever a render finds them out of date.
-  function sameFolderPath(a, b) {
+  function sameFolderPath(a?: string[], b?: string[]): boolean {
     return Array.isArray(a) && Array.isArray(b) &&
       a.length === b.length &&
       a.every((title, i) => title === b[i]);
   }
 
-  function commonPathSuffixLength(a, b) {
+  function commonPathSuffixLength(a?: string[], b?: string[]): number {
     if (!Array.isArray(a) || !Array.isArray(b)) return 0;
     let n = 0;
     while (n < a.length && n < b.length && a[a.length - 1 - n] === b[b.length - 1 - n]) {
@@ -181,11 +205,11 @@
     return n;
   }
 
-  function isDefaultFolderStyle(style) {
+  function isDefaultFolderStyle(style?: FolderStyle | null): boolean {
     return !style || (!style.color && (!style.icon || style.icon === 'default'));
   }
 
-  function normalizeFolderStyleRecords(value) {
+  function normalizeFolderStyleRecords(value: unknown): FolderStyleRecord[] {
     return Array.isArray(value) ? value : [];
   }
 
@@ -197,24 +221,27 @@
   // back outside an explicit user edit — an automatic "heal" write would
   // ping-pong between devices whose trees disagree (e.g. bookmark sync lag
   // or bookmark sync turned off while extension sync stays on).
-  function assignFolderStyles(styleRecords, folders) {
-    const foldersByDate = new Map();
+  function assignFolderStyles(
+    styleRecords: FolderStyleRecord[],
+    folders: FolderIdentity[]
+  ): Map<string, FolderStyleRecord> {
+    const foldersByDate = new Map<number | undefined, FolderIdentity[]>();
     folders.forEach((folder) => {
       if (!foldersByDate.has(folder.dateAdded)) {
         foldersByDate.set(folder.dateAdded, []);
       }
-      foldersByDate.get(folder.dateAdded).push(folder);
+      foldersByDate.get(folder.dateAdded)!.push(folder);
     });
 
-    const recordsByDate = new Map();
+    const recordsByDate = new Map<number | undefined, FolderStyleRecord[]>();
     styleRecords.forEach((record) => {
       if (!recordsByDate.has(record.dateAdded)) {
         recordsByDate.set(record.dateAdded, []);
       }
-      recordsByDate.get(record.dateAdded).push(record);
+      recordsByDate.get(record.dateAdded)!.push(record);
     });
 
-    const byFolderId = new Map();
+    const byFolderId = new Map<string, FolderStyleRecord>();
 
     recordsByDate.forEach((records, dateAdded) => {
       const dateFolders = foldersByDate.get(dateAdded) || [];
@@ -234,11 +261,11 @@
       // by exact path. Leftovers stay unassigned rather than guessed.
       let unmatchedFolders = [...dateFolders];
       let unmatchedRecords = [...records];
-      [
-        (folder, candidates) => candidates.findIndex(
+      ([
+        (folder: FolderIdentity, candidates: FolderStyleRecord[]) => candidates.findIndex(
           (record) => record.title === folder.title && sameFolderPath(record.path, folder.path)
         ),
-        (folder, candidates) => {
+        (folder: FolderIdentity, candidates: FolderStyleRecord[]) => {
           let bestIndex = -1;
           let bestSuffix = -1;
           candidates.forEach((record, index) => {
@@ -251,10 +278,10 @@
           });
           return bestIndex;
         },
-        (folder, candidates) => candidates.findIndex(
+        (folder: FolderIdentity, candidates: FolderStyleRecord[]) => candidates.findIndex(
           (record) => sameFolderPath(record.path, folder.path)
         )
-      ].forEach((selectRecord) => {
+      ] as Array<(folder: FolderIdentity, candidates: FolderStyleRecord[]) => number>).forEach((selectRecord) => {
         unmatchedFolders = unmatchedFolders.filter((folder) => {
           const recordIndex = selectRecord(folder, unmatchedRecords);
           if (recordIndex === -1) return true;
@@ -268,7 +295,12 @@
     return byFolderId;
   }
 
-  function replaceFolderStyle(styleRecords, existingRecord, { dateAdded, title, path }, style) {
+  function replaceFolderStyle(
+    styleRecords: FolderStyleRecord[],
+    existingRecord: FolderStyleRecord | null | undefined,
+    { dateAdded, title, path }: { dateAdded?: number; title?: string; path?: string[] },
+    style: FolderStyle
+  ): FolderStyleRecord[] {
     const next = styleRecords.filter((record) => {
       if (record === existingRecord) return false;
       // Also drop a record that identifies the same folder even if the

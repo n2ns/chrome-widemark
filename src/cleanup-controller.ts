@@ -1,3 +1,25 @@
+  import type {
+    SameNameFolderGroup,
+    ReportChromeError
+  } from './types.ts';
+
+  interface CleanupControllerDeps {
+    document: Document;
+    chromeApi: typeof chrome;
+    bookmarkUtils: typeof import('./bookmark-utils.ts');
+    modalDialog: {
+      showConfirmDialog: (options: {
+        title: string;
+        message: string;
+        confirmLabel?: string;
+        cancelLabel?: string;
+      }) => Promise<boolean>;
+    };
+    reportChromeError: ReportChromeError;
+    beginBatchUpdates: () => void;
+    endBatchUpdates: () => void;
+  }
+
   const MAX_MERGE_PASSES = 10;
 
   function createCleanupController({
@@ -8,13 +30,13 @@
     reportChromeError,
     beginBatchUpdates,
     endBatchUpdates
-  }) {
-    const emptyFoldersBtn = document.getElementById('clean-empty-folders-btn');
-    const mergeFoldersBtn = document.getElementById('merge-folders-btn');
-    const cleanupResults = document.getElementById('cleanup-results');
+  }: CleanupControllerDeps) {
+    const emptyFoldersBtn = document.getElementById('clean-empty-folders-btn') as HTMLButtonElement;
+    const mergeFoldersBtn = document.getElementById('merge-folders-btn') as HTMLButtonElement;
+    const cleanupResults = document.getElementById('cleanup-results') as HTMLElement;
     const { showConfirmDialog } = modalDialog;
 
-    function setStatus(message) {
+    function setStatus(message: string) {
       cleanupResults.textContent = '';
       const el = document.createElement('div');
       el.className = 'duplicate-empty-message';
@@ -22,12 +44,12 @@
       cleanupResults.appendChild(el);
     }
 
-    function setButtonsEnabled(enabled) {
+    function setButtonsEnabled(enabled: boolean) {
       emptyFoldersBtn.disabled = !enabled;
       mergeFoldersBtn.disabled = !enabled;
     }
 
-    function removeSequentially(ids, onDone) {
+    function removeSequentially(ids: string[], onDone: (removedCount: number) => void) {
       beginBatchUpdates();
       let index = 0;
       let removedCount = 0;
@@ -99,7 +121,7 @@
     // Merge every same-titled sibling folder group into its first folder.
     // Merging can surface new groups (two merged parents may each contribute
     // a child of the same name), so re-scan until nothing is left.
-    function mergeGroups(groups, onGroupsDone) {
+    function mergeGroups(groups: SameNameFolderGroup[], onGroupsDone: (mergedCount: number) => void) {
       beginBatchUpdates();
       let groupIndex = 0;
       let mergedCount = 0;
@@ -172,7 +194,7 @@
       nextGroup();
     }
 
-    function runMergePasses(pass, mergedSoFar, onDone) {
+    function runMergePasses(pass: number, mergedSoFar: number, onDone: (mergedCount: number) => void) {
       chromeApi.bookmarks.getTree((tree) => {
         if (chromeApi.runtime.lastError) {
           reportChromeError('Error loading bookmarks for merge');

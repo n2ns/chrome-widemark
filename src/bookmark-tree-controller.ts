@@ -1,4 +1,53 @@
-  function findBookmarksBarNode(nodes) {
+  import type {
+    BookmarkNode,
+    AppState,
+    DropPosition,
+    MoveDestination,
+    FolderStyleRecord,
+    FolderIdentity,
+    ReportChromeError
+  } from './types.ts';
+
+  interface StyledBookmarkNode extends BookmarkNode {
+    stylePath?: string[];
+  }
+
+  interface LinkInfo {
+    url: string;
+    title: string;
+  }
+
+  interface FocusedRowKey {
+    attr: string;
+    value: string;
+  }
+
+  interface BookmarkTreeControllerDeps {
+    document: Document;
+    chromeApi: typeof chrome;
+    state: AppState;
+    treeContainer: HTMLElement;
+    searchInput: HTMLInputElement;
+    clearSearchBtn: HTMLElement;
+    toggleAllBtn: HTMLElement;
+    bindContextMenu: (element: HTMLElement, node: BookmarkNode) => void;
+    getFolderStyles: () => FolderStyleRecord[];
+    reportChromeError: ReportChromeError;
+    bookmarkDomain: (url: string) => string | null;
+    sortNodes: <T extends { index?: number }>(nodes: T[]) => T[];
+    computeMoveDestination: (
+      draggedNode: BookmarkNode | null | undefined,
+      targetNode: BookmarkNode,
+      dropPosition: DropPosition
+    ) => MoveDestination;
+    assignFolderStyles: (
+      styleRecords: FolderStyleRecord[],
+      folders: FolderIdentity[]
+    ) => Map<string, FolderStyleRecord>;
+    icons: typeof import('./ui-icons.ts');
+  }
+
+  function findBookmarksBarNode(nodes: BookmarkNode[]) {
     const rootNode = nodes[0];
     if (!rootNode || !rootNode.children) {
       return null;
@@ -6,7 +55,7 @@
     return rootNode.children.find(child => child.id === '1') || rootNode.children[0] || null;
   }
 
-  function gatherFolderIds(nodes, folderIds = []) {
+  function gatherFolderIds(nodes: BookmarkNode[], folderIds: string[] = []) {
     nodes.forEach(node => {
       if (!node.url) {
         folderIds.push(node.id);
@@ -18,7 +67,7 @@
     return folderIds;
   }
 
-  function determineDropPosition(y, height, isFolder) {
+  function determineDropPosition(y: number, height: number, isFolder: boolean): DropPosition {
     if (isFolder) {
       if (y < height * 0.25) return 'above';
       if (y > height * 0.75) return 'below';
@@ -27,7 +76,7 @@
     return y < height / 2 ? 'above' : 'below';
   }
 
-  function applyDropIndicator(element, dropPosition) {
+  function applyDropIndicator(element: HTMLElement, dropPosition: DropPosition) {
     element.classList.remove('drag-above', 'drag-below', 'drag-over');
     if (dropPosition === 'above') {
       element.classList.add('drag-above');
@@ -39,25 +88,25 @@
     element.dataset.dropPosition = dropPosition;
   }
 
-  function hasTransferType(dataTransfer, type) {
+  function hasTransferType(dataTransfer: DataTransfer, type: string) {
     return Array.prototype.includes.call(dataTransfer.types || [], type);
   }
 
-  function firstUriListUrl(uriList) {
+  function firstUriListUrl(uriList: string) {
     return uriList
       .split(/\r?\n/)
       .map(line => line.trim())
       .find(line => line && !line.startsWith('#')) || '';
   }
 
-  function firstPlainTextUrl(text) {
+  function firstPlainTextUrl(text: string) {
     return text
       .trim()
       .split(/\s+/)
       .find(Boolean) || '';
   }
 
-  function normalizeDroppedUrl(dataTransfer) {
+  function normalizeDroppedUrl(dataTransfer: DataTransfer) {
     const uriListUrl = firstUriListUrl(dataTransfer.getData('text/uri-list') || '');
     const url = uriListUrl || firstPlainTextUrl(dataTransfer.getData('text/plain') || '');
     if (!url) return null;
@@ -73,7 +122,7 @@
     }
   }
 
-  function extractLinkInfo(dataTransfer) {
+  function extractLinkInfo(dataTransfer: DataTransfer): LinkInfo | null {
     const url = normalizeDroppedUrl(dataTransfer);
     if (!url) return null;
 
@@ -98,29 +147,29 @@
     return { url, title: title.trim() };
   }
 
-  function shouldSearchBookmarks(query) {
+  function shouldSearchBookmarks(query: string) {
     return query.length > 0 && !(query.length === 1 && /^[\x00-\x7F]$/.test(query));
   }
 
-  function normalizeSearchText(value) {
+  function normalizeSearchText(value: string | null | undefined) {
     return (value || '').trim().toLocaleLowerCase();
   }
 
-  function compareText(a, b) {
+  function compareText(a: string | null | undefined, b: string | null | undefined) {
     return normalizeSearchText(a).localeCompare(normalizeSearchText(b), undefined, {
       numeric: true,
       sensitivity: 'base'
     });
   }
 
-  function normalizeUrlForSearchRank(url) {
+  function normalizeUrlForSearchRank(url: string | null | undefined) {
     return normalizeSearchText(url).replace(/^[a-z][a-z0-9+.-]*:\/\//, '').replace(/^www\./, '');
   }
 
-  function sortSearchResults(results, query) {
+  function sortSearchResults(results: BookmarkNode[], query: string) {
     const normalizedQuery = normalizeSearchText(query);
 
-    function matchRank(item) {
+    function matchRank(item: BookmarkNode) {
       const title = normalizeSearchText(item.title);
       const url = normalizeSearchText(item.url);
       const rankedUrl = normalizeUrlForSearchRank(item.url);
@@ -157,17 +206,17 @@
     computeMoveDestination,
     assignFolderStyles,
     icons
-  }) {
+  }: BookmarkTreeControllerDeps) {
     const RECENT_SECTION_ID = 'recent-section';
     const RECENT_COUNT = 10;
     // Chrome's permanent root folders: Bookmarks Bar, Other, Mobile.
     const PERMANENT_FOLDER_IDS = ['1', '2', '3'];
 
-    let expandedFolderIds = new Set();
-    let draggedNodeId = null;
-    let draggedNode = null;
-    let styleAssignment = new Map();
-    let folderIdentityById = new Map();
+    let expandedFolderIds = new Set<string>();
+    let draggedNodeId: string | null = null;
+    let draggedNode: BookmarkNode | null = null;
+    let styleAssignment = new Map<string, FolderStyleRecord>();
+    let folderIdentityById = new Map<string, FolderIdentity>();
 
     function persistExpandedState() {
       chromeApi.storage.local.set({ expandedFolderIds: [...expandedFolderIds] }, () => {
@@ -189,7 +238,7 @@
       `;
     }
 
-    function loadBookmarks(silent = false) {
+    function loadBookmarks(silent: boolean = false) {
       const contentContainer = document.querySelector('.content');
       const savedScrollTop = contentContainer ? contentContainer.scrollTop : 0;
 
@@ -208,7 +257,7 @@
           return;
         }
 
-        const finishRender = (recentNodes) => {
+        const finishRender = (recentNodes: BookmarkNode[]) => {
           renderBookmarkTree(bookmarkTreeNodes, recentNodes);
           updateToggleAllButton();
           if (contentContainer) {
@@ -226,15 +275,15 @@
       });
     }
 
-    function collectFolders(nodes, parentPath = [], out = []) {
-      nodes.forEach((node) => {
+    function collectFolders(nodes: BookmarkNode[], parentPath: string[] = [], out: FolderIdentity[] = []) {
+      nodes.forEach((node: StyledBookmarkNode) => {
         if (node.url) return;
         node.stylePath = [...parentPath, node.title];
-        const identity = { id: node.id, dateAdded: node.dateAdded, title: node.title, path: node.stylePath };
+        const identity: FolderIdentity = { id: node.id, dateAdded: node.dateAdded, title: node.title, path: node.stylePath };
         out.push(identity);
         folderIdentityById.set(node.id, identity);
         if (node.children) {
-          collectFolders(node.children, node.stylePath, out);
+          collectFolders(node.children, node.stylePath!, out);
         }
       });
       return out;
@@ -243,7 +292,7 @@
     // Bring the title/path metadata of every currently assigned record up to
     // date. Called only from explicit user style edits (the result is
     // persisted by the caller), so it cannot ping-pong between devices.
-    function refreshRecordMetadata(records) {
+    function refreshRecordMetadata(records: FolderStyleRecord[]) {
       styleAssignment.forEach((record, nodeId) => {
         const identity = folderIdentityById.get(nodeId);
         if (!identity || !records.includes(record)) return;
@@ -253,7 +302,7 @@
       return records;
     }
 
-    function renderBookmarkTree(nodes, recentNodes = []) {
+    function renderBookmarkTree(nodes: BookmarkNode[], recentNodes: BookmarkNode[] = []) {
       treeContainer.innerHTML = '';
       styleAssignment = new Map();
       folderIdentityById = new Map();
@@ -291,7 +340,7 @@
       restoreFocusedRow();
     }
 
-    function createRecentSection(recentNodes) {
+    function createRecentSection(recentNodes: BookmarkNode[]) {
       const li = document.createElement('li');
 
       const headerDiv = document.createElement('div');
@@ -331,7 +380,7 @@
       return li;
     }
 
-    function createTreeItem(node) {
+    function createTreeItem(node: BookmarkNode) {
       const li = document.createElement('li');
 
       if (node.url) {
@@ -355,7 +404,7 @@
       return li;
     }
 
-    function createListNode(nodes, isRoot = false) {
+    function createListNode(nodes: BookmarkNode[], isRoot: boolean = false) {
       const ul = document.createElement('ul');
       if (!isRoot) {
         ul.classList.add('nested-tree');
@@ -368,7 +417,7 @@
       return ul;
     }
 
-    function makeNodeDraggable(element, node) {
+    function makeNodeDraggable(element: HTMLElement, node: BookmarkNode) {
       // Managed (policy) nodes reject all bookmarks-API writes: neither
       // draggable nor a drop target.
       if (node.unmodifiable) {
@@ -386,8 +435,8 @@
         }
         draggedNodeId = node.id;
         draggedNode = node;
-        event.dataTransfer.setData('text/plain', node.id);
-        event.dataTransfer.setData('application/x-bookmark-id', node.id);
+        event.dataTransfer!.setData('text/plain', node.id);
+        event.dataTransfer!.setData('application/x-bookmark-id', node.id);
         element.classList.add('dragging');
         event.stopPropagation();
       });
@@ -406,8 +455,8 @@
 
         if (draggedNodeId === node.id) return;
 
-        const isInternal = hasTransferType(event.dataTransfer, 'application/x-bookmark-id');
-        const isExternalLink = hasTransferType(event.dataTransfer, 'text/uri-list') || hasTransferType(event.dataTransfer, 'text/plain');
+        const isInternal = hasTransferType(event.dataTransfer!, 'application/x-bookmark-id');
+        const isExternalLink = hasTransferType(event.dataTransfer!, 'text/uri-list') || hasTransferType(event.dataTransfer!, 'text/plain');
         if (!isInternal && !isExternalLink) return;
 
         event.preventDefault();
@@ -444,13 +493,13 @@
         element.classList.remove('drag-above', 'drag-below', 'drag-over');
         delete element.dataset.dropPosition;
 
-        const isInternal = hasTransferType(event.dataTransfer, 'application/x-bookmark-id');
+        const isInternal = hasTransferType(event.dataTransfer!, 'application/x-bookmark-id');
 
         if (isInternal) {
-          const draggedId = event.dataTransfer.getData('application/x-bookmark-id') || draggedNodeId;
+          const draggedId = event.dataTransfer!.getData('application/x-bookmark-id') || draggedNodeId;
           if (!draggedId || draggedId === node.id) return;
 
-          const moveDest = computeMoveDestination(draggedNode || { id: draggedId }, node, dropPos);
+          const moveDest = computeMoveDestination(draggedNode || ({ id: draggedId } as BookmarkNode), node, dropPos);
 
           chromeApi.bookmarks.move(draggedId, moveDest, () => {
             if (chromeApi.runtime.lastError) {
@@ -459,7 +508,7 @@
           });
         } else {
           // External drag (hyperlink from webpage)
-          const linkInfo = extractLinkInfo(event.dataTransfer);
+          const linkInfo = extractLinkInfo(event.dataTransfer!);
           if (!linkInfo) return;
 
           const dest = computeMoveDestination(null, node, dropPos);
@@ -478,17 +527,17 @@
       });
     }
 
-    function createBookmarkNode(node, { draggable = true } = {}) {
+    function createBookmarkNode(node: BookmarkNode, { draggable = true }: { draggable?: boolean } = {}) {
       const div = document.createElement('div');
       div.classList.add('tree-node', 'bookmark-item');
-      div.dataset.url = node.url;
+      div.dataset.url = node.url!;
       if (state.tooltipEnabled) {
         div.title = `${node.title}\n${node.url}`;
       }
 
       const icon = document.createElement('img');
       icon.classList.add('node-icon');
-      icon.src = icons.getBookmarkIconSrc({ chromeApi, bookmarkDomain, url: node.url });
+      icon.src = icons.getBookmarkIconSrc({ chromeApi, bookmarkDomain, url: node.url! });
       icon.alt = '';
       icon.onerror = () => {
         icon.src = icons.LINK_ICON_DATA_URI;
@@ -496,19 +545,19 @@
 
       const titleSpan = document.createElement('span');
       titleSpan.classList.add('node-title');
-      titleSpan.textContent = node.title || node.url;
+      titleSpan.textContent = node.title || node.url!;
 
       div.appendChild(icon);
       div.appendChild(titleSpan);
 
       div.addEventListener('click', (event) => {
-        handleBookmarkClick(node.url, event);
+        handleBookmarkClick(node.url!, event);
       });
 
       // Middle clicks fire 'auxclick', not 'click', in Chrome.
       div.addEventListener('auxclick', (event) => {
         if (event.button === 1) {
-          handleBookmarkClick(node.url, event);
+          handleBookmarkClick(node.url!, event);
         }
       });
 
@@ -520,7 +569,7 @@
       return div;
     }
 
-    function createFolderNode(node) {
+    function createFolderNode(node: BookmarkNode) {
       const div = document.createElement('div');
       div.classList.add('tree-node');
       div.dataset.nodeId = node.id;
@@ -554,7 +603,7 @@
       return div;
     }
 
-    function toggleFolder(folderId) {
+    function toggleFolder(folderId: string) {
       const childrenUl = document.getElementById(`folder-child-${folderId}`);
       if (!childrenUl) return;
 
@@ -574,10 +623,10 @@
       updateToggleAllButton();
     }
 
-    function handleBookmarkClick(url, event) {
+    function handleBookmarkClick(url: string, event: MouseEvent | KeyboardEvent) {
       event.preventDefault();
 
-      const forceNewTab = event.ctrlKey || event.metaKey || event.button === 1;
+      const forceNewTab = event.ctrlKey || event.metaKey || (event as MouseEvent).button === 1;
 
       if (forceNewTab) {
         chromeApi.tabs.create({ url, active: false }, () => reportChromeError('Error opening bookmark in new tab'));
@@ -593,7 +642,7 @@
       }
     }
 
-    function searchBookmarks(query, silent = false) {
+    function searchBookmarks(query: string, silent: boolean = false) {
       if (!silent) {
         showLoading();
       }
@@ -611,7 +660,7 @@
       });
     }
 
-    function renderSearchResults(results, query) {
+    function renderSearchResults(results: BookmarkNode[], query: string) {
       treeContainer.innerHTML = '';
 
       const linkResults = sortSearchResults(results.filter(node => node.url), query);
@@ -707,15 +756,15 @@
       });
     }
 
-    let focusedRow = null;
-    let focusedRowKey = null;
+    let focusedRow: HTMLElement | null = null;
+    let focusedRowKey: FocusedRowKey | null = null;
 
-    function visibleTreeRows() {
-      return [...treeContainer.querySelectorAll('.tree-node')]
+    function visibleTreeRows(): HTMLElement[] {
+      return [...treeContainer.querySelectorAll<HTMLElement>('.tree-node')]
         .filter((element) => element.offsetParent !== null);
     }
 
-    function setFocusedRow(row) {
+    function setFocusedRow(row: HTMLElement | null) {
       if (focusedRow) focusedRow.classList.remove('kb-focus');
       focusedRow = row;
       if (focusedRow) {
@@ -736,7 +785,7 @@
     function restoreFocusedRow() {
       if (!focusedRowKey) return;
       const matches = visibleTreeRows().filter(
-        (element) => element.getAttribute(focusedRowKey.attr) === focusedRowKey.value
+        (element) => element.getAttribute(focusedRowKey!.attr) === focusedRowKey!.value
       );
       const row = matches.find(
         (element) => !element.closest(`#folder-child-${RECENT_SECTION_ID}`)
@@ -754,8 +803,8 @@
       return document.getElementById(`folder-child-${focusedRow.dataset.nodeId}`);
     }
 
-    function handleTreeKeydown(event) {
-      const target = event.target;
+    function handleTreeKeydown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
       const isTyping = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
       const modal = document.getElementById('custom-modal');
       const mainView = document.getElementById('main-view');
@@ -795,13 +844,13 @@
         const children = focusedFolderChildren();
         if (children && !children.classList.contains('visible')) {
           event.preventDefault();
-          toggleFolder(focusedRow.dataset.nodeId);
+          toggleFolder(focusedRow!.dataset.nodeId!);
         }
       } else if (event.key === 'ArrowLeft') {
         const children = focusedFolderChildren();
         if (children && children.classList.contains('visible')) {
           event.preventDefault();
-          toggleFolder(focusedRow.dataset.nodeId);
+          toggleFolder(focusedRow!.dataset.nodeId!);
         }
       }
     }
@@ -810,7 +859,7 @@
       document.addEventListener('keydown', handleTreeKeydown);
 
       searchInput.addEventListener('input', (event) => {
-        const query = event.target.value.trim();
+        const query = (event.target as HTMLInputElement).value.trim();
         if (shouldSearchBookmarks(query)) {
           clearSearchBtn.style.display = 'block';
           searchBookmarks(query);
@@ -842,8 +891,8 @@
     return {
       applyFoldersExpandedState,
       initTree,
-      getAssignedStyle: (nodeId) => styleAssignment.get(nodeId) || null,
-      getFolderIdentity: (nodeId) => folderIdentityById.get(nodeId) || null,
+      getAssignedStyle: (nodeId: string) => styleAssignment.get(nodeId) || null,
+      getFolderIdentity: (nodeId: string) => folderIdentityById.get(nodeId) || null,
       refreshRecordMetadata,
       handleBookmarkClick,
       loadBookmarks,
