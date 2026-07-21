@@ -33,60 +33,28 @@ test('side panel html is the React module entry', () => {
   assert.match(html, /<script type="module" src="\.\/main\.tsx"><\/script>/);
 });
 
-test('build sync includes current files and removes stale output', () => {
+test('the build is driven by Vite + @crxjs, emitting into build/', () => {
+  const viteConfig = readProjectFile('vite.config.ts');
   const packageJson = JSON.parse(readProjectFile('package.json'));
-  const movedScript = readProjectFile('scripts/sync-to-windows.sh');
 
-  assert.match(packageJson.scripts.build, /npm run package/);
-  assert.match(packageJson.scripts.build, /scripts\/sync-to-windows\.sh/);
-  assert.strictEqual(fs.existsSync(path.join(rootDir, 'sync-to-windows.sh')), false);
-  assert.match(movedScript, /PACKAGE_DIR="\$ROOT_DIR\/dist\/widemark"/);
-  assert.match(movedScript, /widemark-v\*\.zip/);
-  assert.match(movedScript, /find "\$TARGET_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf/);
-  assert.match(movedScript, /cp -r "\$PACKAGE_DIR"\/\./);
-  assert.match(movedScript, /cp "\$PACKAGE_ZIP" "\$TARGET_PARENT\/"/);
-  assert.doesNotMatch(movedScript, /audit-renderer\.js/);
+  assert.match(viteConfig, /crx\(\{\s*manifest\s*\}\)/);
+  assert.match(viteConfig, /outDir:\s*'build'/);
+  assert.match(packageJson.scripts.build, /vite build/);
 });
 
-
-test('release package command creates a minimal Web Store bundle', () => {
+test('release package zips the build/ output for the Web Store', () => {
   const packageJson = JSON.parse(readProjectFile('package.json'));
   const script = readProjectFile('scripts/package-extension.ts');
   const gitignore = readProjectFile('.gitignore');
 
+  // package runs the checks + tests + build, then zips build/.
+  assert.match(packageJson.scripts.package, /npm run build/);
   assert.match(packageJson.scripts.package, /scripts\/package-extension\.ts/);
-  assert.match(script, /copyRequired\('manifest\.json'\)/);
-  assert.match(script, /copyRequired\('src'\)/);
-  assert.match(script, /copyRequired\('icons'\)/);
-  assert.match(script, /copyOptional\('_locales'\)/);
+  assert.match(script, /zip/);
   assert.match(script, /widemark-v\$\{version\}\.zip/);
+  assert.match(script, /buildDir/);
   assert.match(gitignore, /^dist\/$/m);
-});
-
-test('build assembles the manifest-referenced files into build/', () => {
-  const manifest = JSON.parse(readProjectFile('manifest.json'));
-  const buildScript = readProjectFile('scripts/build-extension.ts');
-  const tsconfig = JSON.parse(readProjectFile('tsconfig.json'));
-
-  // tsc compiles src/*.ts into build/src/*.js, covering the service worker and
-  // the panel scripts referenced by the manifest / html.
-  assert.strictEqual(tsconfig.compilerOptions.rootDir, 'src');
-  assert.strictEqual(tsconfig.compilerOptions.outDir, 'build/src');
-  assert.match(manifest.background.service_worker, /^src\//);
-  assert.match(manifest.side_panel.default_path, /^src\//);
-
-  // Static assets tsc does not emit must be copied verbatim, or the packaged
-  // extension fails to load. Guards against the copy list silently shrinking.
-  [
-    'manifest.json',
-    'icons',
-    'icon.png',
-    'src/sidepanel.html',
-    'src/sidepanel.css',
-    'src/styles'
-  ].forEach(input => {
-    assert.match(buildScript, new RegExp(`'${input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`));
-  });
+  assert.match(gitignore, /^build\/$/m);
 });
 
 test('side panel css is split into focused local style modules', () => {

@@ -9,6 +9,8 @@ export default defineConfig({
   plugins: [react(), crx({ manifest })],
   build: {
     outDir: 'build',
-    sourcemap: true,
+    // No source maps in the shipped bundle (keeps the zip lean); `vite dev`
+    // still provides maps for local debugging.
+    sourcemap: false,
   },
 });

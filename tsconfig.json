@@ -15,9 +15,7 @@
     "noImplicitOverride": true,
     "erasableSyntaxOnly": true,
     "rewriteRelativeImportExtensions": true,
-    "rootDir": "src",
-    "outDir": "build/src",
-    "sourceMap": false
+    "noEmit": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
