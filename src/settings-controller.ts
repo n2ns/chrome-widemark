@@ -66,8 +66,8 @@
 
   const UI_SETTING_KEYS = ['fontSize', 'fontFamily', 'theme', 'syncTheme', 'rowSpacing', 'uiZoom'];
 
-  function getStoredSetting(result: Record<string, any>, key: string, defaultValue: any) {
-    return result[key] !== undefined ? result[key] : defaultValue;
+  function getStoredSetting<T>(result: Record<string, unknown>, key: string, defaultValue: T): T {
+    return result[key] !== undefined ? (result[key] as T) : defaultValue;
   }
 
   function createSettingsController({
@@ -258,14 +258,17 @@
       });
     }
 
-    function saveSetting(key: string, value: any) {
+    function saveSetting(key: string, value: string | boolean) {
+      // Each key routes to a state field of a known type; the change handlers
+      // pass the matching value (select .value is string, checkbox .checked is
+      // boolean), which the compiler can't correlate with the key literal.
       if (key === 'leftClickAction') {
-        state.leftClickAction = value;
+        state.leftClickAction = value as string;
       }
-      if (key === 'dragProtectionEnabled') state.dragProtectionEnabled = value;
-      if (key === 'tooltipEnabled') state.tooltipEnabled = value;
-      if (key === 'showOtherBookmarks') state.showOtherBookmarks = value;
-      if (key === 'showRecent') state.showRecent = value;
+      if (key === 'dragProtectionEnabled') state.dragProtectionEnabled = value as boolean;
+      if (key === 'tooltipEnabled') state.tooltipEnabled = value as boolean;
+      if (key === 'showOtherBookmarks') state.showOtherBookmarks = value as boolean;
+      if (key === 'showRecent') state.showRecent = value as boolean;
 
       if (UI_SETTING_KEYS.includes(key)) {
         applyCurrentFormSettings();

@@ -10,8 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Internal
 - Migrated the source from vanilla ES5-style UMD scripts to TypeScript. Modules
   are now native ES modules (a single `type="module"` panel entry) compiled by
-  `tsc` into `build/` — no bundler. Type checking runs under `strict` plus
-  `noUncheckedIndexedAccess`. No user-facing behavior change.
+  `tsc` into `build/` — no bundler. Type checking runs under `strict`,
+  `noUncheckedIndexedAccess`, and the `noUnused*`/`noImplicitReturns`/
+  `noFallthroughCasesInSwitch`/`noImplicitOverride` flags. Requires Node >=24
+  (`engines`). No user-facing behavior change.
 - Development now loads the compiled `build/` directory as the unpacked
   extension (`npm run compile`); the packaged zip ships transpiled JS. See
   [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) and
