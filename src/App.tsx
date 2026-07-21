@@ -9,6 +9,7 @@ import { Toolbar } from './components/Toolbar.tsx';
 import { BookmarkTree } from './components/BookmarkTree.tsx';
 import { SettingsView } from './components/SettingsView.tsx';
 import { ModalHost } from './components/ModalHost.tsx';
+import { ContextMenu } from './components/ContextMenu.tsx';
 
 export default function App() {
   useApplySettings();
@@ -44,6 +45,7 @@ export default function App() {
         {view === 'help' && <div id="help-view" className="secondary-view">Help — coming soon</div>}
       </main>
       <ModalHost />
+      <ContextMenu />
     </div>
   );
 }

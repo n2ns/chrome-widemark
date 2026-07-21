@@ -2,12 +2,8 @@ import { assignFolderStyles } from './bookmark-utils.ts';
 import type { BookmarkNode, FolderIdentity, FolderStyleRecord } from '../types.ts';
 
 // Walk the rendered roots into folder identities (id + creation time + display
-// path) and match them against the persisted style records. Pure: given the
-// same tree and records it returns the same folderId -> style map.
-export function assignStylesToTree(
-  roots: BookmarkNode[],
-  folderStyles: FolderStyleRecord[]
-): Map<string, FolderStyleRecord> {
+// path). Pure: same tree in, same identities out.
+export function collectFolderIdentities(roots: BookmarkNode[]): FolderIdentity[] {
   const folders: FolderIdentity[] = [];
 
   const walk = (nodes: BookmarkNode[], parentPath: string[]) => {
@@ -20,5 +16,13 @@ export function assignStylesToTree(
   };
 
   walk(roots, []);
-  return assignFolderStyles(folderStyles, folders);
+  return folders;
+}
+
+// Match the rendered folders against the persisted style records.
+export function assignStylesToTree(
+  roots: BookmarkNode[],
+  folderStyles: FolderStyleRecord[]
+): Map<string, FolderStyleRecord> {
+  return assignFolderStyles(folderStyles, collectFolderIdentities(roots));
 }

@@ -1,5 +1,6 @@
 import type { MouseEvent } from 'react';
 import { useSettingsStore } from '../stores/settings.ts';
+import { useContextMenuStore } from '../stores/contextMenu.ts';
 import { getBookmarkIconSrc, LINK_ICON_DATA_URI } from '../lib/ui-icons.ts';
 import { bookmarkDomain } from '../lib/bookmark-utils.ts';
 import { handleBookmarkClick } from '../lib/bookmark-click.ts';
@@ -21,6 +22,10 @@ export function BookmarkRow({ node }: { node: BookmarkNode }) {
       onClick={open}
       onAuxClick={(event) => {
         if (event.button === 1) open(event);
+      }}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        useContextMenuStore.getState().open(node, event.clientX, event.clientY);
       }}
     >
       <img

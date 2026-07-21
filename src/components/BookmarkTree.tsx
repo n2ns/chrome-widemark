@@ -3,6 +3,7 @@ import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { useSettingsStore } from '../stores/settings.ts';
 import { useFolderStylesStore } from '../stores/folderStyles.ts';
 import { useUiStore } from '../stores/ui.ts';
+import { useContextMenuStore } from '../stores/contextMenu.ts';
 import { sortNodes } from '../lib/bookmark-utils.ts';
 import { findBookmarksBarNode, shouldSearchBookmarks } from '../lib/tree-logic.ts';
 import { assignStylesToTree } from '../lib/folder-style-assignment.ts';
@@ -25,6 +26,10 @@ function FolderRow({ node, styleMap }: { node: BookmarkNode; styleMap: StyleMap 
         className={`tree-node${expanded ? ' expanded' : ''}`}
         data-node-id={node.id}
         onClick={() => setExpanded(node.id, !expanded)}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          useContextMenuStore.getState().open(node, event.clientX, event.clientY);
+        }}
       >
         <span
           className="node-icon folder-icon"

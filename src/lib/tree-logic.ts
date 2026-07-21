@@ -7,6 +7,16 @@ export interface LinkInfo {
   title: string;
 }
 
+// The folders whose styles are computed and which the tree renders: the
+// bookmarks-bar children plus (optionally) the other top-level folders.
+export function getVisibleRoots(tree: BookmarkNode[], showOtherBookmarks: boolean): BookmarkNode[] {
+  const bar = findBookmarksBarNode(tree);
+  const barChildren = bar?.children ?? [];
+  const topLevel = tree[0]?.children ?? [];
+  const otherRoots = showOtherBookmarks ? topLevel.filter((node) => node !== bar && !node.url) : [];
+  return [...barChildren, ...otherRoots];
+}
+
 export function findBookmarksBarNode(nodes: BookmarkNode[]) {
   const rootNode = nodes[0];
   if (!rootNode || !rootNode.children) {
