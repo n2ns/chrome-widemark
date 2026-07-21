@@ -20,57 +20,17 @@ test('manifest keeps the extension permission surface narrow', () => {
   ]);
   assert.strictEqual(Object.hasOwn(manifest, 'host_permissions'), false);
   assert.strictEqual(Object.hasOwn(manifest, 'optional_host_permissions'), false);
-  assert.strictEqual(manifest.background.service_worker, 'src/background.js');
+  assert.strictEqual(manifest.background.service_worker, 'src/background.ts');
   assert.strictEqual(manifest.side_panel.default_path, 'src/sidepanel.html');
 });
 
-test('side panel wires the actions page and split modules', () => {
+test('side panel html is the React module entry', () => {
   const html = readProjectFile('src/sidepanel.html');
 
-  [
-    'id="actions-toggle-btn"',
-    'id="actions-view"',
-    'id="help-toggle-btn"',
-    'id="help-view"',
-    'id="find-duplicates-btn"',
-    'id="find-domain-duplicates-btn"',
-    'id="duplicate-results"',
-    'id="clean-empty-folders-btn"',
-    'id="merge-folders-btn"',
-    'id="cleanup-results"',
-    'id="menu-sort"',
-    'id="setting-show-other"',
-    'id="setting-show-recent"'
-  ].forEach(fragment => {
-    assert.match(html, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  });
-
-  [
-    'scanner-toggle-btn',
-    'scanner-view',
-    'start-audit-btn',
-    'audit-results',
-    'audit-renderer.js'
-  ].forEach(fragment => {
-    assert.doesNotMatch(html, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  });
-
-  // The panel now loads a single ES module entry; the split modules are wired
-  // through its import graph rather than ordered <script> tags.
-  assert.match(html, /<script type="module" src="sidepanel\.js"><\/script>/);
-  [
-    'src="bookmark-utils.js"',
-    'src="ui-icons.js"',
-    'src="bookmark-tree-controller.js"',
-    'src="duplicate-renderer.js"',
-    'src="duplicate-finder-controller.js"',
-    'src="cleanup-controller.js"',
-    'src="modal-dialog.js"',
-    'src="context-menu-controller.js"',
-    'src="settings-controller.js"'
-  ].forEach(fragment => {
-    assert.doesNotMatch(html, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  });
+  // The panel is now a React app: a single root element plus the module entry.
+  // (View markup lives in components; covered by their own tests.)
+  assert.match(html, /<div id="root"><\/div>/);
+  assert.match(html, /<script type="module" src="\.\/main\.tsx"><\/script>/);
 });
 
 test('build sync includes current files and removes stale output', () => {
@@ -101,23 +61,6 @@ test('duplicate finder shows paths and confirms deletion', () => {
   assert.match(sidepanel, /modalDialog/);
 });
 
-test('help page has separate about card and branded footer links', () => {
-  const html = readProjectFile('src/sidepanel.html');
-  const settingsController = readProjectFile('src/settings-controller.ts');
-
-  assert.match(html, /help-about-card/);
-  assert.match(html, /https:\/\/n2ns\.com/);
-  assert.match(html, /https:\/\/datafrog\.io\/widemark/);
-  assert.match(html, /Built by/);
-  assert.match(html, />Docs</);
-  assert.doesNotMatch(html, /class="footer-built"/);
-  assert.match(html, /<h4>Basics<\/h4>/);
-  assert.doesNotMatch(html, /footer-left-click-text/);
-  assert.doesNotMatch(html, /footer-ctrl-click-text/);
-  assert.doesNotMatch(html, /<h4>Open links<\/h4>/);
-  assert.doesNotMatch(html, /<h4>Folder style<\/h4>/);
-  assert.doesNotMatch(settingsController, /updateFooterInfo/);
-});
 
 test('release package command creates a minimal Web Store bundle', () => {
   const packageJson = JSON.parse(readProjectFile('package.json'));

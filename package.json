@@ -9,6 +9,8 @@
     "check": "npm run typecheck && npm run typecheck:scripts",
     "compile": "node scripts/build-extension.ts",
     "watch": "tsc -p tsconfig.json --watch",
+    "dev": "vite",
+    "build:react": "vite build",
     "build": "echo 'Building Chrome Extension...' && npm run package && ./scripts/sync-to-windows.sh",
     "package": "npm run check && npm test && npm run compile && node scripts/package-extension.ts",
     "assets:store": "node scripts/generate-store-assets.ts",
@@ -20,8 +22,23 @@
     "node": ">=24"
   },
   "devDependencies": {
+    "@crxjs/vite-plugin": "^2.7.1",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^26.1.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
     "chrome-types": "^0.1.435",
-    "typescript": "^7.0.2"
+    "happy-dom": "^20.11.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zustand": "^5.0.14"
   }
 }

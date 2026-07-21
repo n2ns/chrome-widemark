@@ -13,7 +13,7 @@
     "favicon"
   ],
   "background": {
-    "service_worker": "src/background.js"
+    "service_worker": "src/background.ts"
   },
   "commands": {
     "open-widemark": {
