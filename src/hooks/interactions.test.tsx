@@ -43,7 +43,7 @@ beforeEach(() => {
   useSettingsStore.setState({ ...SETTINGS_DEFAULTS, hydrated: true });
   useFolderStylesStore.setState({ styles: [] });
   useBookmarksStore.setState({ tree, recent: [], expandedFolderIds: new Set(['f1']), loaded: true });
-  useUiStore.setState({ view: 'main', searchQuery: '', focusedNodeId: null });
+  useUiStore.setState({ view: 'main', searchQuery: '', recentExpanded: true, focusedNodeId: null });
   vi.stubGlobal('chrome', {
     runtime: { getURL: (p: string) => p, lastError: undefined },
     tabs: { update: vi.fn(), create: vi.fn() },
@@ -89,6 +89,33 @@ describe('keyboard navigation', () => {
     expect(useSettingsStore.getState().isSearchOpen).toBe(false);
     fireEvent.keyDown(document.body, { key: '/' });
     expect(useSettingsStore.getState().isSearchOpen).toBe(true);
+  });
+
+  it('navigates only the rows rendered by an active search', () => {
+    useSettingsStore.setState({ isSearchOpen: true });
+    useUiStore.setState({ searchQuery: 'docs', focusedNodeId: null });
+    render(<BookmarkTree />);
+    renderHook(() => useKeyboardNav());
+
+    fireEvent.keyDown(document.body, { key: 'ArrowDown' });
+    expect(useUiStore.getState().focusedNodeId).toBe('search:b2');
+    expect(screen.getByText('Docs').closest('.bookmark-item')).toHaveClass('kb-focus');
+
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(chrome.tabs.update).toHaveBeenCalledWith({ url: 'https://docs.example/' });
+  });
+
+  it('navigates a recent bookmark independently from its tree copy', () => {
+    useBookmarksStore.setState({ recent: [tree[0]!.children![0]!.children![0]!] });
+    render(<BookmarkTree />);
+    renderHook(() => useKeyboardNav());
+
+    fireEvent.keyDown(document.body, { key: 'ArrowDown' });
+    expect(useUiStore.getState().focusedNodeId).toBe('recent:b1');
+
+    const githubRows = screen.getAllByText('GitHub').map((el) => el.closest('.bookmark-item'));
+    expect(githubRows[0]).toHaveClass('kb-focus');
+    expect(githubRows[1]).not.toHaveClass('kb-focus');
   });
 });
 

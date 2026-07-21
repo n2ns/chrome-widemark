@@ -10,7 +10,6 @@ export interface SettingsState {
   rowSpacing: string;
   uiZoom: string;
   isSearchOpen: boolean;
-  isFoldersExpanded: boolean;
   leftClickAction: string;
   dragProtectionEnabled: boolean;
   tooltipEnabled: boolean;
@@ -26,7 +25,6 @@ export const SETTINGS_DEFAULTS: SettingsState = {
   rowSpacing: 'medium',
   uiZoom: '100%',
   isSearchOpen: false,
-  isFoldersExpanded: false,
   leftClickAction: 'current',
   dragProtectionEnabled: false,
   tooltipEnabled: true,
@@ -49,6 +47,11 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   hydrate: () =>
     new Promise((resolve) => {
       chrome.storage.local.get(Object.keys(SETTINGS_DEFAULTS), (result) => {
+        if (chrome.runtime.lastError) {
+          set({ ...SETTINGS_DEFAULTS, hydrated: true });
+          resolve();
+          return;
+        }
         // chrome only returns keys that exist, so absent keys keep their
         // default and a stored `false` still overrides.
         set({ ...SETTINGS_DEFAULTS, ...(result as Partial<SettingsState>), hydrated: true });

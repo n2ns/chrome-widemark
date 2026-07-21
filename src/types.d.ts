@@ -70,7 +70,6 @@ export interface SameNameFolderGroup {
 /** Mutable UI state shared across the panel's controllers. */
 export interface AppState {
   isSearchOpen: boolean;
-  isFoldersExpanded: boolean;
   leftClickAction: string;
   dragProtectionEnabled: boolean;
   tooltipEnabled: boolean;

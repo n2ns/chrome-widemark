@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { useSettingsStore } from '../stores/settings.ts';
 import { useFolderStylesStore } from '../stores/folderStyles.ts';
@@ -64,12 +63,13 @@ function TreeItem({ node, styleMap }: { node: BookmarkNode; styleMap: StyleMap }
 }
 
 function RecentSection({ nodes }: { nodes: BookmarkNode[] }) {
-  const [expanded, setExpanded] = useState(true);
+  const expanded = useUiStore((s) => s.recentExpanded);
+  const setExpanded = useUiStore((s) => s.setRecentExpanded);
   return (
     <li>
       <div
         className={`tree-node recent-section-header${expanded ? ' expanded' : ''}`}
-        onClick={() => setExpanded((v) => !v)}
+        onClick={() => setExpanded(!expanded)}
       >
         <span className="node-icon folder-icon" dangerouslySetInnerHTML={{ __html: getFolderSvgIcon('default') }} />
         <span className="node-title">Recently Added</span>
@@ -77,7 +77,7 @@ function RecentSection({ nodes }: { nodes: BookmarkNode[] }) {
       <ul className={`nested-tree folder-children${expanded ? ' visible' : ''}`}>
         {nodes.map((node) => (
           <li key={node.id}>
-            <BookmarkRow node={node} />
+            <BookmarkRow node={node} focusKey={`recent:${node.id}`} />
           </li>
         ))}
       </ul>
@@ -114,7 +114,7 @@ export function BookmarkTree() {
         <ul className="search-results-list">
           {results.map((node) => (
             <li key={node.id}>
-              <BookmarkRow node={node} />
+              <BookmarkRow node={node} focusKey={`search:${node.id}`} />
             </li>
           ))}
         </ul>
@@ -127,7 +127,7 @@ export function BookmarkTree() {
   const topLevel = tree[0]?.children ?? [];
   const otherRoots = showOtherBookmarks ? topLevel.filter((node) => node !== bar && !node.url) : [];
 
-  if (barChildren.length === 0 && otherRoots.length === 0) {
+  if (barChildren.length === 0 && otherRoots.length === 0 && !(showRecent && recent.length > 0)) {
     return (
       <div className="tree-container">
         <div className="empty-state">

@@ -8,10 +8,10 @@ import { bookmarkDomain } from '../lib/bookmark-utils.ts';
 import { handleBookmarkClick } from '../lib/bookmark-click.ts';
 import type { BookmarkNode } from '../types.ts';
 
-export function BookmarkRow({ node }: { node: BookmarkNode }) {
+export function BookmarkRow({ node, focusKey = node.id }: { node: BookmarkNode; focusKey?: string }) {
   const tooltipEnabled = useSettingsStore((s) => s.tooltipEnabled);
   const leftClickAction = useSettingsStore((s) => s.leftClickAction);
-  const focused = useUiStore((s) => s.focusedNodeId === node.id);
+  const focused = useUiStore((s) => s.focusedNodeId === focusKey);
   const drag = useNodeDrag(node);
   const url = node.url ?? '';
   const iconSrc = getBookmarkIconSrc({ chromeApi: chrome, bookmarkDomain, url });

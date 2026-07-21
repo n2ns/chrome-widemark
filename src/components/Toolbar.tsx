@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { useSettingsStore } from '../stores/settings.ts';
 import { useUiStore } from '../stores/ui.ts';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
+import { gatherFolderIds, getVisibleRoots } from '../lib/tree-logic.ts';
 
 // Raw SVG markup carried over from the original header; rendered as trusted
 // inline icons (our own strings, no user input).
@@ -27,7 +29,7 @@ function IconButton({ svg, title, onClick }: { svg: string; title: string; onCli
 
 export function Toolbar() {
   const isSearchOpen = useSettingsStore((s) => s.isSearchOpen);
-  const isFoldersExpanded = useSettingsStore((s) => s.isFoldersExpanded);
+  const showOtherBookmarks = useSettingsStore((s) => s.showOtherBookmarks);
   const setSetting = useSettingsStore((s) => s.setSetting);
   const view = useUiStore((s) => s.view);
   const toggleView = useUiStore((s) => s.toggleView);
@@ -35,12 +37,18 @@ export function Toolbar() {
   const setSearchQuery = useUiStore((s) => s.setSearchQuery);
   const expandAll = useBookmarksStore((s) => s.expandAll);
   const collapseAll = useBookmarksStore((s) => s.collapseAll);
+  const tree = useBookmarksStore((s) => s.tree);
+  const expandedFolderIds = useBookmarksStore((s) => s.expandedFolderIds);
+  const visibleFolderIds = useMemo(
+    () => gatherFolderIds(getVisibleRoots(tree, showOtherBookmarks)),
+    [tree, showOtherBookmarks]
+  );
+  const allFoldersExpanded = visibleFolderIds.length > 0 &&
+    visibleFolderIds.every((id) => expandedFolderIds.has(id));
 
   const toggleAll = () => {
-    const next = !isFoldersExpanded;
-    if (next) expandAll();
+    if (!allFoldersExpanded) expandAll();
     else collapseAll();
-    setSetting('isFoldersExpanded', next);
   };
 
   return (
@@ -54,7 +62,7 @@ export function Toolbar() {
           {view === 'main' && (
             <>
               <IconButton svg={SVG.search} title="Toggle Search" onClick={() => setSetting('isSearchOpen', !isSearchOpen)} />
-              <IconButton svg={SVG.expand} title={isFoldersExpanded ? 'Collapse all folders' : 'Expand all folders'} onClick={toggleAll} />
+              <IconButton svg={SVG.expand} title={allFoldersExpanded ? 'Collapse all folders' : 'Expand all folders'} onClick={toggleAll} />
             </>
           )}
           <IconButton svg={SVG.actions} title="Actions" onClick={() => toggleView('actions')} />

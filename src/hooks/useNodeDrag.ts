@@ -1,14 +1,12 @@
 import { useState, type DragEvent } from 'react';
 import { useSettingsStore } from '../stores/settings.ts';
 import { determineDropPosition, hasTransferType, extractLinkInfo } from '../lib/tree-logic.ts';
-import { computeMoveDestination } from '../lib/bookmark-utils.ts';
+import { computeMoveDestination, isPermanentFolder } from '../lib/bookmark-utils.ts';
 import type { BookmarkNode } from '../types.ts';
-
-const PERMANENT_FOLDER_IDS = ['1', '2', '3'];
 
 // The node currently being dragged, shared across rows (module-level, no
 // re-render needed — the dragged row shows its own `dragging` class locally).
-let dragged: { id: string | null; node: BookmarkNode | null } = { id: null, node: null };
+let draggedId: string | null = null;
 
 export interface NodeDragProps {
   draggable: boolean;
@@ -33,7 +31,7 @@ export function useNodeDrag(node: BookmarkNode): NodeDragProps {
     return { draggable: false, dragClass: '', handlers: {} };
   }
 
-  const isPermanent = PERMANENT_FOLDER_IDS.includes(node.id);
+  const isPermanent = isPermanentFolder(node);
   const draggable = !dragProtection && !isPermanent;
 
   const dropPositionFor = (event: DragEvent) => {
@@ -47,7 +45,7 @@ export function useNodeDrag(node: BookmarkNode): NodeDragProps {
       event.preventDefault();
       return;
     }
-    dragged = { id: node.id, node };
+    draggedId = node.id;
     event.dataTransfer.setData('text/plain', node.id);
     event.dataTransfer.setData('application/x-bookmark-id', node.id);
     setDragging(true);
@@ -56,14 +54,14 @@ export function useNodeDrag(node: BookmarkNode): NodeDragProps {
 
   const onDragEnd = (event: DragEvent) => {
     if (dragProtection) return;
-    dragged = { id: null, node: null };
+    draggedId = null;
     setDragging(false);
     setIndicator('');
     event.stopPropagation();
   };
 
   const onDragOver = (event: DragEvent) => {
-    if (dragProtection || dragged.id === node.id) return;
+    if (dragProtection || draggedId === node.id) return;
     const isInternal = hasTransferType(event.dataTransfer, 'application/x-bookmark-id');
     const isExternal = hasTransferType(event.dataTransfer, 'text/uri-list') || hasTransferType(event.dataTransfer, 'text/plain');
     if (!isInternal && !isExternal) return;
@@ -87,16 +85,16 @@ export function useNodeDrag(node: BookmarkNode): NodeDragProps {
     setIndicator('');
 
     if (hasTransferType(event.dataTransfer, 'application/x-bookmark-id')) {
-      const draggedId = event.dataTransfer.getData('application/x-bookmark-id') || dragged.id;
-      if (!draggedId || draggedId === node.id) return;
-      const dest = computeMoveDestination(dragged.node ?? ({ id: draggedId } as BookmarkNode), node, pos);
-      chrome.bookmarks.move(draggedId, dest);
+      const sourceId = event.dataTransfer.getData('application/x-bookmark-id') || draggedId;
+      if (!sourceId || sourceId === node.id) return;
+      const dest = computeMoveDestination(node, pos);
+      chrome.bookmarks.move(sourceId, dest);
       return;
     }
 
     const link = extractLinkInfo(event.dataTransfer);
     if (!link) return;
-    const dest = computeMoveDestination(null, node, pos);
+    const dest = computeMoveDestination(node, pos);
     chrome.bookmarks.create({ parentId: dest.parentId, index: dest.index, title: link.title, url: link.url });
   };
 

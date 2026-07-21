@@ -1,6 +1,12 @@
 import { findBookmarksBarNode } from './tree-logic.ts';
 import { sortNodes } from './bookmark-utils.ts';
+import { searchBookmarks } from './search.ts';
 import type { BookmarkNode } from '../types.ts';
+
+export interface NavigableNode {
+  focusKey: string;
+  node: BookmarkNode;
+}
 
 // The nodes in the order their rows appear on screen, respecting folder
 // expansion — used for arrow-key navigation. Mirrors BookmarkTree's render:
@@ -27,4 +33,35 @@ export function flattenVisibleNodes(
   walk(barChildren, true);
   walk(otherRoots, false);
   return out;
+}
+
+export function getNavigableNodes({
+  tree,
+  recent,
+  showOtherBookmarks,
+  showRecent,
+  recentExpanded,
+  expandedFolderIds,
+  searchQuery,
+  searchActive,
+}: {
+  tree: BookmarkNode[];
+  recent: BookmarkNode[];
+  showOtherBookmarks: boolean;
+  showRecent: boolean;
+  recentExpanded: boolean;
+  expandedFolderIds: Set<string>;
+  searchQuery: string;
+  searchActive: boolean;
+}): NavigableNode[] {
+  if (searchActive) {
+    return searchBookmarks(tree, searchQuery).map((node) => ({ focusKey: `search:${node.id}`, node }));
+  }
+
+  const recentNodes = showRecent && recentExpanded
+    ? recent.map((node) => ({ focusKey: `recent:${node.id}`, node }))
+    : [];
+  const treeNodes = flattenVisibleNodes(tree, showOtherBookmarks, expandedFolderIds)
+    .map((node) => ({ focusKey: node.id, node }));
+  return [...recentNodes, ...treeNodes];
 }

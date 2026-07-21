@@ -78,6 +78,18 @@ describe('BookmarkTree', () => {
     expect(screen.getByText('Docs')).toBeInTheDocument();
     expect(screen.queryByText('Work')).not.toBeInTheDocument(); // folders excluded from search
   });
+
+  it('still renders recent bookmarks when the visible tree is empty', () => {
+    useSettingsStore.setState({ showOtherBookmarks: false, showRecent: true });
+    useBookmarksStore.setState({
+      tree: [{ id: '0', title: '', syncing: false, children: [{ id: '1', title: 'Bookmarks Bar', syncing: false, children: [] }] }],
+      recent: [{ id: 'recent', title: 'Recent Link', url: 'https://recent.example/', syncing: false }],
+    });
+
+    render(<BookmarkTree />);
+    expect(screen.getByText('Recent Link')).toBeInTheDocument();
+    expect(screen.queryByText('No bookmarks in the Bookmarks Bar.')).not.toBeInTheDocument();
+  });
 });
 
 describe('assignStylesToTree', () => {

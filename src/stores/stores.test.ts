@@ -22,6 +22,7 @@ afterEach(() => {
 describe('settings store', () => {
   it('hydrate merges stored values over defaults', async () => {
     vi.stubGlobal('chrome', {
+      runtime: { lastError: undefined },
       storage: { local: { get: (_keys: string[], cb: (r: object) => void) => cb({ theme: 'light', showRecent: false }) } },
     });
 
@@ -42,6 +43,19 @@ describe('settings store', () => {
 
     expect(useSettingsStore.getState().theme).toBe('dracula');
     expect(set).toHaveBeenCalledWith({ theme: 'dracula' });
+  });
+
+  it('falls back to defaults when settings storage cannot be read', async () => {
+    vi.stubGlobal('chrome', {
+      runtime: { lastError: { message: 'storage unavailable' } },
+      storage: { local: { get: (_keys: string[], cb: (r: object) => void) => cb({}) } },
+    });
+
+    useSettingsStore.setState({ theme: 'dracula', hydrated: false });
+    await useSettingsStore.getState().hydrate();
+
+    expect(useSettingsStore.getState().theme).toBe(SETTINGS_DEFAULTS.theme);
+    expect(useSettingsStore.getState().hydrated).toBe(true);
   });
 });
 
@@ -90,5 +104,20 @@ describe('bookmarks store', () => {
 
     store.getState().setExpanded('a', false);
     expect([...useBookmarksStore.getState().expandedFolderIds]).toEqual(['b']);
+  });
+
+  it('keeps the newest bookmark reload when callbacks finish out of order', async () => {
+    const callbacks: Array<(nodes: unknown[]) => void> = [];
+    const getTree = vi.fn((cb: (nodes: unknown[]) => void) => callbacks.push(cb));
+    const getRecent = vi.fn((_count: number, cb: (nodes: unknown[]) => void) => cb([]));
+    vi.stubGlobal('chrome', { bookmarks: { getTree, getRecent }, runtime: { lastError: undefined } });
+
+    const older = useBookmarksStore.getState().reload();
+    const newer = useBookmarksStore.getState().reload();
+    callbacks[1]!([{ id: 'new', title: 'New tree' }]);
+    callbacks[0]!([{ id: 'old', title: 'Old tree' }]);
+    await Promise.all([older, newer]);
+
+    expect(useBookmarksStore.getState().tree[0]?.id).toBe('new');
   });
 });

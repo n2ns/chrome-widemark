@@ -3,6 +3,7 @@ import { gatherFolderIds } from '../lib/tree-logic.ts';
 import type { BookmarkNode } from '../types.ts';
 
 const RECENT_COUNT = 10;
+let reloadGeneration = 0;
 
 // The bookmark tree, recently-added list, and expansion state. Chrome bookmark
 // events reload the tree, but per-event reloads are suppressed during a bulk
@@ -40,19 +41,34 @@ export const useBookmarksStore = create<BookmarksStore>((set, get) => ({
   batchDepth: 0,
   isImporting: false,
 
-  reload: () =>
-    new Promise((resolve) => {
+  reload: () => {
+    const generation = ++reloadGeneration;
+    return new Promise((resolve) => {
       chrome.bookmarks.getTree((nodes) => {
+        if (chrome.runtime.lastError || !Array.isArray(nodes)) {
+          if (generation === reloadGeneration) set({ loaded: true });
+          resolve();
+          return;
+        }
         chrome.bookmarks.getRecent(RECENT_COUNT, (recent) => {
-          set({ tree: nodes, recent: chrome.runtime.lastError ? [] : recent || [], loaded: true });
+          const nextRecent = chrome.runtime.lastError || !Array.isArray(recent) ? [] : recent;
+          if (generation === reloadGeneration) {
+            set({ tree: nodes, recent: nextRecent, loaded: true });
+          }
           resolve();
         });
       });
-    }),
+    });
+  },
 
   hydrateExpanded: () =>
     new Promise((resolve) => {
       chrome.storage.local.get(['expandedFolderIds'], (result) => {
+        if (chrome.runtime.lastError) {
+          set({ expandedFolderIds: new Set() });
+          resolve();
+          return;
+        }
         const ids: string[] = Array.isArray(result.expandedFolderIds) ? result.expandedFolderIds : [];
         set({ expandedFolderIds: new Set(ids) });
         resolve();

@@ -63,47 +63,56 @@ test('sortNodes - preserves mixed folder and bookmark index order', () => {
   assert.strictEqual(sorted[2].title, 'C Bookmark');
 });
 
-test('computeMoveDestination - adjusts same-parent downward moves', () => {
-  const dragged = { id: 'a', parentId: '1', index: 1 };
+test('computeMoveDestination - uses Chrome insert-before indices for downward moves', () => {
   const target = { id: 'd', parentId: '1', index: 4 };
 
-  assert.deepStrictEqual(computeMoveDestination(dragged, target, 'above'), {
+  assert.deepStrictEqual(computeMoveDestination(target, 'above'), {
     parentId: '1',
-    index: 3
+    index: 4
   });
-  assert.deepStrictEqual(computeMoveDestination(dragged, target, 'below'), {
+  assert.deepStrictEqual(computeMoveDestination(target, 'below'), {
     parentId: '1',
     index: 5
   });
 });
 
 test('computeMoveDestination - keeps same-parent below target one slot after the target', () => {
-  const dragged = { id: 'a', parentId: '1', index: 1 };
   const target = { id: 'b', parentId: '1', index: 2 };
 
-  assert.deepStrictEqual(computeMoveDestination(dragged, target, 'below'), {
+  assert.deepStrictEqual(computeMoveDestination(target, 'below'), {
     parentId: '1',
     index: 3
   });
 });
 
 test('computeMoveDestination - keeps cross-parent moves unadjusted', () => {
-  const dragged = { id: 'a', parentId: '1', index: 1 };
   const target = { id: 'd', parentId: '2', index: 4 };
 
-  assert.deepStrictEqual(computeMoveDestination(dragged, target, 'below'), {
+  assert.deepStrictEqual(computeMoveDestination(target, 'below'), {
     parentId: '2',
     index: 5
   });
 });
 
 test('computeMoveDestination - inside folder appends to target folder', () => {
-  const dragged = { id: 'a', parentId: '1', index: 1 };
   const target = { id: 'folder', parentId: '1', index: 4 };
 
-  assert.deepStrictEqual(computeMoveDestination(dragged, target, 'inside'), {
+  assert.deepStrictEqual(computeMoveDestination(target, 'inside'), {
     parentId: 'folder'
   });
+});
+
+test('cleanup excludes browser-owned folders identified by folderType', () => {
+  const tree = [{
+    id: '0',
+    title: '',
+    children: [
+      { id: 'account-bar', title: 'Bookmarks Bar', folderType: 'bookmarks-bar', children: [] },
+      { id: 'user-empty', title: 'Empty', children: [] },
+    ],
+  }];
+
+  assert.deepStrictEqual(findEmptyFolders(tree).map(folder => folder.id), ['user-empty']);
 });
 
 test('findDuplicateBookmarks - groups matching domains case-insensitively', () => {
@@ -336,6 +345,8 @@ test('shouldSearchBookmarks - allows useful short and multi-character queries', 
   assert.strictEqual(shouldSearchBookmarks('ab'), true);
   assert.strictEqual(shouldSearchBookmarks('12'), true);
   assert.strictEqual(shouldSearchBookmarks(''), false);
+  assert.strictEqual(shouldSearchBookmarks('  '), false);
+  assert.strictEqual(shouldSearchBookmarks('  ab  '), true);
 });
 
 test('sortSearchResults - puts title matches before URL-only matches', () => {

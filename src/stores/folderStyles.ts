@@ -21,6 +21,11 @@ export const useFolderStylesStore = create<FolderStylesStore>((set, get) => ({
   hydrate: () =>
     new Promise((resolve) => {
       chrome.storage.sync.get(['folderStyles'], (result) => {
+        if (chrome.runtime.lastError) {
+          set({ styles: [], hydrated: true });
+          resolve();
+          return;
+        }
         set({ styles: normalizeFolderStyleRecords(result.folderStyles), hydrated: true });
         resolve();
       });

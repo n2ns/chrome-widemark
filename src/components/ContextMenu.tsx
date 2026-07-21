@@ -5,11 +5,9 @@ import { useModalStore } from '../stores/modal.ts';
 import { useFolderStylesStore } from '../stores/folderStyles.ts';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { useSettingsStore } from '../stores/settings.ts';
-import { computeSortedChildren, replaceFolderStyle } from '../lib/bookmark-utils.ts';
+import { computeSortedChildren, isPermanentFolder, replaceFolderStyle } from '../lib/bookmark-utils.ts';
 import { assignStylesToTree, collectFolderIdentities } from '../lib/folder-style-assignment.ts';
 import { getVisibleRoots } from '../lib/tree-logic.ts';
-
-const PERMANENT_FOLDER_IDS = ['1', '2', '3'];
 
 const ICON = {
   addBookmark:
@@ -65,7 +63,7 @@ export function ContextMenu() {
   const isManaged = Boolean(target.unmodifiable);
   if (isManaged && !isFolder) return null; // managed bookmark: no actions
 
-  const isPermanent = PERMANENT_FOLDER_IDS.includes(target.id);
+  const isPermanent = isPermanentFolder(target);
   const restricted = isPermanent || isManaged;
   const showAdd = !isManaged;
   const showSort = isFolder && !isManaged;

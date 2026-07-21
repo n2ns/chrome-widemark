@@ -22,7 +22,10 @@ export function findBookmarksBarNode(nodes: BookmarkNode[]) {
   if (!rootNode || !rootNode.children) {
     return null;
   }
-  return rootNode.children.find(child => child.id === '1') || rootNode.children[0] || null;
+  return rootNode.children.find(child => child.id === '1') ||
+    rootNode.children.find(child => child.folderType === 'bookmarks-bar') ||
+    rootNode.children[0] ||
+    null;
 }
 
 export function gatherFolderIds(nodes: BookmarkNode[], folderIds: string[] = []) {
@@ -106,7 +109,8 @@ export function extractLinkInfo(dataTransfer: DataTransfer): LinkInfo | null {
 }
 
 export function shouldSearchBookmarks(query: string) {
-  return query.length > 0 && !(query.length === 1 && /^[\x00-\x7F]$/.test(query));
+  const trimmed = query.trim();
+  return trimmed.length > 0 && !(trimmed.length === 1 && /^[\x00-\x7F]$/.test(trimmed));
 }
 
 function normalizeSearchText(value: string | null | undefined) {

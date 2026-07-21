@@ -4,12 +4,31 @@ import { SettingsView } from './SettingsView.tsx';
 import { ModalHost } from './ModalHost.tsx';
 import { useSettingsStore, SETTINGS_DEFAULTS } from '../stores/settings.ts';
 import { useModalStore } from '../stores/modal.ts';
+import { useBookmarksStore } from '../stores/bookmarks.ts';
 
 beforeEach(() => {
   useSettingsStore.setState({ ...SETTINGS_DEFAULTS, hydrated: true });
   useModalStore.setState({ active: null });
+  useBookmarksStore.setState({
+    tree: [],
+    recent: [],
+    expandedFolderIds: new Set(['folder']),
+    loaded: true,
+  });
   vi.stubGlobal('chrome', {
-    storage: { local: { set: vi.fn(), clear: vi.fn() }, sync: { remove: vi.fn() } },
+    runtime: { lastError: undefined },
+    bookmarks: {
+      getTree: vi.fn((cb: (nodes: unknown[]) => void) => cb([{ id: '0', title: '', children: [] }])),
+      getRecent: vi.fn((_count: number, cb: (nodes: unknown[]) => void) => cb([])),
+    },
+    storage: {
+      local: {
+        set: vi.fn(),
+        clear: vi.fn((cb: () => void) => cb()),
+        get: vi.fn((_keys: string[], cb: (value: object) => void) => cb({})),
+      },
+      sync: { remove: vi.fn() },
+    },
   });
 });
 
@@ -54,5 +73,6 @@ describe('SettingsView', () => {
     // Confirmation dialog (not a native confirm) appears; confirm it.
     fireEvent.click(await screen.findByText('Restore'));
     await vi.waitFor(() => expect(chrome.storage.local.clear).toHaveBeenCalled());
+    await vi.waitFor(() => expect(useBookmarksStore.getState().expandedFolderIds.size).toBe(0));
   });
 });

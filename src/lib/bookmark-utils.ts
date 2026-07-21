@@ -32,7 +32,6 @@
   }
 
   function computeMoveDestination(
-    draggedNode: BookmarkNode | null | undefined,
     targetNode: BookmarkNode,
     dropPosition: DropPosition
   ): MoveDestination {
@@ -41,19 +40,9 @@
     }
 
     const targetParentId = targetNode.parentId!;
-    let targetIndex = dropPosition === 'below'
+    const targetIndex = dropPosition === 'below'
       ? targetNode.index! + 1
       : targetNode.index!;
-
-    if (
-      dropPosition === 'above' &&
-      draggedNode &&
-      draggedNode.parentId === targetParentId &&
-      Number.isInteger(draggedNode.index) &&
-      draggedNode.index! < targetIndex
-    ) {
-      targetIndex -= 1;
-    }
 
     return { parentId: targetParentId, index: targetIndex };
   }
@@ -120,6 +109,10 @@
 
   const PERMANENT_FOLDER_IDS = ['0', '1', '2', '3'];
 
+  function isPermanentFolder(node: BookmarkNode): boolean {
+    return !node.url && (PERMANENT_FOLDER_IDS.includes(node.id) || Boolean(node.folderType));
+  }
+
   // Top-most folders containing no bookmarks anywhere below them (a folder
   // whose children are all deep-empty folders counts as empty itself).
   // Permanent Chrome folders are never reported.
@@ -135,7 +128,7 @@
       nodes.forEach((node) => {
         if (node.url || node.unmodifiable) return;
         const nodePath = [...path, node.title];
-        if (!PERMANENT_FOLDER_IDS.includes(node.id) && isDeepEmpty(node)) {
+        if (!isPermanentFolder(node) && isDeepEmpty(node)) {
           empties.push({ id: node.id, title: node.title, path: nodePath });
           return; // topmost only: removing it removes everything below
         }
@@ -155,7 +148,7 @@
 
     function walk(nodes: BookmarkNode[], path: string[]): void {
       const folders = nodes.filter((node) =>
-        !node.url && !node.unmodifiable && !PERMANENT_FOLDER_IDS.includes(node.id));
+        !node.url && !node.unmodifiable && !isPermanentFolder(node));
       const byTitle = new Map<string, BookmarkNode[]>();
       folders.forEach((folder) => {
         if (!byTitle.has(folder.title)) byTitle.set(folder.title, []);
@@ -329,6 +322,7 @@
     addBookmarksToKeyMap,
     collectDuplicateGroups,
     sortNodes,
+    isPermanentFolder,
     computeMoveDestination,
     computeSortedChildren,
     findEmptyFolders,

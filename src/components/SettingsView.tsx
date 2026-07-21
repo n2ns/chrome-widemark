@@ -125,6 +125,7 @@ export function SettingsView() {
     if (!ok) return;
     chrome.storage.local.clear(() => {
       void useSettingsStore.getState().hydrate();
+      void useBookmarksStore.getState().hydrateExpanded();
       void useBookmarksStore.getState().reload();
     });
   };

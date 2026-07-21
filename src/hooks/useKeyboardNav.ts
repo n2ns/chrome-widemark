@@ -4,8 +4,9 @@ import { useSettingsStore } from '../stores/settings.ts';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { useModalStore } from '../stores/modal.ts';
 import { useContextMenuStore } from '../stores/contextMenu.ts';
-import { flattenVisibleNodes } from '../lib/visible-nodes.ts';
+import { getNavigableNodes } from '../lib/visible-nodes.ts';
 import { handleBookmarkClick } from '../lib/bookmark-click.ts';
+import { shouldSearchBookmarks } from '../lib/tree-logic.ts';
 
 // Global keyboard handling: Escape closes overlays, "/" focuses search, and the
 // arrow keys / Enter navigate the tree (matching the pre-React behavior).
@@ -35,18 +36,28 @@ export function useKeyboardNav() {
 
       const bookmarks = useBookmarksStore.getState();
       const ui = useUiStore.getState();
-      const rows = flattenVisibleNodes(bookmarks.tree, useSettingsStore.getState().showOtherBookmarks, bookmarks.expandedFolderIds);
+      const settings = useSettingsStore.getState();
+      const rows = getNavigableNodes({
+        tree: bookmarks.tree,
+        recent: bookmarks.recent,
+        showOtherBookmarks: settings.showOtherBookmarks,
+        showRecent: settings.showRecent,
+        recentExpanded: ui.recentExpanded,
+        expandedFolderIds: bookmarks.expandedFolderIds,
+        searchQuery: ui.searchQuery,
+        searchActive: settings.isSearchOpen && shouldSearchBookmarks(ui.searchQuery),
+      });
       if (rows.length === 0) return;
 
-      const currentIndex = rows.findIndex((n) => n.id === ui.focusedNodeId);
-      const focused = currentIndex >= 0 ? rows[currentIndex]! : null;
+      const currentIndex = rows.findIndex((row) => row.focusKey === ui.focusedNodeId);
+      const focused = currentIndex >= 0 ? rows[currentIndex]!.node : null;
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        ui.setFocusedNodeId(rows[Math.min(currentIndex + 1, rows.length - 1)]!.id);
+        ui.setFocusedNodeId(rows[Math.min(currentIndex + 1, rows.length - 1)]!.focusKey);
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
-        ui.setFocusedNodeId(rows[Math.max(currentIndex - 1, 0)]!.id);
+        ui.setFocusedNodeId(rows[Math.max(currentIndex - 1, 0)]!.focusKey);
       } else if (event.key === 'Enter' && focused) {
         event.preventDefault();
         if (focused.url) {
