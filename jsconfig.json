@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "types": ["chrome-types"],
+    "checkJs": true,
+    "strict": false,
+    "noEmit": true
+  },
+  "include": ["src/**/*.js", "src/**/*.d.ts"]
+}

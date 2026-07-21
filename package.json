@@ -3,13 +3,18 @@
   "version": "1.1.0",
   "description": "Compact Chrome bookmark side panel extension for browsing, search, organization, styling, and local duplicate checks.",
   "scripts": {
+    "typecheck": "tsc -p jsconfig.json",
     "validate": "node --check src/background.js && node --check src/bookmark-utils.js && node --check src/ui-icons.js && node --check src/bookmark-tree-controller.js && node --check src/duplicate-renderer.js && node --check src/duplicate-finder-controller.js && node --check src/cleanup-controller.js && node --check src/modal-dialog.js && node --check src/context-menu-controller.js && node --check src/settings-controller.js && node --check src/sidepanel.js && node --check scripts/package-extension.js && node --check scripts/generate-store-assets.js",
-    "check": "npm run validate",
+    "check": "npm run validate && npm run typecheck",
     "build": "echo 'Building Chrome Extension...' && npm run package && ./scripts/sync-to-windows.sh",
     "package": "npm run check && npm test && node scripts/package-extension.js",
     "assets:store": "node scripts/generate-store-assets.js",
     "test": "node --test test/*.test.js"
   },
   "author": "bugstan",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "chrome-types": "^0.1.435",
+    "typescript": "^7.0.2"
+  }
 }

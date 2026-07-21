@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // "/" focuses (and if needed opens) the search box from anywhere in the
     // main view.
     if (event.key === '/') {
-      const target = event.target;
+      const target = /** @type {HTMLElement | null} */ (event.target);
       const isTyping = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
       const modal = document.getElementById('custom-modal');
       const mainView = document.getElementById('main-view');

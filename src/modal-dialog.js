@@ -16,7 +16,7 @@
       badge.addEventListener('click', () => {
         documentRef.querySelectorAll('.color-badge').forEach(b => b.classList.remove('selected'));
         badge.classList.add('selected');
-        selectedModalColor = badge.dataset.color || '';
+        selectedModalColor = /** @type {HTMLElement} */ (badge).dataset.color || '';
       });
     });
 
@@ -24,7 +24,7 @@
       badge.addEventListener('click', () => {
         documentRef.querySelectorAll('.icon-badge').forEach(b => b.classList.remove('selected'));
         badge.classList.add('selected');
-        selectedModalIcon = badge.dataset.icon || 'default';
+        selectedModalIcon = /** @type {HTMLElement} */ (badge).dataset.icon || 'default';
       });
     });
 
@@ -62,6 +62,18 @@
       });
     }
 
+    /**
+     * @param {Object} options
+     * @param {string} options.title
+     * @param {string[]} [options.showFields]
+     * @param {{title?: string, url?: string, color?: string, icon?: string}} [options.fieldsVal]
+     * @param {string} [options.confirmText]
+     * @param {string} [options.message]
+     * @param {string} [options.mode]
+     * @param {string} [options.submitLabel]
+     * @param {string} [options.cancelLabel]
+     * @param {(data?: any) => void} [options.onSubmit]
+     */
     function openCustomModal({
       title,
       showFields = [],
@@ -101,8 +113,8 @@
       const fieldFolderStyle = documentRef.getElementById('field-group-folder-style');
       if (fieldFolderStyle) fieldFolderStyle.style.display = 'none';
 
-      const newInputTitle = inputTitle.cloneNode(true);
-      const newInputUrl = inputUrl.cloneNode(true);
+      const newInputTitle = /** @type {HTMLInputElement} */ (inputTitle.cloneNode(true));
+      const newInputUrl = /** @type {HTMLInputElement} */ (inputUrl.cloneNode(true));
       inputTitle.replaceWith(newInputTitle);
       inputUrl.replaceWith(newInputUrl);
 
@@ -130,14 +142,14 @@
 
           modal.querySelectorAll('.color-badge').forEach(badge => {
             badge.classList.remove('selected');
-            if ((badge.dataset.color || '') === selectedModalColor) {
+            if ((/** @type {HTMLElement} */ (badge).dataset.color || '') === selectedModalColor) {
               badge.classList.add('selected');
             }
           });
 
           modal.querySelectorAll('.icon-badge').forEach(badge => {
             badge.classList.remove('selected');
-            if ((badge.dataset.icon || 'default') === selectedModalIcon) {
+            if ((/** @type {HTMLElement} */ (badge).dataset.icon || 'default') === selectedModalIcon) {
               badge.classList.add('selected');
             }
           });
@@ -152,8 +164,8 @@
       const submitBtn = documentRef.getElementById('modal-submit-btn');
       const cancelBtn = documentRef.getElementById('modal-cancel-btn');
 
-      const newSubmitBtn = submitBtn.cloneNode(true);
-      const newCancelBtn = cancelBtn.cloneNode(true);
+      const newSubmitBtn = /** @type {HTMLElement} */ (submitBtn.cloneNode(true));
+      const newCancelBtn = /** @type {HTMLElement} */ (cancelBtn.cloneNode(true));
       submitBtn.replaceWith(newSubmitBtn);
       cancelBtn.replaceWith(newCancelBtn);
       newSubmitBtn.textContent = submitLabel || (dialogMode === 'input' ? 'Save' : 'OK');
