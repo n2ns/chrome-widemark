@@ -5,12 +5,12 @@
     "moduleResolution": "bundler",
     "lib": ["es2022", "dom", "dom.iterable"],
     "types": ["chrome-types"],
-    "allowJs": true,
-    "checkJs": true,
     "strict": false,
+    "erasableSyntaxOnly": true,
+    "rewriteRelativeImportExtensions": true,
     "rootDir": "src",
     "outDir": "build/src",
     "sourceMap": false
   },
-  "include": ["src/**/*.js", "src/**/*.d.ts"]
+  "include": ["src/**/*.ts"]
 }

@@ -89,9 +89,9 @@ test('build sync includes current files and removes stale output', () => {
 });
 
 test('duplicate finder shows paths and confirms deletion', () => {
-  const controller = readProjectFile('src/duplicate-finder-controller.js');
-  const renderer = readProjectFile('src/duplicate-renderer.js');
-  const sidepanel = readProjectFile('src/sidepanel.js');
+  const controller = readProjectFile('src/duplicate-finder-controller.ts');
+  const renderer = readProjectFile('src/duplicate-renderer.ts');
+  const sidepanel = readProjectFile('src/sidepanel.ts');
 
   assert.match(controller, /folderPath/);
   assert.match(renderer, /duplicate-item-path/);
@@ -103,7 +103,7 @@ test('duplicate finder shows paths and confirms deletion', () => {
 
 test('help page has separate about card and branded footer links', () => {
   const html = readProjectFile('src/sidepanel.html');
-  const settingsController = readProjectFile('src/settings-controller.js');
+  const settingsController = readProjectFile('src/settings-controller.ts');
 
   assert.match(html, /help-about-card/);
   assert.match(html, /https:\/\/n2ns\.com/);
@@ -138,8 +138,8 @@ test('build assembles the manifest-referenced files into build/', () => {
   const buildScript = readProjectFile('scripts/build-extension.cjs');
   const tsconfig = JSON.parse(readProjectFile('tsconfig.json'));
 
-  // tsc compiles src/*.js into build/src, covering the service worker and the
-  // panel scripts referenced by the manifest / html.
+  // tsc compiles src/*.ts into build/src/*.js, covering the service worker and
+  // the panel scripts referenced by the manifest / html.
   assert.strictEqual(tsconfig.compilerOptions.rootDir, 'src');
   assert.strictEqual(tsconfig.compilerOptions.outDir, 'build/src');
   assert.match(manifest.background.service_worker, /^src\//);

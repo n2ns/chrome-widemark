@@ -1,11 +1,11 @@
-import * as bookmarkUtils from './bookmark-utils.js';
-import * as WideMarkIcons from './ui-icons.js';
-import { createBookmarkTreeController } from './bookmark-tree-controller.js';
-import { createDuplicateFinderController } from './duplicate-finder-controller.js';
-import { createCleanupController } from './cleanup-controller.js';
-import { createModalDialog } from './modal-dialog.js';
-import { createContextMenuController } from './context-menu-controller.js';
-import { createSettingsController } from './settings-controller.js';
+import * as bookmarkUtils from './bookmark-utils.ts';
+import * as WideMarkIcons from './ui-icons.ts';
+import { createBookmarkTreeController } from './bookmark-tree-controller.ts';
+import { createDuplicateFinderController } from './duplicate-finder-controller.ts';
+import { createCleanupController } from './cleanup-controller.ts';
+import { createModalDialog } from './modal-dialog.ts';
+import { createContextMenuController } from './context-menu-controller.ts';
+import { createSettingsController } from './settings-controller.ts';
 
 document.addEventListener('DOMContentLoaded', () => {
   const {
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // "/" focuses (and if needed opens) the search box from anywhere in the
     // main view.
     if (event.key === '/') {
-      const target = /** @type {HTMLElement | null} */ (event.target);
+      const target = event.target as HTMLElement | null;
       const isTyping = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
       const modal = document.getElementById('custom-modal');
       const mainView = document.getElementById('main-view');

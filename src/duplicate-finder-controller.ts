@@ -1,4 +1,4 @@
-import { createDuplicateRenderer } from './duplicate-renderer.js';
+import { createDuplicateRenderer } from './duplicate-renderer.ts';
 
   function gatherAllBookmarks(nodes, bookmarksList = [], folderPath = []) {
     nodes.forEach(node => {
