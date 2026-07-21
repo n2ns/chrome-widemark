@@ -8,32 +8,33 @@ npm install
 
 ## Commands
 
-Type-check both TypeScript projects — the extension (`src/`) and the build
-scripts (`scripts/`):
+Type-check both TypeScript projects (the extension `src/` and the build
+scripts `scripts/`):
 
 ```bash
 npm run check
 ```
 
-Run tests:
+Run the test suite (Vitest — pure-logic, store, and component tests):
 
 ```bash
 npm test
 ```
 
-Compile `src/` into the loadable `build/` directory:
+Start the Vite dev server (HMR):
 
 ```bash
-npm run compile
+npm run dev
 ```
 
-Build the packaged extension and sync it to the configured Windows Chrome test directory:
+Build the loadable extension into `build/`:
 
 ```bash
 npm run build
 ```
 
-Create a Chrome Web Store upload package:
+Create the Chrome Web Store upload zip (runs check + tests + build, then zips
+`build/`):
 
 ```bash
 npm run package
@@ -41,113 +42,81 @@ npm run package
 
 ## Loading the extension for development
 
-The source in `src/` is compiled by `tsc` (see `tsconfig.json`) into `build/`.
-Chrome loads the **compiled** tree, not the repo source:
+Vite + `@crxjs/vite-plugin` compile `src/` into `build/`, which is a
+self-contained loadable extension.
 
-1. Run `npm run compile` once to assemble `build/` (compiles TS and copies the
-   static assets — html/css/icons/manifest).
+1. Run `npm run build` (or `npm run dev` for HMR).
 2. In `chrome://extensions`, enable Developer mode and **Load unpacked** the
    `build/` directory.
-3. While iterating, `npm run watch` recompiles `src/*.ts` into `build/src` on
-   save. After a change, click the extension's reload button. Re-run
-   `npm run compile` if you touch a static asset (html/css/manifest/icons),
-   since `watch` only recompiles TypeScript.
+3. After a change, rebuild (or rely on the dev server) and click the
+   extension's reload button.
 
-`build/` mirrors the repo layout (`build/manifest.json`, `build/src/…`,
-`build/icons/…`), so the manifest's relative paths are unchanged. `build/` is
-generated output and is git-ignored.
+`build/` is generated output and is git-ignored.
 
-## Local Build Sync
+### Local Windows/WSL sync
 
-`npm run build` runs `npm run package`, then uses `scripts/sync-to-windows.sh` to copy `dist/widemark` to the configured Windows path.
-
-Set `WINDOWS_ARTIFACTS_PATH` in `.env`:
+`npm run build:sync` builds and then copies `build/` to a Windows path for
+testing in Windows Chrome. Set `WINDOWS_ARTIFACTS_PATH` in `.env`:
 
 ```bash
 WINDOWS_ARTIFACTS_PATH="/mnt/c/path/to/chrome-widemark-dist"
 ```
 
-The sync script clears stale files from the target directory before copying the packaged extension bundle.
-
 ## Release Package
 
-`npm run package` runs syntax checks, tests, then creates:
-
-```text
-dist/
-├── widemark/
-│   ├── manifest.json
-│   ├── src/
-│   ├── icons/
-│   └── icon.png
-└── widemark-v<version>.zip
-```
-
-The release zip is intentionally minimal. It should contain only runtime extension files:
-
-- `manifest.json`
-- `src/`
-- `icons/`
-- `icon.png`
-- `_locales/` when localization is added
-
-It must not contain development or publishing support files such as `.env`, `node_modules/`, `dist/`, `docs/`, `design/`, `store-assets/`, `scripts/`, `test/`, `README.md`, `TODO.md`, or `package*.json`.
-
-Check the zip contents before upload:
+`npm run package` produces `dist/widemark-v<version>.zip` from the `build/`
+output. The zip contains only the runtime extension (compiled JS/CSS, HTML,
+manifest, icons) — no source maps and no development files. Check it before
+upload:
 
 ```bash
 unzip -l dist/widemark-v<version>.zip
 ```
 
-Upload the zip file to the Chrome Web Store. `dist/` is generated output and should not be committed.
-
-`npm run build` uses the unpacked `dist/widemark/` directory for local Windows/Chrome testing, so the tested layout matches the release package layout. It also copies the zip file to the parent Windows artifacts directory.
+Upload the zip to the Chrome Web Store. `dist/` is generated output and is
+git-ignored. Publishing is automated on `v*` tags (`.github/workflows/publish.yml`).
 
 ## Project Layout
 
 ```text
 chrome-widemark/
 ├── manifest.json
-├── tsconfig.json           # extension (src/), DOM + chrome-types
-├── tsconfig.scripts.json   # build scripts (scripts/), Node
+├── vite.config.ts          # Vite + @crxjs build
+├── vitest.config.ts        # test runner (happy-dom)
+├── tsconfig.json           # extension type-check (noEmit)
+├── tsconfig.scripts.json   # build-script type-check (Node)
 ├── src/
-│   ├── background.ts
-│   ├── sidepanel.html
-│   ├── sidepanel.css
-│   ├── sidepanel.ts
-│   ├── bookmark-tree-controller.ts
-│   ├── context-menu-controller.ts
-│   ├── settings-controller.ts
-│   ├── duplicate-finder-controller.ts
-│   ├── duplicate-renderer.ts
-│   ├── cleanup-controller.ts
-│   ├── modal-dialog.ts
-│   ├── bookmark-utils.ts
-│   ├── ui-icons.ts
-│   ├── types.d.ts          # shared domain types (emits no JS)
-│   ├── chrome-shims.d.ts   # chrome-types augmentation (emits no JS)
+│   ├── background.ts        # MV3 service worker
+│   ├── sidepanel.html       # React entry (#root + main.tsx)
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── sidepanel.css        # imports styles/*
+│   ├── components/          # React components (+ *.test.tsx)
+│   ├── stores/              # Zustand stores (+ tests)
+│   ├── hooks/               # useApplySettings / useKeyboardNav / useNodeDrag
+│   ├── lib/                 # framework-agnostic logic (+ tests)
+│   ├── types.d.ts           # shared types (emits no JS)
+│   ├── chrome-shims.d.ts    # chrome-types augmentation
 │   └── styles/
-├── build/                  # tsc output — loadable unpacked extension (git-ignored)
-├── icons/
-├── store-assets/
-├── design/
-├── scripts/                # .ts build/asset tooling (run via node type-strip)
-├── test/                   # *.test.mjs (Node runs the .ts source directly)
+├── build/                   # Vite output (git-ignored; Load unpacked here)
+├── icons/  ·  store-assets/  ·  design/
+├── scripts/                 # .ts build tooling + sync-to-windows.sh
+├── test/                    # repo/logic tests (*.test.ts)
 └── docs/
 ```
 
-## Testing Focus
+## Testing
 
-Current Node tests cover:
+Vitest is the single test runner (happy-dom environment). Tests cover:
 
-- bookmark helper behavior
-- duplicate grouping (exact URL and same domain) and chunked scanning
-- folder style record assignment, same-millisecond tie-breaking, and replacement
-- folder sorting order, empty-folder detection, and same-name folder grouping (including managed-bookmark exclusion)
-- drag/drop move destination calculations
-- search thresholds and search result ordering
-- ES module exports resolve and the panel loads a single module entry
-- manifest permission surface
-- build assembly and sync file coverage
+- bookmark helpers, duplicate grouping, folder-style matching, sorting,
+  empty/same-name folder detection, drop-position math, search ranking
+- Zustand store behavior (hydrate, persistence, event suppression) with a
+  mocked `chrome`
+- React components via Testing Library: tree render / expand / open, settings,
+  modal dialogs, context menu, actions (duplicate/cleanup), drag-and-drop, and
+  keyboard navigation
+- manifest permission surface and the Vite/package pipeline shape
 
-Real browser smoke tests are still a future improvement.
+Real-browser smoke testing (actual bookmarks API + side panel) is still done
+manually via Load unpacked.

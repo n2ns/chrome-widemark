@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PACKAGE_DIR="$ROOT_DIR/dist/widemark"
+# The Vite + @crxjs output is the loadable unpacked extension.
+PACKAGE_DIR="$ROOT_DIR/build"
 
 # Load environment variables from .env file if it exists
 if [ -f "$ROOT_DIR/.env" ]; then
@@ -25,7 +26,7 @@ echo "Target directory: $TARGET_DIR"
 
 if [ ! -d "$PACKAGE_DIR" ]; then
     echo "Error: Package directory $PACKAGE_DIR does not exist."
-    echo "Run npm run package before syncing."
+    echo "Run npm run build before syncing."
     exit 1
 fi
 

@@ -72,34 +72,27 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for details.
 
 ## Project Layout
 
+Built with React 19 + TypeScript, bundled by Vite (`@crxjs/vite-plugin`); UI
+state in Zustand; bookmark logic is framework-agnostic and unit-tested.
+
 ```text
 chrome-widemark/
 ├── manifest.json
-├── tsconfig.json
-├── src/                     # TypeScript source (compiled by tsc)
-│   ├── background.ts
-│   ├── sidepanel.html
-│   ├── sidepanel.css
-│   ├── sidepanel.ts
-│   ├── bookmark-tree-controller.ts
-│   ├── settings-controller.ts
-│   ├── context-menu-controller.ts
-│   ├── duplicate-finder-controller.ts
-│   ├── duplicate-renderer.ts
-│   ├── cleanup-controller.ts
-│   ├── modal-dialog.ts
-│   ├── bookmark-utils.ts
-│   ├── ui-icons.ts
-│   ├── types.d.ts
-│   ├── chrome-shims.d.ts
+├── vite.config.ts           # Vite + @crxjs build
+├── tsconfig.json            # type-check only (Vite bundles)
+├── src/
+│   ├── background.ts        # MV3 service worker
+│   ├── sidepanel.html       # React entry (#root + main.tsx)
+│   ├── main.tsx  ·  App.tsx  ·  sidepanel.css
+│   ├── components/          # React components
+│   ├── stores/              # Zustand stores
+│   ├── hooks/               # settings apply / keyboard / drag
+│   ├── lib/                 # framework-agnostic bookmark logic
+│   ├── types.d.ts  ·  chrome-shims.d.ts
 │   └── styles/
-├── build/                   # tsc output, git-ignored (Load unpacked here)
-├── icons/
-├── store-assets/
-├── design/
-├── scripts/
-├── test/
-└── docs/
+├── build/                   # Vite output, git-ignored (Load unpacked here)
+├── icons/  ·  store-assets/  ·  design/
+├── scripts/  ·  test/  ·  docs/
 ```
 
 ## Status
