@@ -11,11 +11,10 @@
     "watch": "tsc -p tsconfig.json --watch",
     "dev": "vite",
     "build:react": "vite build",
-    "test:unit": "vitest run",
     "build": "echo 'Building Chrome Extension...' && npm run package && ./scripts/sync-to-windows.sh",
     "package": "npm run check && npm test && npm run compile && node scripts/package-extension.ts",
     "assets:store": "node scripts/generate-store-assets.ts",
-    "test": "node --test test/*.test.mjs"
+    "test": "vitest run"
   },
   "author": "bugstan",
   "license": "ISC",
