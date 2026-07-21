@@ -7,6 +7,7 @@ import { initChromeSubscriptions } from './stores/subscriptions.ts';
 import { useApplySettings } from './hooks/useApplySettings.ts';
 import { Toolbar } from './components/Toolbar.tsx';
 import { BookmarkTree } from './components/BookmarkTree.tsx';
+import { SettingsView } from './components/SettingsView.tsx';
 
 export default function App() {
   useApplySettings();
@@ -37,7 +38,7 @@ export default function App() {
             <BookmarkTree />
           </div>
         )}
-        {view === 'settings' && <div id="settings-view" className="secondary-view">Settings — coming soon</div>}
+        {view === 'settings' && <SettingsView />}
         {view === 'actions' && <div id="actions-view" className="secondary-view">Actions — coming soon</div>}
         {view === 'help' && <div id="help-view" className="secondary-view">Help — coming soon</div>}
       </main>
