@@ -8,6 +8,8 @@ import { useApplySettings } from './hooks/useApplySettings.ts';
 import { Toolbar } from './components/Toolbar.tsx';
 import { BookmarkTree } from './components/BookmarkTree.tsx';
 import { SettingsView } from './components/SettingsView.tsx';
+import { ActionsView } from './components/ActionsView.tsx';
+import { HelpView } from './components/HelpView.tsx';
 import { ModalHost } from './components/ModalHost.tsx';
 import { ContextMenu } from './components/ContextMenu.tsx';
 
@@ -41,9 +43,18 @@ export default function App() {
           </div>
         )}
         {view === 'settings' && <SettingsView />}
-        {view === 'actions' && <div id="actions-view" className="secondary-view">Actions — coming soon</div>}
-        {view === 'help' && <div id="help-view" className="secondary-view">Help — coming soon</div>}
+        {view === 'actions' && <ActionsView />}
+        {view === 'help' && <HelpView />}
       </main>
+      <footer className="footer">
+        <a href="https://n2ns.com" target="_blank" rel="noopener noreferrer">
+          N2NS Lab
+        </a>
+        <span className="footer-dot">·</span>
+        <a href="https://datafrog.io/widemark" target="_blank" rel="noopener noreferrer">
+          Docs
+        </a>
+      </footer>
       <ModalHost />
       <ContextMenu />
     </div>
