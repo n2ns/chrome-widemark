@@ -30,11 +30,12 @@ manifest.json ──▶ @crxjs ──▶ build/  (loadable extension)
 - `bookmarks` — the bookmark tree, recently-added list, and expansion state. Chrome bookmark events reload the tree, with per-event reloads suppressed during a bulk import or an explicit batch (sort/cleanup).
 - `ui` — ephemeral view/search/focus state.
 - `modal` / `contextMenu` — the currently open dialog (promise-based) and right-click target.
+- `operations` — panel-wide bookmark-mutation/cleanup lock and cleanup status, preventing destructive jobs from overlapping other writes in the same panel.
 - `subscriptions.ts` wires `chrome.bookmarks.on*` and `chrome.storage.onChanged` into the stores at startup.
 
 ## Framework-agnostic logic (`src/lib/`)
 
-The bookmark algorithms carry no DOM/React dependency and are covered by their own tests: `bookmark-utils` (domain/keys, duplicates, sorting, folder-style matching), `tree-logic` (bookmarks-bar lookup, drop-position math, dropped-link parsing, search ranking), `duplicate-scan`, `folder-style-assignment`, `cleanup`, `search`, `visible-nodes`, `bookmark-click`, `theme`, `ui-icons`.
+The bookmark algorithms carry no DOM/React dependency and are covered by their own tests: `bookmark-utils` (domain/keys, duplicates, sorting, folder-style matching), `tree-logic` (bookmarks-bar lookup, drop-position math, dropped-link parsing, search ranking), `duplicate-scan`, `folder-style-assignment`, `folder-style-storage`, `cleanup`, `search`, `visible-nodes`, `bookmark-click`, `theme`, `ui-icons`.
 
 Type-only declaration files (`src/types.d.ts`, `src/chrome-shims.d.ts`) emit no JavaScript; the latter augments `chrome-types` with `chrome.runtime.lastError`.
 
@@ -44,7 +45,11 @@ WideMark deliberately avoids `host_permissions`. It uses only Chrome's Bookmarks
 
 ## Data Boundary
 
-Chrome bookmarks remain Chrome bookmark data. WideMark stores only its own preferences and folder-style metadata in extension storage. Folder styles live in `chrome.storage.sync` as records identified by the folder's `dateAdded` creation time (transported verbatim by Chrome bookmark sync), so a style follows the same folder across synced devices and survives renames and moves. Title/path on each record only break ties between folders created in the same millisecond. Style records are written only on explicit user edits.
+Chrome bookmarks remain Chrome bookmark data. WideMark stores only its own preferences and a simple `folderStyles` list in extension storage. Folder styles use `dateAdded` as their rename/move-stable identity, with title/path metadata for rare same-millisecond collisions. The list is synchronized by Chrome Sync when enabled and is never sent to developer-operated servers.
+
+## Internationalization
+
+The extension uses Chrome's native `_locales` message catalogs. `src/lib/i18n.ts` provides typed lookups and locale-aware number/plural formatting, while `scripts/check-i18n.ts` verifies exact key parity, locale directory coverage, placeholders, Manifest references, and Manifest field lengths for every supported locale.
 
 ## Notes
 

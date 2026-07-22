@@ -6,7 +6,8 @@ interface ContextMenuStore {
   target: BookmarkNode | null;
   x: number;
   y: number;
-  open: (target: BookmarkNode, x: number, y: number) => void;
+  trigger: HTMLElement | null;
+  open: (target: BookmarkNode, x: number, y: number, trigger?: HTMLElement | null) => void;
   close: () => void;
 }
 
@@ -14,6 +15,7 @@ export const useContextMenuStore = create<ContextMenuStore>((set) => ({
   target: null,
   x: 0,
   y: 0,
-  open: (target, x, y) => set({ target, x, y }),
+  trigger: null,
+  open: (target, x, y, trigger = null) => set({ target, x, y, trigger }),
   close: () => set({ target: null }),
 }));

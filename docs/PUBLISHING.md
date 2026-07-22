@@ -24,7 +24,7 @@ Key features:
 - Create, edit, delete, reorder, sort, and move bookmarks.
 - Keyboard support: Alt+B opens the panel, arrow keys navigate, "/" focuses search.
 - Recently Added section at the top of the tree.
-- Customize folder colors and icons, synced across devices.
+- Customize folder colors and icons; their metadata is synced by Chrome Sync.
 - Adjust theme, font size, row spacing, and UI zoom.
 - Find duplicate bookmarks locally (exact URL or same domain) without visiting bookmarked websites.
 - Delete empty folders and merge same-named sibling folders locally.
@@ -42,7 +42,7 @@ WideMark does not declare `host_permissions`.
 
 ## Privacy Summary
 
-WideMark processes bookmark data locally in the browser. It does not sell, share, upload, or use bookmark data for advertising, profiling, analytics, or unrelated purposes.
+WideMark processes bookmark data locally in the browser. Folder style metadata (folder title, display path, creation timestamp, color, and icon) is stored in Chrome Sync so styles can follow the user's Chrome profile. No data is sent to the developer's servers. WideMark does not sell or use bookmark data for advertising, profiling, analytics, or unrelated purposes.
 
 Before publishing, host the privacy policy and add the hosted URL to the Chrome Web Store Developer Dashboard.
 
@@ -61,5 +61,6 @@ Before publishing, host the privacy policy and add the hosted URL to the Chrome 
 - Host the privacy policy on the project website.
 - Add the hosted privacy policy URL to the store listing.
 - Complete the privacy practices form.
-- Verify the packaged extension contains only `manifest.json`, `src/`, `icons/`, `icon.png`, and optional `_locales/`.
+- Verify the packaged extension contains only the generated runtime files: `manifest.json`, `src/`, `assets/`, `icons/`, `service-worker-loader.js`, and `_locales/`.
+- Configure the `chrome-web-store` GitHub environment with required reviewers, prevent self-review, and store the Web Store credentials as environment secrets before using the tag workflow.
 - Reload the unpacked extension and manually test browsing (including Other Bookmarks), search, drag/drop, sorting, settings, duplicate checks, cleanup actions, and keyboard navigation.

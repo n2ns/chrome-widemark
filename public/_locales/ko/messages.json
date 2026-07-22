@@ -1,0 +1,595 @@
+{
+  "manifest_name": {
+    "message": "WideMark: 북마크 사이드 패널"
+  },
+  "manifest_short_name": {
+    "message": "WideMark"
+  },
+  "manifest_description": {
+    "message": "Chrome 사이드 패널에서 사용하는 간편한 북마크 관리자입니다. 북마크 탐색, 검색, 정리, 폴더 꾸미기와 중복 찾기를 로컬에서 처리합니다."
+  },
+  "manifest_command_open": {
+    "message": "WideMark 사이드 패널 열기"
+  },
+  "manifest_action_open": {
+    "message": "WideMark 열기"
+  },
+  "common_actions": {
+    "message": "작업"
+  },
+  "common_settings": {
+    "message": "설정"
+  },
+  "common_help": {
+    "message": "도움말"
+  },
+  "common_error": { "message": "오류" },
+  "common_storage_error": { "message": "변경사항을 Chrome 저장소에 저장하지 못했습니다. 다시 시도해 주세요." },
+  "common_delete": {
+    "message": "삭제"
+  },
+  "common_cancel": {
+    "message": "취소"
+  },
+  "common_save": {
+    "message": "저장"
+  },
+  "common_ok": {
+    "message": "확인"
+  },
+  "common_confirm": {
+    "message": "확인"
+  },
+  "common_reset": {
+    "message": "초기화"
+  },
+  "common_restore": {
+    "message": "복원"
+  },
+  "common_sort": {
+    "message": "정렬"
+  },
+  "common_merge": {
+    "message": "병합"
+  },
+  "common_default": {
+    "message": "기본값"
+  },
+  "common_bookmarks": {
+    "message": "북마크"
+  },
+  "common_docs": {
+    "message": "문서"
+  },
+  "toolbar_toggle_search": {
+    "message": "검색 표시 전환"
+  },
+  "toolbar_expand_all": {
+    "message": "모든 폴더 펼치기"
+  },
+  "toolbar_collapse_all": {
+    "message": "모든 폴더 접기"
+  },
+  "toolbar_search_placeholder": {
+    "message": "북마크 검색..."
+  },
+  "toolbar_clear_search": {
+    "message": "검색 지우기"
+  },
+  "tree_recently_added": {
+    "message": "최근 추가됨"
+  },
+  "tree_loading": {
+    "message": "북마크를 불러오는 중..."
+  },
+  "tree_result_count_one": {
+    "message": "결과 $COUNT$개",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "tree_result_count_other": {
+    "message": "결과 $COUNT$개",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "tree_empty_all": {
+    "message": "아직 북마크가 없습니다."
+  },
+  "tree_empty_bar": {
+    "message": "북마크바에 북마크가 없습니다."
+  },
+  "settings_display": {
+    "message": "표시"
+  },
+  "settings_theme": {
+    "message": "테마"
+  },
+  "settings_sync_theme": {
+    "message": "Chrome / 시스템 테마와 동기화"
+  },
+  "settings_show_other": {
+    "message": "기타 북마크 표시"
+  },
+  "settings_show_recent": {
+    "message": "최근 추가됨 섹션 표시"
+  },
+  "settings_font_size": {
+    "message": "글꼴 크기"
+  },
+  "settings_font_family": {
+    "message": "글꼴"
+  },
+  "settings_row_spacing": {
+    "message": "행 간격"
+  },
+  "settings_ui_zoom": {
+    "message": "UI 확대/축소"
+  },
+  "settings_behavior": {
+    "message": "동작"
+  },
+  "settings_left_click": {
+    "message": "왼쪽 클릭 동작"
+  },
+  "settings_drag_protection": {
+    "message": "드래그 보호(순서 변경 사용 안 함)"
+  },
+  "settings_tooltips": {
+    "message": "URL 마우스 오버 도움말 사용"
+  },
+  "settings_system": {
+    "message": "시스템"
+  },
+  "settings_reset_styles": {
+    "message": "폴더 스타일 초기화"
+  },
+  "settings_reset_styles_message": {
+    "message": "사용자 지정 폴더 색상과 아이콘을 모두 제거하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+  },
+  "settings_restore_defaults": {
+    "message": "기본값 복원"
+  },
+  "settings_restore_defaults_message": {
+    "message": "모든 설정을 기본값으로 되돌리시겠습니까?"
+  },
+  "option_theme_light": {
+    "message": "라이트"
+  },
+  "option_theme_dark": {
+    "message": "다크"
+  },
+  "option_theme_blue_gray": {
+    "message": "블루 그레이"
+  },
+  "option_theme_graphite": {
+    "message": "그래파이트"
+  },
+  "option_theme_slate": {
+    "message": "슬레이트"
+  },
+  "option_theme_olive": {
+    "message": "올리브"
+  },
+  "option_theme_sepia": {
+    "message": "세피아"
+  },
+  "option_font_small": {
+    "message": "작게(12px)"
+  },
+  "option_font_medium": {
+    "message": "중간(14px)"
+  },
+  "option_font_large": {
+    "message": "크게(16px)"
+  },
+  "option_font_extra_large": {
+    "message": "매우 크게(18px)"
+  },
+  "option_font_system": {
+    "message": "시스템 기본값"
+  },
+  "option_font_sans": {
+    "message": "고딕체(YaHei / Arial)"
+  },
+  "option_font_serif": {
+    "message": "명조체(SimSun / Georgia)"
+  },
+  "option_font_mono": {
+    "message": "고정폭(Consolas / Courier)"
+  },
+  "option_spacing_compact": {
+    "message": "좁게"
+  },
+  "option_spacing_medium": {
+    "message": "표준"
+  },
+  "option_spacing_relaxed": {
+    "message": "넓게"
+  },
+  "option_open_current": {
+    "message": "현재 탭에서 열기"
+  },
+  "option_open_foreground": {
+    "message": "새 탭에서 열고 전환"
+  },
+  "option_open_background": {
+    "message": "새 탭에서 열기(백그라운드)"
+  },
+  "actions_duplicate_urls": {
+    "message": "중복 URL"
+  },
+  "actions_same_domain": {
+    "message": "같은 도메인"
+  },
+  "actions_checking": {
+    "message": "확인 중..."
+  },
+  "actions_unable_load": {
+    "message": "북마크를 불러올 수 없습니다."
+  },
+  "actions_nothing_to_check": {
+    "message": "확인할 북마크가 없습니다."
+  },
+  "actions_checking_urls": {
+    "message": "중복 URL 확인 중($CHECKED$/$TOTAL$)...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_checking_domains": {
+    "message": "같은 도메인의 북마크 확인 중($CHECKED$/$TOTAL$)...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_check_complete_one": {
+    "message": "중복 확인이 완료되었습니다. 북마크 $COUNT$개를 확인했습니다.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_check_complete_other": {
+    "message": "중복 확인이 완료되었습니다. 북마크 $COUNT$개를 확인했습니다.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "450"
+      }
+    }
+  },
+  "actions_delete_bookmark": {
+    "message": "북마크 삭제"
+  },
+  "actions_delete_bookmark_message": {
+    "message": "“$TITLE$”을(를) 삭제하시겠습니까?",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "actions_no_empty_folders": {
+    "message": "빈 폴더가 없습니다."
+  },
+  "actions_delete_empty_folders": {
+    "message": "빈 폴더 삭제"
+  },
+  "actions_delete_empty_one": {
+    "message": "빈 폴더 $COUNT$개를 삭제하시겠습니까? ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Empty"
+      }
+    }
+  },
+  "actions_delete_empty_other": {
+    "message": "빈 폴더 $COUNT$개를 삭제하시겠습니까? ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Work / Empty, Personal / Empty"
+      }
+    }
+  },
+  "actions_removed_empty_one": {
+    "message": "빈 폴더 $COUNT$개를 삭제했습니다.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_removed_empty_other": {
+    "message": "빈 폴더 $COUNT$개를 삭제했습니다.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_same_named": {
+    "message": "같은 계층에 이름이 같은 폴더가 없습니다."
+  },
+  "actions_merge_same_named": {
+    "message": "이름이 같은 폴더 병합"
+  },
+  "actions_merge_groups_one": {
+    "message": "같은 계층에 이름이 같은 폴더 $COUNT$개 그룹을 병합하시겠습니까? 내용은 그룹의 첫 번째 폴더에 합쳐집니다. ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work"
+      }
+    }
+  },
+  "actions_merge_groups_other": {
+    "message": "같은 계층에 이름이 같은 폴더 $COUNT$개 그룹을 병합하시겠습니까? 내용은 각 그룹의 첫 번째 폴더에 합쳐집니다. ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work, Other Bookmarks / News"
+      }
+    }
+  },
+  "actions_merged_folders_one": {
+    "message": "폴더 $COUNT$개를 병합했습니다.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_merged_folders_other": {
+    "message": "폴더 $COUNT$개를 병합했습니다.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_duplicates": {
+    "message": "중복 북마크가 없습니다."
+  },
+  "actions_local_only_note": {
+    "message": "중복 확인은 로컬 북마크 URL만 검사하며 웹사이트에 접속하지 않습니다."
+  },
+  "actions_cleanup": {
+    "message": "정리"
+  },
+  "actions_empty_folders": {
+    "message": "빈 폴더"
+  },
+  "actions_merge_folders": {
+    "message": "폴더 병합"
+  },
+  "context_add_bookmark": {
+    "message": "북마크 추가"
+  },
+  "context_add_folder": {
+    "message": "폴더 추가"
+  },
+  "context_sort_by_name": {
+    "message": "이름순 정렬"
+  },
+  "context_rename_edit": {
+    "message": "이름 변경 / 편집"
+  },
+  "context_folder_style": {
+    "message": "폴더 스타일"
+  },
+  "context_sort_message": {
+    "message": "“$FOLDER$”의 내용을 가나다순(폴더 우선)으로 정렬하시겠습니까? 북마크 순서가 영구적으로 변경됩니다.",
+    "placeholders": {
+      "folder": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "context_this_folder": {
+    "message": "이 폴더"
+  },
+  "context_edit_bookmark": {
+    "message": "북마크 편집"
+  },
+  "context_rename_folder": {
+    "message": "폴더 이름 변경"
+  },
+  "context_delete_confirmation": {
+    "message": "삭제 확인"
+  },
+  "context_delete_bookmark_message": {
+    "message": "북마크 “$TITLE$”을(를) 삭제하시겠습니까?",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "context_delete_folder_message": {
+    "message": "폴더 “$TITLE$” 및 모든 내용을 삭제하시겠습니까?",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "modal_name": {
+    "message": "이름"
+  },
+  "modal_name_placeholder": {
+    "message": "이름 입력..."
+  },
+  "modal_url": {
+    "message": "URL"
+  },
+  "modal_folder_color": {
+    "message": "폴더 색상"
+  },
+  "modal_folder_icon": {
+    "message": "폴더 아이콘"
+  },
+  "modal_name_required": {
+    "message": "이름을 입력해 주세요."
+  },
+  "modal_url_required": {
+    "message": "URL을 입력해 주세요."
+  },
+  "color_red": {
+    "message": "빨간색"
+  },
+  "color_orange": {
+    "message": "주황색"
+  },
+  "color_yellow": {
+    "message": "노란색"
+  },
+  "color_green": {
+    "message": "초록색"
+  },
+  "color_blue": {
+    "message": "파란색"
+  },
+  "color_purple": {
+    "message": "보라색"
+  },
+  "color_pink": {
+    "message": "분홍색"
+  },
+  "icon_code": {
+    "message": "코드"
+  },
+  "icon_document": {
+    "message": "문서"
+  },
+  "icon_star": {
+    "message": "별표"
+  },
+  "icon_heart": {
+    "message": "즐겨찾기"
+  },
+  "icon_lock": {
+    "message": "비공개"
+  },
+  "help_about": {
+    "message": "정보"
+  },
+  "help_built_by": {
+    "message": "개발"
+  },
+  "help_basics": {
+    "message": "기본 사용법"
+  },
+  "help_basics_folder": {
+    "message": "폴더를 클릭하여 펼치거나 접습니다."
+  },
+  "help_basics_search": {
+    "message": "검색 버튼(또는 “/” 키)을 사용하여 제목이나 URL로 북마크를 필터링합니다."
+  },
+  "help_basics_background": {
+    "message": "Ctrl-클릭 또는 가운데 클릭으로 북마크를 백그라운드 탭에서 엽니다."
+  },
+  "help_basics_keyboard": {
+    "message": "방향키로 트리를 이동하고 Enter 키로 선택한 항목을 엽니다."
+  },
+  "help_basics_shortcut": {
+    "message": "어느 페이지에서나 Alt+B를 눌러 WideMark를 엽니다(chrome://extensions/shortcuts에서 변경 가능)."
+  },
+  "help_organize": {
+    "message": "정리"
+  },
+  "help_organize_menu": {
+    "message": "폴더나 북마크를 마우스 오른쪽 버튼으로 클릭하여 항목을 추가, 이름 변경, 편집 또는 삭제합니다."
+  },
+  "help_organize_sort": {
+    "message": "폴더를 마우스 오른쪽 버튼으로 클릭하고 “이름순 정렬”을 선택하여 내용을 정렬합니다."
+  },
+  "help_organize_drag": {
+    "message": "항목을 끌어서 순서를 바꾸거나 다른 폴더로 이동합니다."
+  },
+  "help_organize_styles": {
+    "message": "폴더 스타일 메타데이터는 Chrome Sync에 저장됩니다."
+  },
+  "help_actions_duplicates": {
+    "message": "중복 URL이나 같은 도메인의 북마크를 로컬에서 찾습니다."
+  },
+  "help_actions_cleanup": {
+    "message": "빈 폴더를 삭제하고 같은 계층의 동명 폴더를 병합합니다."
+  },
+  "help_actions_review": {
+    "message": "삭제하기 전에 폴더 경로를 확인하세요."
+  },
+  "help_actions_confirm": {
+    "message": "삭제 및 병합에는 확인이 필요합니다."
+  },
+  "help_settings_adjust": {
+    "message": "테마, 글꼴 크기, 간격, 확대/축소와 클릭 동작을 조정합니다."
+  },
+  "help_settings_restore": {
+    "message": "기본값 복원은 WideMark 설정만 초기화합니다."
+  },
+  "help_privacy": {
+    "message": "개인정보 보호"
+  },
+  "help_privacy_permissions": {
+    "message": "민감한 웹사이트 호스트 권한이 없습니다."
+  },
+  "help_privacy_tracking": {
+    "message": "사용자 데이터를 수집하거나 추적하지 않습니다."
+  },
+  "help_privacy_upload": {
+    "message": "개발자 서버로 데이터를 전송하지 않습니다."
+  },
+  "help_privacy_local": {
+    "message": "북마크와 중복 확인은 로컬에서 처리됩니다."
+  }
+}

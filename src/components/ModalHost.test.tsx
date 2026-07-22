@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ModalHost } from './ModalHost.tsx';
 import { useModalStore } from '../stores/modal.ts';
 
@@ -53,5 +54,22 @@ describe('ModalHost', () => {
     fireEvent.click(screen.getByText('Save'));
 
     expect(await result).toEqual({ color: '#3b82f6', icon: 'star' });
+  });
+
+  it('exposes dialog semantics and keyboard-accessible style choices', async () => {
+    render(<ModalHost />);
+    useModalStore.getState().openCustomModal({
+      title: 'Folder Style',
+      mode: 'input',
+      showFields: ['folderStyle'],
+    });
+
+    const dialog = await screen.findByRole('dialog', { name: 'Folder Style' });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    const blue = screen.getByRole('button', { name: 'Blue' });
+    expect(blue).toHaveAttribute('aria-pressed', 'false');
+    blue.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(blue).toHaveAttribute('aria-pressed', 'true');
   });
 });

@@ -1,43 +1,45 @@
 import { create } from 'zustand';
-import { normalizeFolderStyleRecords } from '../lib/bookmark-utils.ts';
+import { loadFolderStyleRecords } from '../lib/folder-style-storage.ts';
 import type { FolderStyleRecord } from '../types.ts';
 
 // Folder color/icon records, cached from chrome.storage.sync. Writes are made
-// by the folder-style editing action; edits from other synced devices arrive
-// via applyStorageChange.
+// by the folder-style editing action; Chrome storage changes trigger a reload
+// through the central event subscription.
 interface FolderStylesStore {
   styles: FolderStyleRecord[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  reload: () => Promise<void>;
   setStyles: (next: FolderStyleRecord[]) => void;
-  /** Apply an external chrome.storage.sync change, ignoring no-op updates. */
-  applyStorageChange: (newValue: unknown) => void;
 }
+
+let loadGeneration = 0;
 
 export const useFolderStylesStore = create<FolderStylesStore>((set, get) => ({
   styles: [],
   hydrated: false,
 
-  hydrate: () =>
-    new Promise((resolve) => {
-      chrome.storage.sync.get(['folderStyles'], (result) => {
-        if (chrome.runtime.lastError) {
-          set({ styles: [], hydrated: true });
-          resolve();
-          return;
-        }
-        set({ styles: normalizeFolderStyleRecords(result.folderStyles), hydrated: true });
-        resolve();
-      });
-    }),
+  hydrate: async () => {
+    const generation = ++loadGeneration;
+    try {
+      const styles = await loadFolderStyleRecords();
+      if (generation === loadGeneration) set({ styles, hydrated: true });
+    } catch {
+      if (generation === loadGeneration) set({ styles: [], hydrated: true });
+    }
+  },
+
+  reload: async () => {
+    const generation = ++loadGeneration;
+    try {
+      const next = await loadFolderStyleRecords();
+      if (generation === loadGeneration && JSON.stringify(next) !== JSON.stringify(get().styles)) {
+        set({ styles: next, hydrated: true });
+      }
+    } catch {
+      // Keep the last successfully loaded styles on transient sync failures.
+    }
+  },
 
   setStyles: (next) => set({ styles: next }),
-
-  applyStorageChange: (newValue) => {
-    const next = normalizeFolderStyleRecords(newValue);
-    // Writes made by this panel are already in the cache; skip identical values
-    // so a device's own write doesn't trigger a redundant re-render.
-    if (JSON.stringify(next) === JSON.stringify(get().styles)) return;
-    set({ styles: next });
-  },
 }));

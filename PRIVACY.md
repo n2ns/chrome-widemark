@@ -1,6 +1,6 @@
 # WideMark Privacy Policy
 
-Last updated: 2026-06-20
+Last updated: 2026-07-22
 
 WideMark is a Chrome extension for browsing, searching, organizing, styling, and finding duplicate bookmarks in Chrome's side panel.
 
@@ -14,12 +14,12 @@ Bookmark data may include:
 - Bookmark URLs.
 - Folder names and bookmark folder structure.
 
-WideMark also uses Chrome storage to save extension preferences, including:
+WideMark also uses Chrome storage to save extension preferences. Theme, display,
+click behavior, row spacing, zoom, and folder expansion state are stored locally.
+Folder style metadata is stored in Chrome Sync and may include:
 
-- Theme and display settings.
-- Click behavior settings.
-- Row spacing and zoom settings.
-- Custom folder colors and icons.
+- The folder title, display path, and creation timestamp used to identify a folder.
+- The custom folder color and icon selected by the user.
 
 ## How Data Is Used
 
@@ -36,15 +36,19 @@ WideMark does not use bookmark data for advertising, profiling, analytics, or un
 
 ## Local Processing
 
-WideMark processes bookmark data locally in the browser.
+WideMark processes bookmark data locally in the browser. Folder style metadata is
+the exception to local-only storage: Chrome Sync synchronizes it across the user's
+Chrome profiles when Chrome Sync is enabled. The developer's servers do not receive
+this metadata.
 
 The duplicate bookmark check and the cleanup actions read bookmarks through the Chrome Bookmarks API and work entirely locally. They do not fetch, visit, or scan bookmarked websites.
 
 ## Data Sharing
 
-WideMark does not sell, rent, transfer, or share user bookmark data with third parties.
-
-WideMark does not upload any user data to N2NS Lab, datafrog.io, or any external server.
+WideMark does not sell, rent, transfer, or share user bookmark data with the developer
+or unrelated third parties. WideMark does not send user data to N2NS Lab, datafrog.io,
+or any other developer-operated server. Chrome itself may transmit folder style
+metadata through Chrome Sync as described above.
 
 ## Network Access
 
@@ -56,7 +60,11 @@ WideMark uses Chrome's Manifest V3 `_favicon` endpoint through the `favicon` per
 
 Bookmark data remains in the user's Chrome browser and Chrome profile.
 
-WideMark settings and folder style preferences are stored using Chrome extension storage. Users can remove this data by resetting WideMark settings, clearing extension data, or uninstalling the extension.
+Local settings are stored using local Chrome extension storage. Folder style metadata
+is stored using Chrome Sync storage. Users can remove these categories with Restore
+All Defaults and Reset Folder Styles respectively, by clearing extension data, or by
+uninstalling the extension. Chrome Sync retention is also governed by the user's
+Chrome Sync settings.
 
 ## Limited Use
 

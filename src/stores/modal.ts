@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { t } from '../lib/i18n.ts';
 
 export interface ModalFieldsVal {
   title?: string;
@@ -43,11 +44,11 @@ export const useModalStore = create<ModalStore>((set, get) => ({
       set({ active: { ...options, resolve } });
     }),
 
-  showConfirmDialog: ({ title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel' }) =>
-    get().openCustomModal({ title, message, mode: 'confirm', submitLabel: confirmLabel, cancelLabel }) as Promise<boolean>,
+  showConfirmDialog: ({ title, message, confirmLabel, cancelLabel }) =>
+    get().openCustomModal({ title, message, mode: 'confirm', submitLabel: confirmLabel ?? t('common_confirm'), cancelLabel: cancelLabel ?? t('common_cancel') }) as Promise<boolean>,
 
-  showInfoDialog: ({ title, message, confirmLabel = 'OK' }) =>
-    get().openCustomModal({ title, message, mode: 'alert', submitLabel: confirmLabel }) as Promise<void>,
+  showInfoDialog: ({ title, message, confirmLabel }) =>
+    get().openCustomModal({ title, message, mode: 'alert', submitLabel: confirmLabel ?? t('common_ok') }) as Promise<void>,
 
   submit: (result) => {
     const active = get().active;

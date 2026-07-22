@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import { ContextMenu } from './ContextMenu.tsx';
 import { ModalHost } from './ModalHost.tsx';
 import { useContextMenuStore } from '../stores/contextMenu.ts';
 import { useModalStore } from '../stores/modal.ts';
+import { useOperationsStore } from '../stores/operations.ts';
 import type { BookmarkNode } from '../types.ts';
 
 const bookmark = { id: 'b1', title: 'GitHub', url: 'https://github.com/' } as unknown as BookmarkNode;
@@ -22,14 +23,21 @@ function renderMenu() {
 beforeEach(() => {
   useContextMenuStore.setState({ target: null, x: 0, y: 0 });
   useModalStore.setState({ active: null });
+  useOperationsStore.setState({ bookmarkMutationBusy: false, cleanupBusy: false, cleanupStatus: '' });
   vi.stubGlobal('chrome', {
-    bookmarks: { remove: vi.fn(), removeTree: vi.fn(), update: vi.fn(), create: vi.fn() },
+    bookmarks: {
+      remove: vi.fn((_id: string, cb?: () => void) => cb?.()),
+      removeTree: vi.fn((_id: string, cb?: () => void) => cb?.()),
+      update: vi.fn((_id: string, _changes: object, cb?: () => void) => cb?.()),
+      create: vi.fn((_details: object, cb?: () => void) => cb?.()),
+    },
     runtime: { lastError: undefined },
   });
 });
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
@@ -64,6 +72,29 @@ describe('ContextMenu', () => {
     renderMenu();
     fireEvent.click(screen.getByText('Delete'));
     fireEvent.click(await screen.findByText('Delete')); // confirm button
-    await vi.waitFor(() => expect(chrome.bookmarks.remove).toHaveBeenCalledWith('b1'));
+    await vi.waitFor(() => expect(chrome.bookmarks.remove).toHaveBeenCalledWith('b1', expect.any(Function)));
+  });
+
+  it('keeps the menu inside the viewport', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      width: 160,
+      height: 240,
+      top: 0,
+      right: 160,
+      bottom: 240,
+      left: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+    vi.stubGlobal('innerWidth', 300);
+    vi.stubGlobal('innerHeight', 400);
+    useContextMenuStore.getState().open(folder, 290, 390);
+    renderMenu();
+
+    const menu = screen.getByRole('menu');
+    await waitFor(() => {
+      expect(menu).toHaveStyle({ left: '132px', top: '152px' });
+    });
   });
 });

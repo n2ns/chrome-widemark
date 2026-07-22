@@ -3,8 +3,8 @@ chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })
   .catch((error) => console.error(error));
 
-// Keyboard shortcut (default Alt+B) opens the side panel. sidePanel.open
-// requires Chrome 116+; earlier versions simply ignore the command.
+// Keyboard shortcut (default Alt+B) opens the side panel. The manifest's
+// minimum Chrome version is 116 because sidePanel.open requires Chrome 116+.
 chrome.commands.onCommand.addListener((command) => {
   if (command !== 'open-widemark' || typeof chrome.sidePanel.open !== 'function') return;
   chrome.windows.getLastFocused({}, (win) => {

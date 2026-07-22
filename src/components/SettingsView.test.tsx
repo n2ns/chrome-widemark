@@ -5,10 +5,14 @@ import { ModalHost } from './ModalHost.tsx';
 import { useSettingsStore, SETTINGS_DEFAULTS } from '../stores/settings.ts';
 import { useModalStore } from '../stores/modal.ts';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
+import { useFolderStylesStore } from '../stores/folderStyles.ts';
+import { useOperationsStore } from '../stores/operations.ts';
 
 beforeEach(() => {
   useSettingsStore.setState({ ...SETTINGS_DEFAULTS, hydrated: true });
   useModalStore.setState({ active: null });
+  useFolderStylesStore.setState({ styles: [{ dateAdded: 1, color: 'red' }], hydrated: true });
+  useOperationsStore.setState({ bookmarkMutationBusy: false, cleanupBusy: false, cleanupStatus: '' });
   useBookmarksStore.setState({
     tree: [],
     recent: [],
@@ -27,7 +31,10 @@ beforeEach(() => {
         clear: vi.fn((cb: () => void) => cb()),
         get: vi.fn((_keys: string[], cb: (value: object) => void) => cb({})),
       },
-      sync: { remove: vi.fn() },
+      sync: {
+        get: vi.fn((_keys: string[], cb: (values: object) => void) => cb({ folderStyles: [{ dateAdded: 1, color: 'red' }] })),
+        remove: vi.fn((_keys: string | string[], cb?: () => void) => cb?.()),
+      },
     },
   });
 });
@@ -74,5 +81,20 @@ describe('SettingsView', () => {
     fireEvent.click(await screen.findByText('Restore'));
     await vi.waitFor(() => expect(chrome.storage.local.clear).toHaveBeenCalled());
     await vi.waitFor(() => expect(useBookmarksStore.getState().expandedFolderIds.size).toBe(0));
+  });
+
+  it('Reset Folder Styles clears the synced style list under the mutation lock', async () => {
+    render(
+      <>
+        <SettingsView />
+        <ModalHost />
+      </>
+    );
+    fireEvent.click(screen.getByText('Reset Folder Styles'));
+    fireEvent.click(await screen.findByText('Reset'));
+
+    await vi.waitFor(() => expect(chrome.storage.sync.remove).toHaveBeenCalledWith('folderStyles', expect.any(Function)));
+    expect(useFolderStylesStore.getState().styles).toEqual([]);
+    expect(useOperationsStore.getState().bookmarkMutationBusy).toBe(false);
   });
 });

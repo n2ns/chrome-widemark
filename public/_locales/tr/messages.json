@@ -1,0 +1,595 @@
+{
+  "manifest_name": {
+    "message": "WideMark: Yer İmleri Yan Paneli"
+  },
+  "manifest_short_name": {
+    "message": "WideMark"
+  },
+  "manifest_description": {
+    "message": "Chrome yan paneli için kompakt yer imi yöneticisi. Yer imlerini arayın, düzenleyin, klasörleri biçimlendirin ve yinelenenleri bulun."
+  },
+  "manifest_command_open": {
+    "message": "WideMark yan panelini aç"
+  },
+  "manifest_action_open": {
+    "message": "WideMark'ı aç"
+  },
+  "common_actions": {
+    "message": "Eylemler"
+  },
+  "common_settings": {
+    "message": "Ayarlar"
+  },
+  "common_help": {
+    "message": "Yardım"
+  },
+  "common_error": { "message": "Hata" },
+  "common_storage_error": { "message": "Değişiklikler Chrome depolama alanına kaydedilemedi. Lütfen yeniden deneyin." },
+  "common_delete": {
+    "message": "Sil"
+  },
+  "common_cancel": {
+    "message": "İptal"
+  },
+  "common_save": {
+    "message": "Kaydet"
+  },
+  "common_ok": {
+    "message": "Tamam"
+  },
+  "common_confirm": {
+    "message": "Onayla"
+  },
+  "common_reset": {
+    "message": "Sıfırla"
+  },
+  "common_restore": {
+    "message": "Geri yükle"
+  },
+  "common_sort": {
+    "message": "Sırala"
+  },
+  "common_merge": {
+    "message": "Birleştir"
+  },
+  "common_default": {
+    "message": "Varsayılan"
+  },
+  "common_bookmarks": {
+    "message": "Yer İmleri"
+  },
+  "common_docs": {
+    "message": "Belgeler"
+  },
+  "toolbar_toggle_search": {
+    "message": "Aramayı aç/kapat"
+  },
+  "toolbar_expand_all": {
+    "message": "Tüm klasörleri genişlet"
+  },
+  "toolbar_collapse_all": {
+    "message": "Tüm klasörleri daralt"
+  },
+  "toolbar_search_placeholder": {
+    "message": "Yer imlerinde ara..."
+  },
+  "toolbar_clear_search": {
+    "message": "Aramayı temizle"
+  },
+  "tree_recently_added": {
+    "message": "Son Eklenenler"
+  },
+  "tree_loading": {
+    "message": "Yer imleri yükleniyor..."
+  },
+  "tree_result_count_one": {
+    "message": "$COUNT$ sonuç",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "tree_result_count_other": {
+    "message": "$COUNT$ sonuç",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "tree_empty_all": {
+    "message": "Henüz yer imi yok."
+  },
+  "tree_empty_bar": {
+    "message": "Yer İmleri Çubuğunda yer imi yok."
+  },
+  "settings_display": {
+    "message": "Görünüm"
+  },
+  "settings_theme": {
+    "message": "Tema"
+  },
+  "settings_sync_theme": {
+    "message": "Chrome / Sistem Temasıyla Eşitle"
+  },
+  "settings_show_other": {
+    "message": "Diğer Yer İmlerini Göster"
+  },
+  "settings_show_recent": {
+    "message": "Son Eklenenler Bölümünü Göster"
+  },
+  "settings_font_size": {
+    "message": "Yazı Tipi Boyutu"
+  },
+  "settings_font_family": {
+    "message": "Yazı Tipi"
+  },
+  "settings_row_spacing": {
+    "message": "Satır Aralığı"
+  },
+  "settings_ui_zoom": {
+    "message": "Arayüz Yakınlaştırma Düzeyi"
+  },
+  "settings_behavior": {
+    "message": "Davranış"
+  },
+  "settings_left_click": {
+    "message": "Sol Tıklama Eylemi"
+  },
+  "settings_drag_protection": {
+    "message": "Sürükleme Koruması (yeniden sıralamayı devre dışı bırak)"
+  },
+  "settings_tooltips": {
+    "message": "URL Üzerine Gelme İpuçlarını Etkinleştir"
+  },
+  "settings_system": {
+    "message": "Sistem"
+  },
+  "settings_reset_styles": {
+    "message": "Klasör Stillerini Sıfırla"
+  },
+  "settings_reset_styles_message": {
+    "message": "Tüm özel klasör renkleri ve simgeleri kaldırılsın mı? Bu işlem geri alınamaz."
+  },
+  "settings_restore_defaults": {
+    "message": "Varsayılanları Geri Yükle"
+  },
+  "settings_restore_defaults_message": {
+    "message": "Tüm ayarlar varsayılan değerlerine sıfırlansın mı?"
+  },
+  "option_theme_light": {
+    "message": "Açık"
+  },
+  "option_theme_dark": {
+    "message": "Koyu"
+  },
+  "option_theme_blue_gray": {
+    "message": "Mavi Gri"
+  },
+  "option_theme_graphite": {
+    "message": "Grafit"
+  },
+  "option_theme_slate": {
+    "message": "Arduvaz"
+  },
+  "option_theme_olive": {
+    "message": "Zeytin"
+  },
+  "option_theme_sepia": {
+    "message": "Sepya"
+  },
+  "option_font_small": {
+    "message": "Küçük (12px)"
+  },
+  "option_font_medium": {
+    "message": "Orta (14px)"
+  },
+  "option_font_large": {
+    "message": "Büyük (16px)"
+  },
+  "option_font_extra_large": {
+    "message": "Çok Büyük (18px)"
+  },
+  "option_font_system": {
+    "message": "Sistem Varsayılanı"
+  },
+  "option_font_sans": {
+    "message": "Sans Serif (YaHei / Arial)"
+  },
+  "option_font_serif": {
+    "message": "Serif (SimSun / Georgia)"
+  },
+  "option_font_mono": {
+    "message": "Eş Aralıklı (Consolas / Courier)"
+  },
+  "option_spacing_compact": {
+    "message": "Sıkı"
+  },
+  "option_spacing_medium": {
+    "message": "Standart"
+  },
+  "option_spacing_relaxed": {
+    "message": "Rahat"
+  },
+  "option_open_current": {
+    "message": "Geçerli Sekmede Aç"
+  },
+  "option_open_foreground": {
+    "message": "Yeni Sekmede Aç ve Etkinleştir"
+  },
+  "option_open_background": {
+    "message": "Yeni Sekmede Aç (arka planda)"
+  },
+  "actions_duplicate_urls": {
+    "message": "Yinelenen URL’ler"
+  },
+  "actions_same_domain": {
+    "message": "Aynı Alan Adı"
+  },
+  "actions_checking": {
+    "message": "Kontrol ediliyor..."
+  },
+  "actions_unable_load": {
+    "message": "Yer imleri yüklenemedi."
+  },
+  "actions_nothing_to_check": {
+    "message": "Kontrol edilecek yer imi yok."
+  },
+  "actions_checking_urls": {
+    "message": "Yinelenen URL’ler kontrol ediliyor ($CHECKED$/$TOTAL$)...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_checking_domains": {
+    "message": "Aynı alan adına sahip yer imleri kontrol ediliyor ($CHECKED$/$TOTAL$)...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_check_complete_one": {
+    "message": "Yinelenen kontrolü tamamlandı. $COUNT$ yer imi kontrol edildi.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_check_complete_other": {
+    "message": "Yinelenen kontrolü tamamlandı. $COUNT$ yer imi kontrol edildi.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "450"
+      }
+    }
+  },
+  "actions_delete_bookmark": {
+    "message": "Yer İmini Sil"
+  },
+  "actions_delete_bookmark_message": {
+    "message": "“$TITLE$” silinsin mi?",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "actions_no_empty_folders": {
+    "message": "Boş klasör bulunamadı."
+  },
+  "actions_delete_empty_folders": {
+    "message": "Boş Klasörleri Sil"
+  },
+  "actions_delete_empty_one": {
+    "message": "$COUNT$ boş klasör silinsin mi? ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Empty"
+      }
+    }
+  },
+  "actions_delete_empty_other": {
+    "message": "$COUNT$ boş klasör silinsin mi? ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Work / Empty, Personal / Empty"
+      }
+    }
+  },
+  "actions_removed_empty_one": {
+    "message": "$COUNT$ boş klasör kaldırıldı.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_removed_empty_other": {
+    "message": "$COUNT$ boş klasör kaldırıldı.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_same_named": {
+    "message": "Aynı düzeyde aynı adlı klasör bulunamadı."
+  },
+  "actions_merge_same_named": {
+    "message": "Aynı Adlı Klasörleri Birleştir"
+  },
+  "actions_merge_groups_one": {
+    "message": "Aynı düzeydeki aynı adlı $COUNT$ klasör grubu birleştirilsin mi? İçerik grubun ilk klasöründe birleştirilir. ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work"
+      }
+    }
+  },
+  "actions_merge_groups_other": {
+    "message": "Aynı düzeydeki aynı adlı $COUNT$ klasör grubu birleştirilsin mi? İçerik her grubun ilk klasöründe birleştirilir. ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work, Other Bookmarks / News"
+      }
+    }
+  },
+  "actions_merged_folders_one": {
+    "message": "$COUNT$ klasör birleştirildi.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_merged_folders_other": {
+    "message": "$COUNT$ klasör birleştirildi.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_duplicates": {
+    "message": "Yinelenen yer imi bulunamadı."
+  },
+  "actions_local_only_note": {
+    "message": "Bu kontrol yalnızca yerel yer imi URL’lerini inceler ve web siteleriyle iletişim kurmaz."
+  },
+  "actions_cleanup": {
+    "message": "Temizleme"
+  },
+  "actions_empty_folders": {
+    "message": "Boş Klasörler"
+  },
+  "actions_merge_folders": {
+    "message": "Klasörleri Birleştir"
+  },
+  "context_add_bookmark": {
+    "message": "Yer İmi Ekle"
+  },
+  "context_add_folder": {
+    "message": "Klasör Ekle"
+  },
+  "context_sort_by_name": {
+    "message": "Ada Göre Sırala"
+  },
+  "context_rename_edit": {
+    "message": "Yeniden Adlandır / Düzenle"
+  },
+  "context_folder_style": {
+    "message": "Klasör Stili"
+  },
+  "context_sort_message": {
+    "message": "“$FOLDER$” içeriği alfabetik olarak (önce klasörler) sıralansın mı? Bu işlem yer imlerini kalıcı olarak yeniden sıralar.",
+    "placeholders": {
+      "folder": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "context_this_folder": {
+    "message": "bu klasör"
+  },
+  "context_edit_bookmark": {
+    "message": "Yer İmini Düzenle"
+  },
+  "context_rename_folder": {
+    "message": "Klasörü Yeniden Adlandır"
+  },
+  "context_delete_confirmation": {
+    "message": "Silmeyi Onayla"
+  },
+  "context_delete_bookmark_message": {
+    "message": "“$TITLE$” yer imini silmek istediğinizden emin misiniz?",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "context_delete_folder_message": {
+    "message": "“$TITLE$” klasörünü ve tüm içeriğini silmek istediğinizden emin misiniz?",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "modal_name": {
+    "message": "Ad"
+  },
+  "modal_name_placeholder": {
+    "message": "Ad girin..."
+  },
+  "modal_url": {
+    "message": "URL"
+  },
+  "modal_folder_color": {
+    "message": "Klasör Rengi"
+  },
+  "modal_folder_icon": {
+    "message": "Klasör Simgesi"
+  },
+  "modal_name_required": {
+    "message": "Ad boş bırakılamaz."
+  },
+  "modal_url_required": {
+    "message": "URL boş bırakılamaz."
+  },
+  "color_red": {
+    "message": "Kırmızı"
+  },
+  "color_orange": {
+    "message": "Turuncu"
+  },
+  "color_yellow": {
+    "message": "Sarı"
+  },
+  "color_green": {
+    "message": "Yeşil"
+  },
+  "color_blue": {
+    "message": "Mavi"
+  },
+  "color_purple": {
+    "message": "Mor"
+  },
+  "color_pink": {
+    "message": "Pembe"
+  },
+  "icon_code": {
+    "message": "Kod"
+  },
+  "icon_document": {
+    "message": "Belge"
+  },
+  "icon_star": {
+    "message": "Yıldız"
+  },
+  "icon_heart": {
+    "message": "Favori"
+  },
+  "icon_lock": {
+    "message": "Özel"
+  },
+  "help_about": {
+    "message": "Hakkında"
+  },
+  "help_built_by": {
+    "message": "Geliştiren"
+  },
+  "help_basics": {
+    "message": "Temel Bilgiler"
+  },
+  "help_basics_folder": {
+    "message": "Bir klasörü genişletmek veya daraltmak için tıklayın."
+  },
+  "help_basics_search": {
+    "message": "Yer imlerini başlığa veya URL’ye göre filtrelemek için arama düğmesini kullanın (veya “/” tuşuna basın)."
+  },
+  "help_basics_background": {
+    "message": "Ctrl ile tıklama veya orta tıklama, yer imini arka plandaki bir sekmede açar."
+  },
+  "help_basics_keyboard": {
+    "message": "Ok tuşları ağaçta hareket eder; Enter seçili öğeyi açar."
+  },
+  "help_basics_shortcut": {
+    "message": "WideMark'ı herhangi bir sayfadan açmak için Alt+B tuşlarına basın (chrome://extensions/shortcuts adresinden yapılandırılabilir)."
+  },
+  "help_organize": {
+    "message": "Düzenleme"
+  },
+  "help_organize_menu": {
+    "message": "Öğe eklemek, yeniden adlandırmak, düzenlemek veya silmek için klasöre ya da yer imine sağ tıklayın."
+  },
+  "help_organize_sort": {
+    "message": "İçeriği sıralamak için klasöre sağ tıklayıp “Ada Göre Sırala”yı seçin."
+  },
+  "help_organize_drag": {
+    "message": "Öğeleri yeniden sıralamak veya başka klasöre taşımak için sürükleyin."
+  },
+  "help_organize_styles": {
+    "message": "Klasör stili meta verileri Chrome Sync'te saklanır."
+  },
+  "help_actions_duplicates": {
+    "message": "Yinelenen URL’leri veya aynı alan adına sahip yer imlerini yerel olarak bulun."
+  },
+  "help_actions_cleanup": {
+    "message": "Boş klasörleri silin ve aynı düzeydeki aynı adlı klasörleri birleştirin."
+  },
+  "help_actions_review": {
+    "message": "Silmeden önce klasör yollarını gözden geçirin."
+  },
+  "help_actions_confirm": {
+    "message": "Silme ve birleştirme işlemleri onay gerektirir."
+  },
+  "help_settings_adjust": {
+    "message": "Tema, yazı tipi boyutu, aralık, yakınlaştırma ve tıklama davranışını ayarlayın."
+  },
+  "help_settings_restore": {
+    "message": "Varsayılanları Geri Yükle yalnızca WideMark ayarlarını sıfırlar."
+  },
+  "help_privacy": {
+    "message": "Gizlilik"
+  },
+  "help_privacy_permissions": {
+    "message": "Hassas web sitesi ana makine izinleri yoktur."
+  },
+  "help_privacy_tracking": {
+    "message": "Kullanıcı verileri toplanmaz veya izlenmez."
+  },
+  "help_privacy_upload": {
+    "message": "Geliştiricinin sunucularına veri gönderilmez."
+  },
+  "help_privacy_local": {
+    "message": "Yer imleri ve yinelenen kontrolleri yerel olarak işlenir."
+  }
+}

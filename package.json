@@ -6,7 +6,8 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "typecheck:scripts": "tsc -p tsconfig.scripts.json --noEmit",
-    "check": "npm run typecheck && npm run typecheck:scripts",
+    "check:i18n": "node scripts/check-i18n.ts",
+    "check": "npm run typecheck && npm run typecheck:scripts && npm run check:i18n",
     "dev": "vite",
     "build": "vite build",
     "build:sync": "npm run build && ./scripts/sync-to-windows.sh",

@@ -3,6 +3,7 @@ import { useSettingsStore } from '../stores/settings.ts';
 import { useUiStore } from '../stores/ui.ts';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { gatherFolderIds, getVisibleRoots } from '../lib/tree-logic.ts';
+import { t } from '../lib/i18n.ts';
 
 // Raw SVG markup carried over from the original header; rendered as trusted
 // inline icons (our own strings, no user input).
@@ -61,13 +62,13 @@ export function Toolbar() {
         <div className="header-actions">
           {view === 'main' && (
             <>
-              <IconButton svg={SVG.search} title="Toggle Search" onClick={() => setSetting('isSearchOpen', !isSearchOpen)} />
-              <IconButton svg={SVG.expand} title={allFoldersExpanded ? 'Collapse all folders' : 'Expand all folders'} onClick={toggleAll} />
+              <IconButton svg={SVG.search} title={t('toolbar_toggle_search')} onClick={() => setSetting('isSearchOpen', !isSearchOpen)} />
+              <IconButton svg={SVG.expand} title={t(allFoldersExpanded ? 'toolbar_collapse_all' : 'toolbar_expand_all')} onClick={toggleAll} />
             </>
           )}
-          <IconButton svg={SVG.actions} title="Actions" onClick={() => toggleView('actions')} />
-          <IconButton svg={SVG.settings} title="Settings" onClick={() => toggleView('settings')} />
-          <IconButton svg={SVG.help} title="Help" onClick={() => toggleView('help')} />
+          <IconButton svg={SVG.actions} title={t('common_actions')} onClick={() => toggleView('actions')} />
+          <IconButton svg={SVG.settings} title={t('common_settings')} onClick={() => toggleView('settings')} />
+          <IconButton svg={SVG.help} title={t('common_help')} onClick={() => toggleView('help')} />
         </div>
       </div>
       {isSearchOpen && view === 'main' && (
@@ -75,14 +76,14 @@ export function Toolbar() {
           <input
             type="text"
             id="search-input"
-            placeholder="Search bookmarks..."
+            placeholder={t('toolbar_search_placeholder')}
             autoComplete="off"
             autoFocus
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
           />
           {searchQuery && (
-            <button className="clear-btn" title="Clear search" onClick={() => setSearchQuery('')}>
+            <button className="clear-btn" title={t('toolbar_clear_search')} onClick={() => setSearchQuery('')}>
               ✕
             </button>
           )}

@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0] - 2026-07-22
 
+### Added
+- Added native Chrome localization for English, Spanish, German, French,
+  Simplified Chinese, Traditional Chinese, Japanese, Korean, Turkish, and Vietnamese.
+- Added automated locale/placeholder/Manifest-length validation and localized
+  number and plural formatting.
+
+### Changed
+- Folder style metadata remains a simple Chrome Sync list and follows folders
+  across normal rename and move operations.
+- Disclosed clearly in the UI, privacy policy, and store copy that folder style
+  metadata is synchronized by Chrome Sync and is not received by developer servers.
+- CI now builds and inspects the packaged extension. The release workflow checks
+  package/Manifest/tag versions, uses least privilege and a protected environment,
+  serializes deployments, and pins Actions to full commit SHAs.
+- Raised the minimum Chrome version to 116 to match the side-panel shortcut API.
+
+### Fixed
+- Empty-folder cleanup now atomically refuses to delete folders that gained content.
+- Bookmark writes and cleanup jobs are serialized across extension panels with the
+  Web Locks API; scans cancel cleanly when their view unmounts.
+- Collapsed folder descendants are no longer mounted, large folders are no longer
+  clipped, and tree/menu/dialog keyboard focus and ARIA behavior were improved.
+- Settings and folder-style reloads no longer allow older asynchronous reads to
+  overwrite newer local or cross-window changes.
+
+## [1.2.0] - 2026-07-22
+
 ### Internal
 - Rewrote the UI on **React 19 + Zustand**, bundled by **Vite** with
   `@crxjs/vite-plugin` (replacing the vanilla-DOM controllers and the
@@ -15,16 +42,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   bundle carries no source maps. No user-facing behavior change intended. See
   [docs/REACT_MIGRATION.md](docs/REACT_MIGRATION.md).
 - Migrated the source from vanilla ES5-style UMD scripts to TypeScript. Modules
-  are now native ES modules (a single `type="module"` panel entry) compiled by
-  `tsc` into `build/` — no bundler. Type checking runs under `strict`,
+  are bundled into `build/` by Vite, while `tsc` performs strict type checking.
+  Type checking runs under `strict`,
   `noUncheckedIndexedAccess`, and the `noUnused*`/`noImplicitReturns`/
   `noFallthroughCasesInSwitch`/`noImplicitOverride` flags. Requires Node >=24
   (`engines`). No user-facing behavior change.
 - The build/packaging scripts (`scripts/*.ts`) are TypeScript too, type-checked
   by a separate Node-targeted `tsconfig.scripts.json` and run directly via
-  Node's `.ts` execution. A `ci.yml` workflow type-checks and tests on push/PR.
-- Development now loads the compiled `build/` directory as the unpacked
-  extension (`npm run compile`); the packaged zip ships transpiled JS. See
+  Node's `.ts` execution. A `ci.yml` workflow type-checks, tests, builds, and
+  validates the packaged ZIP on push/PR.
+- Development now loads the bundled `build/` directory as the unpacked
+  extension (`npm run build`); the packaged zip ships the Vite output. See
   [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) and
   [docs/TYPESCRIPT_MIGRATION.md](docs/TYPESCRIPT_MIGRATION.md).
 
@@ -42,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ISC LICENSE file.
 
 ### Changed
-- Folder styles are now identified by the folder's creation time (dateAdded), which Chrome bookmark sync transports verbatim, so styles follow folders across synced devices and survive renames and moves; styles are written only on explicit user edits.
+- Folder styles are identified by the folder's creation time (`dateAdded`) so they survive normal renames and moves; styles are written only on explicit user edits.
 - Bookmark events, storage sync updates, and import end now refresh an active search in place instead of replacing it with the tree; per-node re-renders are suppressed during imports and batch operations.
 - Policy-managed (enterprise) bookmarks are excluded from cleanup, sorting, editing, and drag and drop.
 

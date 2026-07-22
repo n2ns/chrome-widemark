@@ -6,7 +6,11 @@ import type { BookmarkNode } from '../types.ts';
 export interface NavigableNode {
   focusKey: string;
   node: BookmarkNode;
+  kind?: 'recent-header';
+  parentFocusKey?: string;
 }
+
+const RECENT_HEADER_NODE = { id: 'widemark:recent-header', title: 'Recently Added', children: [] } as unknown as BookmarkNode;
 
 // The nodes in the order their rows appear on screen, respecting folder
 // expansion — used for arrow-key navigation. Mirrors BookmarkTree's render:
@@ -58,10 +62,27 @@ export function getNavigableNodes({
     return searchBookmarks(tree, searchQuery).map((node) => ({ focusKey: `search:${node.id}`, node }));
   }
 
-  const recentNodes = showRecent && recentExpanded
-    ? recent.map((node) => ({ focusKey: `recent:${node.id}`, node }))
+  const recentNodes = showRecent && recent.length > 0
+    ? [
+        { focusKey: 'recent:header', node: RECENT_HEADER_NODE, kind: 'recent-header' as const },
+        ...(recentExpanded ? recent.map((node) => ({ focusKey: `recent:${node.id}`, node, parentFocusKey: 'recent:header' })) : []),
+      ]
     : [];
-  const treeNodes = flattenVisibleNodes(tree, showOtherBookmarks, expandedFolderIds)
-    .map((node) => ({ focusKey: node.id, node }));
+  const flatNodes = flattenVisibleNodes(tree, showOtherBookmarks, expandedFolderIds);
+  const visibleIds = new Set(flatNodes.map((node) => node.id));
+  const parentById = new Map<string, string>();
+  const walkParents = (nodes: BookmarkNode[]) => nodes.forEach((node) => {
+    node.children?.forEach((child) => parentById.set(child.id, node.id));
+    if (node.children) walkParents(node.children);
+  });
+  walkParents(tree);
+  const treeNodes = flatNodes.map((node) => {
+    const parentId = parentById.get(node.id);
+    return {
+      focusKey: node.id,
+      node,
+      ...(parentId && visibleIds.has(parentId) ? { parentFocusKey: parentId } : {}),
+    };
+  });
   return [...recentNodes, ...treeNodes];
 }

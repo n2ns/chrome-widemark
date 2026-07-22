@@ -1,12 +1,31 @@
 import { useState, type DragEvent } from 'react';
 import { useSettingsStore } from '../stores/settings.ts';
+import { useOperationsStore } from '../stores/operations.ts';
 import { determineDropPosition, hasTransferType, extractLinkInfo } from '../lib/tree-logic.ts';
 import { computeMoveDestination, isPermanentFolder } from '../lib/bookmark-utils.ts';
+import { withGlobalBookmarkMutation } from '../lib/bookmark-mutation-lock.ts';
 import type { BookmarkNode } from '../types.ts';
 
 // The node currently being dragged, shared across rows (module-level, no
 // re-render needed — the dragged row shows its own `dragging` class locally).
 let draggedId: string | null = null;
+let clearDraggedRow: (() => void) | null = null;
+
+function resetActiveDrag() {
+  draggedId = null;
+  const clear = clearDraggedRow;
+  clearDraggedRow = null;
+  clear?.();
+}
+
+function readBookmarkNode(id: string): Promise<BookmarkNode> {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.get(id, (nodes) => {
+      if (chrome.runtime.lastError || !nodes[0]) reject(new Error(chrome.runtime.lastError?.message ?? 'Bookmark not found'));
+      else resolve(nodes[0]);
+    });
+  });
+}
 
 export interface NodeDragProps {
   draggable: boolean;
@@ -22,12 +41,13 @@ export interface NodeDragProps {
 
 export function useNodeDrag(node: BookmarkNode): NodeDragProps {
   const dragProtection = useSettingsStore((s) => s.dragProtectionEnabled);
+  const mutationBusy = useOperationsStore((s) => s.bookmarkMutationBusy);
   const [dragging, setDragging] = useState(false);
   const [indicator, setIndicator] = useState('');
 
   // Managed (policy) nodes reject all bookmarks-API writes: not draggable, not
   // a drop target.
-  if (node.unmodifiable) {
+  if (node.unmodifiable || mutationBusy) {
     return { draggable: false, dragClass: '', handlers: {} };
   }
 
@@ -45,7 +65,12 @@ export function useNodeDrag(node: BookmarkNode): NodeDragProps {
       event.preventDefault();
       return;
     }
+    resetActiveDrag();
     draggedId = node.id;
+    clearDraggedRow = () => {
+      setDragging(false);
+      setIndicator('');
+    };
     event.dataTransfer.setData('text/plain', node.id);
     event.dataTransfer.setData('application/x-bookmark-id', node.id);
     setDragging(true);
@@ -53,10 +78,7 @@ export function useNodeDrag(node: BookmarkNode): NodeDragProps {
   };
 
   const onDragEnd = (event: DragEvent) => {
-    if (dragProtection) return;
-    draggedId = null;
-    setDragging(false);
-    setIndicator('');
+    resetActiveDrag();
     event.stopPropagation();
   };
 
@@ -86,16 +108,34 @@ export function useNodeDrag(node: BookmarkNode): NodeDragProps {
 
     if (hasTransferType(event.dataTransfer, 'application/x-bookmark-id')) {
       const sourceId = event.dataTransfer.getData('application/x-bookmark-id') || draggedId;
+      resetActiveDrag();
       if (!sourceId || sourceId === node.id) return;
-      const dest = computeMoveDestination(node, pos);
-      chrome.bookmarks.move(sourceId, dest);
+      const operations = useOperationsStore.getState();
+      if (!operations.tryBeginMutation()) return;
+      void withGlobalBookmarkMutation(async () => {
+        const latestTarget = await readBookmarkNode(node.id);
+        const dest = computeMoveDestination(latestTarget, pos);
+        await new Promise<void>((resolve) => {
+          chrome.bookmarks.move(sourceId, dest, () => resolve());
+        });
+      }).catch(() => undefined).finally(() => operations.finishMutation());
       return;
     }
 
     const link = extractLinkInfo(event.dataTransfer);
     if (!link) return;
-    const dest = computeMoveDestination(node, pos);
-    chrome.bookmarks.create({ parentId: dest.parentId, index: dest.index, title: link.title, url: link.url });
+    const operations = useOperationsStore.getState();
+    if (!operations.tryBeginMutation()) return;
+    void withGlobalBookmarkMutation(async () => {
+      const latestTarget = await readBookmarkNode(node.id);
+      const dest = computeMoveDestination(latestTarget, pos);
+      await new Promise<void>((resolve) => {
+      chrome.bookmarks.create(
+        { parentId: dest.parentId, index: dest.index, title: link.title, url: link.url },
+        () => resolve()
+      );
+      });
+    }).catch(() => undefined).finally(() => operations.finishMutation());
   };
 
   const dragClass = `${dragging ? ' dragging' : ''}${indicator ? ` ${indicator}` : ''}`;

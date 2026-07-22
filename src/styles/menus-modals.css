@@ -7,6 +7,9 @@
   box-shadow: var(--shadow-md);
   padding: 6px;
   min-width: 150px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -212,9 +215,11 @@
   outline: 1px solid var(--border);
   outline-offset: 1px;
   transition: outline-color var(--transition-speed), box-shadow var(--transition-speed);
+  padding: 0;
 }
 
-.color-badge:hover {
+.color-badge:hover,
+.color-badge:focus-visible {
   outline-color: var(--accent);
 }
 
@@ -245,9 +250,12 @@
   align-items: center;
   transition: background-color var(--transition-speed), border-color var(--transition-speed), color var(--transition-speed);
   user-select: none;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
 }
 
-.icon-badge:hover {
+.icon-badge:hover,
+.icon-badge:focus-visible {
   background-color: var(--bg-hover);
   border-color: var(--accent);
 }

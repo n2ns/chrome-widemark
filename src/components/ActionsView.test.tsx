@@ -3,6 +3,7 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { ActionsView } from './ActionsView.tsx';
 import { ModalHost } from './ModalHost.tsx';
 import { useModalStore } from '../stores/modal.ts';
+import { useOperationsStore } from '../stores/operations.ts';
 
 const treeWithDupes = [
   {
@@ -23,6 +24,7 @@ const treeWithDupes = [
 
 beforeEach(() => {
   useModalStore.setState({ active: null });
+  useOperationsStore.setState({ bookmarkMutationBusy: false, cleanupBusy: false, cleanupStatus: '' });
   vi.stubGlobal('chrome', {
     bookmarks: {
       getTree: vi.fn((cb: (t: unknown[]) => void) => cb(treeWithDupes)),
@@ -60,5 +62,39 @@ describe('ActionsView', () => {
     );
     fireEvent.click(screen.getByText('Empty Folders'));
     expect(await screen.findByText('No empty folders found.')).toBeInTheDocument();
+  });
+
+  it('does not offer deletion for a managed duplicate bookmark', async () => {
+    const managedTree = structuredClone(treeWithDupes) as unknown as chrome.bookmarks.BookmarkTreeNode[];
+    managedTree[0]!.children![0]!.children![0]!.unmodifiable = 'managed';
+    vi.mocked(chrome.bookmarks.getTree).mockImplementation((cb) => cb!(managedTree));
+    render(<ActionsView />);
+
+    fireEvent.click(screen.getByText('Duplicate URLs'));
+
+    const managedItem = (await screen.findByText('GitHub')).closest('.duplicate-item')!;
+    expect(managedItem.querySelector('.duplicate-btn-delete')).toBeNull();
+    expect(screen.getAllByTitle('Delete')).toHaveLength(1);
+  });
+
+  it('reports a bookmark deletion failure instead of treating it as success', async () => {
+    vi.mocked(chrome.bookmarks.remove).mockImplementation((_id, cb) => {
+      Object.defineProperty(chrome.runtime, 'lastError', { configurable: true, value: { message: 'Remove failed' } });
+      cb?.();
+      Object.defineProperty(chrome.runtime, 'lastError', { configurable: true, value: undefined });
+    });
+    render(
+      <>
+        <ActionsView />
+        <ModalHost />
+      </>
+    );
+    fireEvent.click(screen.getByText('Duplicate URLs'));
+    await screen.findByText('GitHub');
+    fireEvent.click(screen.getAllByTitle('Delete')[0]!);
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+
+    expect(await screen.findByText('Error')).toBeInTheDocument();
+    expect(chrome.bookmarks.getTree).toHaveBeenCalledTimes(1);
   });
 });

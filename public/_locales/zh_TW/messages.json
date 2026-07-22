@@ -1,0 +1,595 @@
+{
+  "manifest_name": {
+    "message": "WideMark：書籤側邊欄"
+  },
+  "manifest_short_name": {
+    "message": "WideMark"
+  },
+  "manifest_description": {
+    "message": "Chrome 側邊欄中的輕量書籤管理器。可在本機瀏覽、搜尋、整理書籤，自訂資料夾樣式並尋找重複項目。"
+  },
+  "manifest_command_open": {
+    "message": "開啟 WideMark 側邊欄"
+  },
+  "manifest_action_open": {
+    "message": "開啟 WideMark"
+  },
+  "common_actions": {
+    "message": "操作"
+  },
+  "common_settings": {
+    "message": "設定"
+  },
+  "common_help": {
+    "message": "說明"
+  },
+  "common_error": { "message": "錯誤" },
+  "common_storage_error": { "message": "無法將變更儲存至 Chrome 儲存空間，請再試一次。" },
+  "common_delete": {
+    "message": "刪除"
+  },
+  "common_cancel": {
+    "message": "取消"
+  },
+  "common_save": {
+    "message": "儲存"
+  },
+  "common_ok": {
+    "message": "確定"
+  },
+  "common_confirm": {
+    "message": "確認"
+  },
+  "common_reset": {
+    "message": "重設"
+  },
+  "common_restore": {
+    "message": "還原"
+  },
+  "common_sort": {
+    "message": "排序"
+  },
+  "common_merge": {
+    "message": "合併"
+  },
+  "common_default": {
+    "message": "預設"
+  },
+  "common_bookmarks": {
+    "message": "書籤"
+  },
+  "common_docs": {
+    "message": "文件"
+  },
+  "toolbar_toggle_search": {
+    "message": "顯示或隱藏搜尋"
+  },
+  "toolbar_expand_all": {
+    "message": "展開所有資料夾"
+  },
+  "toolbar_collapse_all": {
+    "message": "收合所有資料夾"
+  },
+  "toolbar_search_placeholder": {
+    "message": "搜尋書籤..."
+  },
+  "toolbar_clear_search": {
+    "message": "清除搜尋"
+  },
+  "tree_recently_added": {
+    "message": "最近新增"
+  },
+  "tree_loading": {
+    "message": "正在載入書籤..."
+  },
+  "tree_result_count_one": {
+    "message": "$COUNT$ 個結果",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "tree_result_count_other": {
+    "message": "$COUNT$ 個結果",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "tree_empty_all": {
+    "message": "目前沒有書籤。"
+  },
+  "tree_empty_bar": {
+    "message": "書籤列中沒有書籤。"
+  },
+  "settings_display": {
+    "message": "顯示"
+  },
+  "settings_theme": {
+    "message": "主題"
+  },
+  "settings_sync_theme": {
+    "message": "跟隨 Chrome / 系統主題"
+  },
+  "settings_show_other": {
+    "message": "顯示其他書籤"
+  },
+  "settings_show_recent": {
+    "message": "顯示「最近新增」區段"
+  },
+  "settings_font_size": {
+    "message": "字型大小"
+  },
+  "settings_font_family": {
+    "message": "字型"
+  },
+  "settings_row_spacing": {
+    "message": "列間距"
+  },
+  "settings_ui_zoom": {
+    "message": "介面縮放"
+  },
+  "settings_behavior": {
+    "message": "行為"
+  },
+  "settings_left_click": {
+    "message": "按一下滑鼠左鍵的動作"
+  },
+  "settings_drag_protection": {
+    "message": "拖曳保護（禁止重新排序）"
+  },
+  "settings_tooltips": {
+    "message": "啟用 URL 游標暫留提示"
+  },
+  "settings_system": {
+    "message": "系統"
+  },
+  "settings_reset_styles": {
+    "message": "重設資料夾樣式"
+  },
+  "settings_reset_styles_message": {
+    "message": "要移除所有自訂資料夾顏色和圖示嗎？此操作無法復原。"
+  },
+  "settings_restore_defaults": {
+    "message": "還原預設設定"
+  },
+  "settings_restore_defaults_message": {
+    "message": "要將所有設定還原為預設值嗎？"
+  },
+  "option_theme_light": {
+    "message": "淺色"
+  },
+  "option_theme_dark": {
+    "message": "深色"
+  },
+  "option_theme_blue_gray": {
+    "message": "藍灰"
+  },
+  "option_theme_graphite": {
+    "message": "石墨"
+  },
+  "option_theme_slate": {
+    "message": "板岩"
+  },
+  "option_theme_olive": {
+    "message": "橄欖"
+  },
+  "option_theme_sepia": {
+    "message": "棕褐"
+  },
+  "option_font_small": {
+    "message": "小（12px）"
+  },
+  "option_font_medium": {
+    "message": "中（14px）"
+  },
+  "option_font_large": {
+    "message": "大（16px）"
+  },
+  "option_font_extra_large": {
+    "message": "特大（18px）"
+  },
+  "option_font_system": {
+    "message": "系統預設"
+  },
+  "option_font_sans": {
+    "message": "無襯線（微軟正黑體 / Arial）"
+  },
+  "option_font_serif": {
+    "message": "襯線（新細明體 / Georgia）"
+  },
+  "option_font_mono": {
+    "message": "等寬（Consolas / Courier）"
+  },
+  "option_spacing_compact": {
+    "message": "緊湊"
+  },
+  "option_spacing_medium": {
+    "message": "標準"
+  },
+  "option_spacing_relaxed": {
+    "message": "寬鬆"
+  },
+  "option_open_current": {
+    "message": "在目前分頁中開啟"
+  },
+  "option_open_foreground": {
+    "message": "在新分頁中開啟並切換過去"
+  },
+  "option_open_background": {
+    "message": "在背景新分頁中開啟"
+  },
+  "actions_duplicate_urls": {
+    "message": "重複 URL"
+  },
+  "actions_same_domain": {
+    "message": "相同網域"
+  },
+  "actions_checking": {
+    "message": "正在檢查..."
+  },
+  "actions_unable_load": {
+    "message": "無法載入書籤。"
+  },
+  "actions_nothing_to_check": {
+    "message": "沒有可檢查的書籤。"
+  },
+  "actions_checking_urls": {
+    "message": "正在檢查重複 URL（$CHECKED$/$TOTAL$）...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_checking_domains": {
+    "message": "正在檢查相同網域的書籤（$CHECKED$/$TOTAL$）...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_check_complete_one": {
+    "message": "重複項目檢查完成，共檢查 $COUNT$ 個書籤。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_check_complete_other": {
+    "message": "重複項目檢查完成，共檢查 $COUNT$ 個書籤。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "450"
+      }
+    }
+  },
+  "actions_delete_bookmark": {
+    "message": "刪除書籤"
+  },
+  "actions_delete_bookmark_message": {
+    "message": "要刪除「$TITLE$」嗎？",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "actions_no_empty_folders": {
+    "message": "找不到空資料夾。"
+  },
+  "actions_delete_empty_folders": {
+    "message": "刪除空資料夾"
+  },
+  "actions_delete_empty_one": {
+    "message": "要刪除 $COUNT$ 個空資料夾嗎？（$PREVIEW$）",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Empty"
+      }
+    }
+  },
+  "actions_delete_empty_other": {
+    "message": "要刪除 $COUNT$ 個空資料夾嗎？（$PREVIEW$）",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Work / Empty, Personal / Empty"
+      }
+    }
+  },
+  "actions_removed_empty_one": {
+    "message": "已刪除 $COUNT$ 個空資料夾。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_removed_empty_other": {
+    "message": "已刪除 $COUNT$ 個空資料夾。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_same_named": {
+    "message": "找不到同一層級中的同名資料夾。"
+  },
+  "actions_merge_same_named": {
+    "message": "合併同名資料夾"
+  },
+  "actions_merge_groups_one": {
+    "message": "要合併 $COUNT$ 組同一層級中的同名資料夾嗎？內容將合併到該組的第一個資料夾中。（$PREVIEW$）",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work"
+      }
+    }
+  },
+  "actions_merge_groups_other": {
+    "message": "要合併 $COUNT$ 組同一層級中的同名資料夾嗎？內容將合併到每組的第一個資料夾中。（$PREVIEW$）",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work, Other Bookmarks / News"
+      }
+    }
+  },
+  "actions_merged_folders_one": {
+    "message": "已合併 $COUNT$ 個資料夾。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_merged_folders_other": {
+    "message": "已合併 $COUNT$ 個資料夾。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_duplicates": {
+    "message": "找不到重複書籤。"
+  },
+  "actions_local_only_note": {
+    "message": "重複項目檢查只會在本機檢查書籤 URL，不會連線至任何網站。"
+  },
+  "actions_cleanup": {
+    "message": "清理"
+  },
+  "actions_empty_folders": {
+    "message": "空資料夾"
+  },
+  "actions_merge_folders": {
+    "message": "合併資料夾"
+  },
+  "context_add_bookmark": {
+    "message": "新增書籤"
+  },
+  "context_add_folder": {
+    "message": "新增資料夾"
+  },
+  "context_sort_by_name": {
+    "message": "依名稱排序"
+  },
+  "context_rename_edit": {
+    "message": "重新命名 / 編輯"
+  },
+  "context_folder_style": {
+    "message": "資料夾樣式"
+  },
+  "context_sort_message": {
+    "message": "要將「$FOLDER$」中的內容依字母順序排序（資料夾優先）嗎？這會永久變更書籤順序。",
+    "placeholders": {
+      "folder": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "context_this_folder": {
+    "message": "此資料夾"
+  },
+  "context_edit_bookmark": {
+    "message": "編輯書籤"
+  },
+  "context_rename_folder": {
+    "message": "重新命名資料夾"
+  },
+  "context_delete_confirmation": {
+    "message": "確認刪除"
+  },
+  "context_delete_bookmark_message": {
+    "message": "確定要刪除書籤「$TITLE$」嗎？",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "context_delete_folder_message": {
+    "message": "確定要刪除資料夾「$TITLE$」及其中的所有內容嗎？",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "modal_name": {
+    "message": "名稱"
+  },
+  "modal_name_placeholder": {
+    "message": "輸入名稱..."
+  },
+  "modal_url": {
+    "message": "URL"
+  },
+  "modal_folder_color": {
+    "message": "資料夾顏色"
+  },
+  "modal_folder_icon": {
+    "message": "資料夾圖示"
+  },
+  "modal_name_required": {
+    "message": "名稱不可留空。"
+  },
+  "modal_url_required": {
+    "message": "URL 不可留空。"
+  },
+  "color_red": {
+    "message": "紅色"
+  },
+  "color_orange": {
+    "message": "橙色"
+  },
+  "color_yellow": {
+    "message": "黃色"
+  },
+  "color_green": {
+    "message": "綠色"
+  },
+  "color_blue": {
+    "message": "藍色"
+  },
+  "color_purple": {
+    "message": "紫色"
+  },
+  "color_pink": {
+    "message": "粉紅色"
+  },
+  "icon_code": {
+    "message": "程式碼"
+  },
+  "icon_document": {
+    "message": "文件"
+  },
+  "icon_star": {
+    "message": "星號"
+  },
+  "icon_heart": {
+    "message": "最愛"
+  },
+  "icon_lock": {
+    "message": "私人"
+  },
+  "help_about": {
+    "message": "關於"
+  },
+  "help_built_by": {
+    "message": "開發者"
+  },
+  "help_basics": {
+    "message": "基本操作"
+  },
+  "help_basics_folder": {
+    "message": "按一下資料夾可將其展開或收合。"
+  },
+  "help_basics_search": {
+    "message": "使用搜尋按鈕（或按「/」鍵），可依標題或 URL 篩選書籤。"
+  },
+  "help_basics_background": {
+    "message": "按住 Ctrl 再按一下，或按滑鼠中鍵，可在背景分頁中開啟書籤。"
+  },
+  "help_basics_keyboard": {
+    "message": "使用方向鍵在樹狀結構中移動，按 Enter 鍵開啟所選項目。"
+  },
+  "help_basics_shortcut": {
+    "message": "在任何頁面按 Alt+B 可開啟 WideMark（可在 chrome://extensions/shortcuts 中設定）。"
+  },
+  "help_organize": {
+    "message": "整理"
+  },
+  "help_organize_menu": {
+    "message": "在資料夾或書籤上按一下滑鼠右鍵，可新增、重新命名、編輯或刪除項目。"
+  },
+  "help_organize_sort": {
+    "message": "在資料夾上按一下滑鼠右鍵並選擇「依名稱排序」，即可整理其中的內容。"
+  },
+  "help_organize_drag": {
+    "message": "拖曳項目可重新排序，或將其移至其他資料夾。"
+  },
+  "help_organize_styles": {
+    "message": "資料夾樣式中繼資料儲存在 Chrome Sync 中。"
+  },
+  "help_actions_duplicates": {
+    "message": "在本機尋找重複的書籤 URL 或相同網域的書籤。"
+  },
+  "help_actions_cleanup": {
+    "message": "刪除空資料夾，並合併同一層級中的同名資料夾。"
+  },
+  "help_actions_review": {
+    "message": "刪除前請檢查資料夾路徑。"
+  },
+  "help_actions_confirm": {
+    "message": "刪除和合併操作都需要確認。"
+  },
+  "help_settings_adjust": {
+    "message": "調整主題、字型大小、間距、縮放和點擊行為。"
+  },
+  "help_settings_restore": {
+    "message": "「還原預設設定」只會重設 WideMark 設定。"
+  },
+  "help_privacy": {
+    "message": "隱私權"
+  },
+  "help_privacy_permissions": {
+    "message": "不要求敏感的網站主機權限。"
+  },
+  "help_privacy_tracking": {
+    "message": "不收集或追蹤使用者資料。"
+  },
+  "help_privacy_upload": {
+    "message": "不會向開發者伺服器傳送資料。"
+  },
+  "help_privacy_local": {
+    "message": "書籤和重複項目檢查均在本機處理。"
+  }
+}

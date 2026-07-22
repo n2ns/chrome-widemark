@@ -3,44 +3,45 @@ import { useSettingsStore } from '../stores/settings.ts';
 import { useFolderStylesStore } from '../stores/folderStyles.ts';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { useModalStore } from '../stores/modal.ts';
+import { useOperationsStore } from '../stores/operations.ts';
+import { t } from '../lib/i18n.ts';
+import type { MessageKey } from '../lib/message-catalog.ts';
+import { clearFolderStyleRecords } from '../lib/folder-style-storage.ts';
+import { withGlobalBookmarkMutation } from '../lib/bookmark-mutation-lock.ts';
 
-const THEME_OPTIONS = [
-  ['light', 'Light'],
-  ['dark', 'Dark'],
-  ['one-dark-pro', 'Blue Gray'],
-  ['dracula', 'Graphite'],
-  ['github-dark', 'Slate'],
-  ['everforest', 'Olive'],
-  ['gruvbox', 'Sepia'],
+type SelectOption = { value: string; labelKey?: MessageKey; label?: string };
+
+const THEME_OPTIONS: SelectOption[] = [
+  { value: 'light', labelKey: 'option_theme_light' },
+  { value: 'dark', labelKey: 'option_theme_dark' },
+  { value: 'one-dark-pro', labelKey: 'option_theme_blue_gray' },
+  { value: 'dracula', labelKey: 'option_theme_graphite' },
+  { value: 'github-dark', labelKey: 'option_theme_slate' },
+  { value: 'everforest', labelKey: 'option_theme_olive' },
+  { value: 'gruvbox', labelKey: 'option_theme_sepia' },
 ];
-const FONT_SIZE_OPTIONS = [
-  ['12px', 'Small (12px)'],
-  ['14px', 'Medium (14px)'],
-  ['16px', 'Large (16px)'],
-  ['18px', 'Extra Large (18px)'],
+const FONT_SIZE_OPTIONS: SelectOption[] = [
+  { value: '12px', labelKey: 'option_font_small' },
+  { value: '14px', labelKey: 'option_font_medium' },
+  { value: '16px', labelKey: 'option_font_large' },
+  { value: '18px', labelKey: 'option_font_extra_large' },
 ];
-const FONT_FAMILY_OPTIONS = [
-  ['system', 'System Default'],
-  ['sans-serif', 'Sans-Serif (YaHei / Arial)'],
-  ['serif', 'Serif (SimSun / Georgia)'],
-  ['monospace', 'Monospace (Consolas / Courier)'],
+const FONT_FAMILY_OPTIONS: SelectOption[] = [
+  { value: 'system', labelKey: 'option_font_system' },
+  { value: 'sans-serif', labelKey: 'option_font_sans' },
+  { value: 'serif', labelKey: 'option_font_serif' },
+  { value: 'monospace', labelKey: 'option_font_mono' },
 ];
-const ROW_SPACING_OPTIONS = [
-  ['compact', 'Compact (Tight)'],
-  ['medium', 'Standard (Medium)'],
-  ['relaxed', 'Relaxed (Spacious)'],
+const ROW_SPACING_OPTIONS: SelectOption[] = [
+  { value: 'compact', labelKey: 'option_spacing_compact' },
+  { value: 'medium', labelKey: 'option_spacing_medium' },
+  { value: 'relaxed', labelKey: 'option_spacing_relaxed' },
 ];
-const UI_ZOOM_OPTIONS = [
-  ['80%', '80%'],
-  ['90%', '90%'],
-  ['100%', '100%'],
-  ['110%', '110%'],
-  ['120%', '120%'],
-];
-const LEFT_CLICK_OPTIONS = [
-  ['current', 'Open in Current Tab'],
-  ['new-foreground', 'Open in New Tab & Activate'],
-  ['new-background', 'Open in New Tab (Background)'],
+const UI_ZOOM_OPTIONS: SelectOption[] = ['80%', '90%', '100%', '110%', '120%'].map((value) => ({ value, label: value }));
+const LEFT_CLICK_OPTIONS: SelectOption[] = [
+  { value: 'current', labelKey: 'option_open_current' },
+  { value: 'new-foreground', labelKey: 'option_open_foreground' },
+  { value: 'new-background', labelKey: 'option_open_background' },
 ];
 
 function SelectRow({
@@ -54,7 +55,7 @@ function SelectRow({
   id: string;
   label: string;
   value: string;
-  options: string[][];
+  options: SelectOption[];
   disabled?: boolean;
   onChange: (value: string) => void;
 }) {
@@ -62,9 +63,9 @@ function SelectRow({
     <div className="settings-group">
       <label htmlFor={id}>{label}</label>
       <select id={id} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
-        {options.map(([optValue, optLabel]) => (
-          <option key={optValue} value={optValue}>
-            {optLabel}
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.labelKey ? t(option.labelKey) : option.label}
           </option>
         ))}
       </select>
@@ -103,24 +104,35 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 export function SettingsView() {
   const s = useSettingsStore();
   const set = s.setSetting;
+  const mutationBusy = useOperationsStore((state) => state.bookmarkMutationBusy);
 
   const resetFolderStyles = async () => {
     const ok = await useModalStore.getState().showConfirmDialog({
-      title: 'Reset Folder Styles',
-      message: 'Remove all custom folder colors and icons? This cannot be undone.',
-      confirmLabel: 'Reset',
+      title: t('settings_reset_styles'),
+      message: t('settings_reset_styles_message'),
+      confirmLabel: t('common_reset'),
     });
     if (!ok) return;
-    chrome.storage.sync.remove('folderStyles', () => {
+    const operations = useOperationsStore.getState();
+    if (!operations.tryBeginMutation()) return;
+    try {
+      await withGlobalBookmarkMutation(clearFolderStyleRecords);
       useFolderStylesStore.getState().setStyles([]);
-    });
+    } catch {
+      await useModalStore.getState().showInfoDialog({
+        title: t('common_error'),
+        message: t('common_storage_error'),
+      });
+    } finally {
+      operations.finishMutation();
+    }
   };
 
   const restoreDefaults = async () => {
     const ok = await useModalStore.getState().showConfirmDialog({
-      title: 'Restore Defaults',
-      message: 'Reset all settings to their defaults?',
-      confirmLabel: 'Restore',
+      title: t('settings_restore_defaults'),
+      message: t('settings_restore_defaults_message'),
+      confirmLabel: t('common_restore'),
     });
     if (!ok) return;
     chrome.storage.local.clear(() => {
@@ -132,30 +144,30 @@ export function SettingsView() {
 
   return (
     <div id="settings-view">
-      <Card title="Display">
-        <SelectRow id="setting-theme" label="Theme" value={s.theme} options={THEME_OPTIONS} disabled={s.syncTheme} onChange={(v) => set('theme', v)} />
-        <CheckboxRow id="setting-sync-theme" label="Sync with Chrome / System Theme" checked={s.syncTheme} onChange={(v) => set('syncTheme', v)} />
-        <CheckboxRow id="setting-show-other" label="Show Other Bookmarks" checked={s.showOtherBookmarks} onChange={(v) => set('showOtherBookmarks', v)} />
-        <CheckboxRow id="setting-show-recent" label="Show Recently Added Section" checked={s.showRecent} onChange={(v) => set('showRecent', v)} />
-        <SelectRow id="setting-font-size" label="Font Size" value={s.fontSize} options={FONT_SIZE_OPTIONS} onChange={(v) => set('fontSize', v)} />
-        <SelectRow id="setting-font-family" label="Font Family" value={s.fontFamily} options={FONT_FAMILY_OPTIONS} onChange={(v) => set('fontFamily', v)} />
-        <SelectRow id="setting-row-spacing" label="Row Spacing" value={s.rowSpacing} options={ROW_SPACING_OPTIONS} onChange={(v) => set('rowSpacing', v)} />
-        <SelectRow id="setting-ui-zoom" label="UI Zoom Level" value={s.uiZoom} options={UI_ZOOM_OPTIONS} onChange={(v) => set('uiZoom', v)} />
+      <Card title={t('settings_display')}>
+        <SelectRow id="setting-theme" label={t('settings_theme')} value={s.theme} options={THEME_OPTIONS} disabled={s.syncTheme} onChange={(v) => set('theme', v)} />
+        <CheckboxRow id="setting-sync-theme" label={t('settings_sync_theme')} checked={s.syncTheme} onChange={(v) => set('syncTheme', v)} />
+        <CheckboxRow id="setting-show-other" label={t('settings_show_other')} checked={s.showOtherBookmarks} onChange={(v) => set('showOtherBookmarks', v)} />
+        <CheckboxRow id="setting-show-recent" label={t('settings_show_recent')} checked={s.showRecent} onChange={(v) => set('showRecent', v)} />
+        <SelectRow id="setting-font-size" label={t('settings_font_size')} value={s.fontSize} options={FONT_SIZE_OPTIONS} onChange={(v) => set('fontSize', v)} />
+        <SelectRow id="setting-font-family" label={t('settings_font_family')} value={s.fontFamily} options={FONT_FAMILY_OPTIONS} onChange={(v) => set('fontFamily', v)} />
+        <SelectRow id="setting-row-spacing" label={t('settings_row_spacing')} value={s.rowSpacing} options={ROW_SPACING_OPTIONS} onChange={(v) => set('rowSpacing', v)} />
+        <SelectRow id="setting-ui-zoom" label={t('settings_ui_zoom')} value={s.uiZoom} options={UI_ZOOM_OPTIONS} onChange={(v) => set('uiZoom', v)} />
       </Card>
 
-      <Card title="Behavior">
-        <SelectRow id="setting-left-click-action" label="Left-click Action" value={s.leftClickAction} options={LEFT_CLICK_OPTIONS} onChange={(v) => set('leftClickAction', v)} />
-        <CheckboxRow id="setting-drag-protection" label="Drag Protection (Disable reordering)" checked={s.dragProtectionEnabled} onChange={(v) => set('dragProtectionEnabled', v)} />
-        <CheckboxRow id="setting-tooltip-enabled" label="Enable URL Hover Tooltips" checked={s.tooltipEnabled} onChange={(v) => set('tooltipEnabled', v)} />
+      <Card title={t('settings_behavior')}>
+        <SelectRow id="setting-left-click-action" label={t('settings_left_click')} value={s.leftClickAction} options={LEFT_CLICK_OPTIONS} onChange={(v) => set('leftClickAction', v)} />
+        <CheckboxRow id="setting-drag-protection" label={t('settings_drag_protection')} checked={s.dragProtectionEnabled} onChange={(v) => set('dragProtectionEnabled', v)} />
+        <CheckboxRow id="setting-tooltip-enabled" label={t('settings_tooltips')} checked={s.tooltipEnabled} onChange={(v) => set('tooltipEnabled', v)} />
       </Card>
 
-      <Card title="System">
+      <Card title={t('settings_system')}>
         <div className="settings-actions-column">
-          <button className="modal-btn warning-btn" onClick={resetFolderStyles}>
-            Reset Folder Styles
+          <button className="modal-btn warning-btn" disabled={mutationBusy} onClick={resetFolderStyles}>
+            {t('settings_reset_styles')}
           </button>
           <button className="modal-btn danger-btn" onClick={restoreDefaults}>
-            Restore Defaults
+            {t('settings_restore_defaults')}
           </button>
         </div>
       </Card>

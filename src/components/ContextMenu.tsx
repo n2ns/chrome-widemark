@@ -1,13 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useContextMenuStore } from '../stores/contextMenu.ts';
 import { useModalStore } from '../stores/modal.ts';
 import { useFolderStylesStore } from '../stores/folderStyles.ts';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { useSettingsStore } from '../stores/settings.ts';
-import { computeSortedChildren, isPermanentFolder, replaceFolderStyle } from '../lib/bookmark-utils.ts';
+import { useOperationsStore } from '../stores/operations.ts';
+import { computeSortedChildren, isPermanentFolder } from '../lib/bookmark-utils.ts';
 import { assignStylesToTree, collectFolderIdentities } from '../lib/folder-style-assignment.ts';
+import { loadFolderStyleRecords, saveFolderStyleRecord } from '../lib/folder-style-storage.ts';
 import { getVisibleRoots } from '../lib/tree-logic.ts';
+import { t } from '../lib/i18n.ts';
+import { withGlobalBookmarkMutation } from '../lib/bookmark-mutation-lock.ts';
+import type { BookmarkNode } from '../types.ts';
 
 const ICON = {
   addBookmark:
@@ -31,9 +36,27 @@ interface ModalData {
   icon?: string;
 }
 
+function readFreshBookmarkTree(): Promise<BookmarkNode[]> {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.getTree((tree) => {
+      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+      else resolve(tree);
+    });
+  });
+}
+
+function readBookmarkNode(id: string): Promise<BookmarkNode> {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.get(id, (nodes) => {
+      if (chrome.runtime.lastError || !nodes[0]) reject(new Error(chrome.runtime.lastError?.message ?? 'Bookmark not found'));
+      else resolve(nodes[0]);
+    });
+  });
+}
+
 function MenuItem({ svg, label, danger, onClick }: { svg: string; label: string; danger?: boolean; onClick: () => void }) {
   return (
-    <button className={`menu-item${danger ? ' menu-item-danger' : ''}`} onClick={onClick}>
+    <button type="button" role="menuitem" className={`menu-item${danger ? ' menu-item-danger' : ''}`} onClick={onClick}>
       <span dangerouslySetInnerHTML={{ __html: svg }} />
       {label}
     </button>
@@ -45,17 +68,53 @@ export function ContextMenu() {
   const x = useContextMenuStore((s) => s.x);
   const y = useContextMenuStore((s) => s.y);
   const close = useContextMenuStore((s) => s.close);
+  const trigger = useContextMenuStore((s) => s.trigger);
+  const mutationBusy = useOperationsStore((s) => s.bookmarkMutationBusy);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ left: x, top: y });
+
+  useLayoutEffect(() => {
+    if (!target || !menuRef.current) return;
+    const margin = 8;
+    const rect = menuRef.current.getBoundingClientRect();
+    setPosition({
+      left: Math.max(margin, Math.min(x, window.innerWidth - rect.width - margin)),
+      top: Math.max(margin, Math.min(y, window.innerHeight - rect.height - margin)),
+    });
+  }, [target, x, y, mutationBusy]);
 
   useEffect(() => {
     if (!target) return;
     const onClose = () => close();
+    const frame = requestAnimationFrame(() => menuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus());
     document.addEventListener('click', onClose);
     document.addEventListener('scroll', onClose, true);
     return () => {
+      cancelAnimationFrame(frame);
       document.removeEventListener('click', onClose);
       document.removeEventListener('scroll', onClose, true);
+      if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     };
-  }, [target, close]);
+  }, [target, close, trigger]);
+
+  const onMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const items = [...(menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])];
+    const current = items.indexOf(document.activeElement as HTMLButtonElement);
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      event.stopPropagation();
+      const offset = event.key === 'ArrowDown' ? 1 : -1;
+      items[(current + offset + items.length) % items.length]?.focus();
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      event.stopPropagation();
+      items[0]?.focus();
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      event.stopPropagation();
+      items[items.length - 1]?.focus();
+    }
+  };
 
   if (!target) return null;
 
@@ -65,80 +124,117 @@ export function ContextMenu() {
 
   const isPermanent = isPermanentFolder(target);
   const restricted = isPermanent || isManaged;
-  const showAdd = !isManaged;
-  const showSort = isFolder && !isManaged;
-  const showEdit = !restricted;
-  const showDelete = !restricted;
-  const showFolderStyle = isFolder;
+  const showAdd = !isManaged && !mutationBusy;
+  const showSort = isFolder && !isManaged && !mutationBusy;
+  const showEdit = !restricted && !mutationBusy;
+  const showDelete = !restricted && !mutationBusy;
+  const showFolderStyle = isFolder && !mutationBusy;
 
   const openModal = useModalStore.getState().openCustomModal;
-  const parentId = isFolder ? target.id : target.parentId || '1';
+  const beginMutation = () => {
+    const operations = useOperationsStore.getState();
+    return operations.tryBeginMutation() ? operations : null;
+  };
 
   const addBookmark = async () => {
     close();
-    const data = (await openModal({ title: 'Add Bookmark', mode: 'input', showFields: ['title', 'url'], fieldsVal: { title: '', url: 'https://' } })) as ModalData | false;
+    const data = (await openModal({ title: t('context_add_bookmark'), mode: 'input', showFields: ['title', 'url'], fieldsVal: { title: '', url: 'https://' } })) as ModalData | false;
     if (!data) return;
-    chrome.bookmarks.create({ parentId, title: data.title, url: data.url });
+    const operations = beginMutation();
+    if (!operations) return;
+    void withGlobalBookmarkMutation(async () => {
+      const latestTarget = await readBookmarkNode(target.id);
+      const parentId = latestTarget.url ? latestTarget.parentId || '1' : latestTarget.id;
+      await new Promise<void>((resolve) => {
+        chrome.bookmarks.create({ parentId, title: data.title, url: data.url }, () => resolve());
+      });
+    }).catch(() => undefined).finally(() => operations.finishMutation());
   };
 
   const addFolder = async () => {
     close();
-    const data = (await openModal({ title: 'Add Folder', mode: 'input', showFields: ['title'], fieldsVal: { title: '' } })) as ModalData | false;
+    const data = (await openModal({ title: t('context_add_folder'), mode: 'input', showFields: ['title'], fieldsVal: { title: '' } })) as ModalData | false;
     if (!data) return;
-    chrome.bookmarks.create({ parentId, title: data.title });
+    const operations = beginMutation();
+    if (!operations) return;
+    void withGlobalBookmarkMutation(async () => {
+      const latestTarget = await readBookmarkNode(target.id);
+      const parentId = latestTarget.url ? latestTarget.parentId || '1' : latestTarget.id;
+      await new Promise<void>((resolve) => {
+        chrome.bookmarks.create({ parentId, title: data.title }, () => resolve());
+      });
+    }).catch(() => undefined).finally(() => operations.finishMutation());
   };
 
   const sort = async () => {
     close();
     const ok = await openModal({
-      title: 'Sort by Name',
-      message: `Sort the contents of "${target.title || 'this folder'}" alphabetically (folders first)? This reorders bookmarks permanently.`,
+      title: t('context_sort_by_name'),
+      message: t('context_sort_message', target.title || t('context_this_folder')),
       mode: 'confirm',
-      submitLabel: 'Sort',
+      submitLabel: t('common_sort'),
     });
     if (!ok) return;
-    const store = useBookmarksStore.getState();
-    chrome.bookmarks.getChildren(target.id, (children) => {
-      if (chrome.runtime.lastError) return;
-      const sorted = computeSortedChildren(children || []);
-      store.beginBatch();
-      let index = 0;
-      const moveNext = () => {
-        if (index >= sorted.length) {
-          store.endBatch();
+    const operations = beginMutation();
+    if (!operations) return;
+    void withGlobalBookmarkMutation(() => new Promise<void>((resolve) => {
+      const store = useBookmarksStore.getState();
+      chrome.bookmarks.getChildren(target.id, (children) => {
+        if (chrome.runtime.lastError) {
+          resolve();
           return;
         }
-        chrome.bookmarks.move(sorted[index]!.id, { parentId: target.id, index }, () => {
-          index += 1;
-          moveNext();
-        });
-      };
-      moveNext();
-    });
+        const sorted = computeSortedChildren(children || []);
+        store.beginBatch();
+        let index = 0;
+        const moveNext = () => {
+          if (index >= sorted.length) {
+            store.endBatch();
+            resolve();
+            return;
+          }
+          chrome.bookmarks.move(sorted[index]!.id, { parentId: target.id, index }, () => {
+            index += 1;
+            moveNext();
+          });
+        };
+        moveNext();
+      });
+    })).finally(() => operations.finishMutation());
   };
 
   const edit = async () => {
     close();
     if (target.url) {
-      const data = (await openModal({ title: 'Edit Bookmark', mode: 'input', showFields: ['title', 'url'], fieldsVal: { title: target.title, url: target.url } })) as ModalData | false;
+      const data = (await openModal({ title: t('context_edit_bookmark'), mode: 'input', showFields: ['title', 'url'], fieldsVal: { title: target.title, url: target.url } })) as ModalData | false;
       if (!data) return;
-      chrome.bookmarks.update(target.id, { title: data.title, url: data.url });
+      const operations = beginMutation();
+      if (!operations) return;
+      void withGlobalBookmarkMutation(() => new Promise<void>((resolve) => {
+        chrome.bookmarks.update(target.id, { title: data.title, url: data.url }, () => resolve());
+      })).finally(() => operations.finishMutation());
       return;
     }
-    const data = (await openModal({ title: 'Rename Folder', mode: 'input', showFields: ['title'], fieldsVal: { title: target.title } })) as ModalData | false;
+    const data = (await openModal({ title: t('context_rename_folder'), mode: 'input', showFields: ['title'], fieldsVal: { title: target.title } })) as ModalData | false;
     if (!data) return;
-    chrome.bookmarks.update(target.id, { title: data.title });
+    const operations = beginMutation();
+    if (!operations) return;
+    void withGlobalBookmarkMutation(() => new Promise<void>((resolve) => {
+      chrome.bookmarks.update(target.id, { title: data.title }, () => resolve());
+    })).finally(() => operations.finishMutation());
   };
 
   const del = async () => {
     close();
-    const message = target.url
-      ? `Are you sure you want to delete bookmark "${target.title}"?`
-      : `Are you sure you want to delete folder "${target.title}" and all its contents?`;
-    const ok = await openModal({ title: 'Delete Confirmation', message, mode: 'confirm', submitLabel: 'Delete' });
+    const message = t(target.url ? 'context_delete_bookmark_message' : 'context_delete_folder_message', target.title);
+    const ok = await openModal({ title: t('context_delete_confirmation'), message, mode: 'confirm', submitLabel: t('common_delete') });
     if (!ok) return;
-    if (target.url) chrome.bookmarks.remove(target.id);
-    else chrome.bookmarks.removeTree(target.id);
+    const operations = beginMutation();
+    if (!operations) return;
+    void withGlobalBookmarkMutation(() => new Promise<void>((resolve) => {
+      if (target.url) chrome.bookmarks.remove(target.id, () => resolve());
+      else chrome.bookmarks.removeTree(target.id, () => resolve());
+    })).finally(() => operations.finishMutation());
   };
 
   const folderStyle = async () => {
@@ -146,38 +242,69 @@ export function ContextMenu() {
     const roots = getVisibleRoots(useBookmarksStore.getState().tree, useSettingsStore.getState().showOtherBookmarks);
     const styles = useFolderStylesStore.getState().styles;
     const record = assignStylesToTree(roots, styles).get(target.id) ?? null;
-    const identity = collectFolderIdentities(roots).find((f) => f.id === target.id) ?? {
-      dateAdded: target.dateAdded,
-      title: target.title,
-      path: [target.title],
-    };
     const current = record ? { color: record.color || '', icon: record.icon || 'default' } : { color: '', icon: 'default' };
-    const data = (await openModal({ title: 'Folder Style', mode: 'input', showFields: ['folderStyle'], fieldsVal: current })) as ModalData | false;
+    const data = (await openModal({ title: t('context_folder_style'), mode: 'input', showFields: ['folderStyle'], fieldsVal: current })) as ModalData | false;
     if (!data) return;
-    const next = replaceFolderStyle(
-      styles,
-      record,
-      { dateAdded: identity.dateAdded, title: identity.title, path: identity.path },
-      { color: data.color, icon: data.icon }
-    );
-    useFolderStylesStore.getState().setStyles(next);
-    chrome.storage.sync.set({ folderStyles: next });
+    const operations = beginMutation();
+    if (!operations) return;
+    let unableToLoadFolder = false;
+    try {
+      await withGlobalBookmarkMutation(async () => {
+        let latestRoots: BookmarkNode[];
+        try {
+          latestRoots = getVisibleRoots(await readFreshBookmarkTree(), true);
+        } catch {
+          unableToLoadFolder = true;
+          throw new Error('Unable to load bookmark tree');
+        }
+        const latestIdentities = collectFolderIdentities(latestRoots);
+        const latestIdentity = latestIdentities.find((folder) => folder.id === target.id);
+        if (!latestIdentity) {
+          unableToLoadFolder = true;
+          throw new Error('Folder no longer exists');
+        }
+        // Re-read inside the mutation lock so the edit uses the latest local
+        // bookmark and style snapshot.
+        const latestStyles = await loadFolderStyleRecords();
+        const latestRecord = assignStylesToTree(latestRoots, latestStyles).get(target.id) ?? null;
+        const saved = await saveFolderStyleRecord(
+          latestRecord,
+          latestIdentity,
+          { color: data.color, icon: data.icon }
+        );
+        const next = latestStyles.filter((item) => item !== latestRecord);
+        if (saved) next.push(saved);
+        useFolderStylesStore.getState().setStyles(next);
+      });
+      void useFolderStylesStore.getState().reload();
+    } catch {
+      await useModalStore.getState().showInfoDialog({
+        title: t('common_error'),
+        message: t(unableToLoadFolder ? 'actions_unable_load' : 'common_storage_error'),
+      });
+    } finally {
+      operations.finishMutation();
+    }
   };
 
   return createPortal(
     <div
+      ref={menuRef}
+      role="menu"
+      aria-label={target.title || t('common_bookmarks')}
       className="context-menu"
-      style={{ display: 'block', position: 'fixed', top: y, left: x }}
+      style={{ display: 'block', position: 'fixed', top: position.top, left: position.left }}
       onClick={(event) => event.stopPropagation()}
+      onKeyDown={onMenuKeyDown}
     >
-      {showAdd && <MenuItem svg={ICON.addBookmark} label="Add Bookmark" onClick={addBookmark} />}
-      {showAdd && <MenuItem svg={ICON.addFolder} label="Add Folder" onClick={addFolder} />}
-      {showSort && <MenuItem svg={ICON.sort} label="Sort by Name" onClick={sort} />}
+      {showAdd && <MenuItem svg={ICON.addBookmark} label={t('context_add_bookmark')} onClick={addBookmark} />}
+      {showAdd && <MenuItem svg={ICON.addFolder} label={t('context_add_folder')} onClick={addFolder} />}
+      {showSort && <MenuItem svg={ICON.sort} label={t('context_sort_by_name')} onClick={sort} />}
       {(showEdit || showDelete) && <div className="menu-separator" />}
-      {showEdit && <MenuItem svg={ICON.edit} label="Rename / Edit" onClick={edit} />}
-      {showDelete && <MenuItem svg={ICON.del} label="Delete" danger onClick={del} />}
+      {showEdit && <MenuItem svg={ICON.edit} label={t('context_rename_edit')} onClick={edit} />}
+      {showDelete && <MenuItem svg={ICON.del} label={t('common_delete')} danger onClick={del} />}
       {showFolderStyle && <div className="menu-separator folder-style-sep" />}
-      {showFolderStyle && <MenuItem svg={ICON.folderStyle} label="Folder Style" onClick={folderStyle} />}
+      {showFolderStyle && <MenuItem svg={ICON.folderStyle} label={t('context_folder_style')} onClick={folderStyle} />}
     </div>,
     document.body
   );

@@ -1,0 +1,595 @@
+{
+  "manifest_name": {
+    "message": "WideMark: Bảng bên dấu trang"
+  },
+  "manifest_short_name": {
+    "message": "WideMark"
+  },
+  "manifest_description": {
+    "message": "Trình quản lý dấu trang gọn nhẹ cho bảng bên Chrome. Tìm kiếm, sắp xếp, tạo kiểu thư mục và tìm mục trùng lặp trên thiết bị."
+  },
+  "manifest_command_open": {
+    "message": "Mở bảng bên WideMark"
+  },
+  "manifest_action_open": {
+    "message": "Mở WideMark"
+  },
+  "common_actions": {
+    "message": "Thao tác"
+  },
+  "common_settings": {
+    "message": "Cài đặt"
+  },
+  "common_help": {
+    "message": "Trợ giúp"
+  },
+  "common_error": { "message": "Lỗi" },
+  "common_storage_error": { "message": "Không thể lưu thay đổi vào bộ nhớ Chrome. Vui lòng thử lại." },
+  "common_delete": {
+    "message": "Xóa"
+  },
+  "common_cancel": {
+    "message": "Hủy"
+  },
+  "common_save": {
+    "message": "Lưu"
+  },
+  "common_ok": {
+    "message": "OK"
+  },
+  "common_confirm": {
+    "message": "Xác nhận"
+  },
+  "common_reset": {
+    "message": "Đặt lại"
+  },
+  "common_restore": {
+    "message": "Khôi phục"
+  },
+  "common_sort": {
+    "message": "Sắp xếp"
+  },
+  "common_merge": {
+    "message": "Hợp nhất"
+  },
+  "common_default": {
+    "message": "Mặc định"
+  },
+  "common_bookmarks": {
+    "message": "Dấu trang"
+  },
+  "common_docs": {
+    "message": "Tài liệu"
+  },
+  "toolbar_toggle_search": {
+    "message": "Bật/tắt tìm kiếm"
+  },
+  "toolbar_expand_all": {
+    "message": "Mở rộng tất cả thư mục"
+  },
+  "toolbar_collapse_all": {
+    "message": "Thu gọn tất cả thư mục"
+  },
+  "toolbar_search_placeholder": {
+    "message": "Tìm kiếm dấu trang..."
+  },
+  "toolbar_clear_search": {
+    "message": "Xóa tìm kiếm"
+  },
+  "tree_recently_added": {
+    "message": "Mới thêm gần đây"
+  },
+  "tree_loading": {
+    "message": "Đang tải dấu trang..."
+  },
+  "tree_result_count_one": {
+    "message": "$COUNT$ kết quả",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "tree_result_count_other": {
+    "message": "$COUNT$ kết quả",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "tree_empty_all": {
+    "message": "Chưa có dấu trang."
+  },
+  "tree_empty_bar": {
+    "message": "Không có dấu trang trong Thanh dấu trang."
+  },
+  "settings_display": {
+    "message": "Hiển thị"
+  },
+  "settings_theme": {
+    "message": "Giao diện"
+  },
+  "settings_sync_theme": {
+    "message": "Đồng bộ với giao diện Chrome / hệ thống"
+  },
+  "settings_show_other": {
+    "message": "Hiển thị Dấu trang khác"
+  },
+  "settings_show_recent": {
+    "message": "Hiển thị mục Mới thêm gần đây"
+  },
+  "settings_font_size": {
+    "message": "Cỡ chữ"
+  },
+  "settings_font_family": {
+    "message": "Phông chữ"
+  },
+  "settings_row_spacing": {
+    "message": "Khoảng cách dòng"
+  },
+  "settings_ui_zoom": {
+    "message": "Mức thu phóng giao diện"
+  },
+  "settings_behavior": {
+    "message": "Hành vi"
+  },
+  "settings_left_click": {
+    "message": "Thao tác nhấp chuột trái"
+  },
+  "settings_drag_protection": {
+    "message": "Bảo vệ khi kéo (tắt sắp xếp lại)"
+  },
+  "settings_tooltips": {
+    "message": "Bật chú giải URL khi di chuột"
+  },
+  "settings_system": {
+    "message": "Hệ thống"
+  },
+  "settings_reset_styles": {
+    "message": "Đặt lại kiểu thư mục"
+  },
+  "settings_reset_styles_message": {
+    "message": "Xóa tất cả màu và biểu tượng thư mục tùy chỉnh? Thao tác này không thể hoàn tác."
+  },
+  "settings_restore_defaults": {
+    "message": "Khôi phục mặc định"
+  },
+  "settings_restore_defaults_message": {
+    "message": "Đặt lại tất cả cài đặt về giá trị mặc định?"
+  },
+  "option_theme_light": {
+    "message": "Sáng"
+  },
+  "option_theme_dark": {
+    "message": "Tối"
+  },
+  "option_theme_blue_gray": {
+    "message": "Xám xanh"
+  },
+  "option_theme_graphite": {
+    "message": "Than chì"
+  },
+  "option_theme_slate": {
+    "message": "Đá phiến"
+  },
+  "option_theme_olive": {
+    "message": "Ô liu"
+  },
+  "option_theme_sepia": {
+    "message": "Nâu đỏ"
+  },
+  "option_font_small": {
+    "message": "Nhỏ (12px)"
+  },
+  "option_font_medium": {
+    "message": "Vừa (14px)"
+  },
+  "option_font_large": {
+    "message": "Lớn (16px)"
+  },
+  "option_font_extra_large": {
+    "message": "Rất lớn (18px)"
+  },
+  "option_font_system": {
+    "message": "Mặc định hệ thống"
+  },
+  "option_font_sans": {
+    "message": "Không chân (YaHei / Arial)"
+  },
+  "option_font_serif": {
+    "message": "Có chân (SimSun / Georgia)"
+  },
+  "option_font_mono": {
+    "message": "Đơn cách (Consolas / Courier)"
+  },
+  "option_spacing_compact": {
+    "message": "Gọn"
+  },
+  "option_spacing_medium": {
+    "message": "Tiêu chuẩn"
+  },
+  "option_spacing_relaxed": {
+    "message": "Thoáng"
+  },
+  "option_open_current": {
+    "message": "Mở trong thẻ hiện tại"
+  },
+  "option_open_foreground": {
+    "message": "Mở trong thẻ mới và chuyển đến"
+  },
+  "option_open_background": {
+    "message": "Mở trong thẻ mới (nền)"
+  },
+  "actions_duplicate_urls": {
+    "message": "URL trùng lặp"
+  },
+  "actions_same_domain": {
+    "message": "Cùng tên miền"
+  },
+  "actions_checking": {
+    "message": "Đang kiểm tra..."
+  },
+  "actions_unable_load": {
+    "message": "Không thể tải dấu trang."
+  },
+  "actions_nothing_to_check": {
+    "message": "Không có dấu trang để kiểm tra."
+  },
+  "actions_checking_urls": {
+    "message": "Đang kiểm tra URL trùng lặp ($CHECKED$/$TOTAL$)...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_checking_domains": {
+    "message": "Đang kiểm tra dấu trang cùng tên miền ($CHECKED$/$TOTAL$)...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_check_complete_one": {
+    "message": "Đã kiểm tra trùng lặp. Đã kiểm tra $COUNT$ dấu trang.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_check_complete_other": {
+    "message": "Đã kiểm tra trùng lặp. Đã kiểm tra $COUNT$ dấu trang.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "450"
+      }
+    }
+  },
+  "actions_delete_bookmark": {
+    "message": "Xóa dấu trang"
+  },
+  "actions_delete_bookmark_message": {
+    "message": "Xóa “$TITLE$”?",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "actions_no_empty_folders": {
+    "message": "Không tìm thấy thư mục trống."
+  },
+  "actions_delete_empty_folders": {
+    "message": "Xóa thư mục trống"
+  },
+  "actions_delete_empty_one": {
+    "message": "Xóa $COUNT$ thư mục trống? ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Empty"
+      }
+    }
+  },
+  "actions_delete_empty_other": {
+    "message": "Xóa $COUNT$ thư mục trống? ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Work / Empty, Personal / Empty"
+      }
+    }
+  },
+  "actions_removed_empty_one": {
+    "message": "Đã xóa $COUNT$ thư mục trống.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_removed_empty_other": {
+    "message": "Đã xóa $COUNT$ thư mục trống.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_same_named": {
+    "message": "Không tìm thấy thư mục cùng cấp trùng tên."
+  },
+  "actions_merge_same_named": {
+    "message": "Hợp nhất thư mục trùng tên"
+  },
+  "actions_merge_groups_one": {
+    "message": "Hợp nhất $COUNT$ nhóm thư mục cùng cấp trùng tên? Nội dung sẽ được gộp vào thư mục đầu tiên của nhóm. ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work"
+      }
+    }
+  },
+  "actions_merge_groups_other": {
+    "message": "Hợp nhất $COUNT$ nhóm thư mục cùng cấp trùng tên? Nội dung sẽ được gộp vào thư mục đầu tiên của từng nhóm. ($PREVIEW$)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work, Other Bookmarks / News"
+      }
+    }
+  },
+  "actions_merged_folders_one": {
+    "message": "Đã hợp nhất $COUNT$ thư mục.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_merged_folders_other": {
+    "message": "Đã hợp nhất $COUNT$ thư mục.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_duplicates": {
+    "message": "Không tìm thấy dấu trang trùng lặp."
+  },
+  "actions_local_only_note": {
+    "message": "Quá trình này chỉ kiểm tra URL dấu trang trên thiết bị và không liên hệ với trang web."
+  },
+  "actions_cleanup": {
+    "message": "Dọn dẹp"
+  },
+  "actions_empty_folders": {
+    "message": "Thư mục trống"
+  },
+  "actions_merge_folders": {
+    "message": "Hợp nhất thư mục"
+  },
+  "context_add_bookmark": {
+    "message": "Thêm dấu trang"
+  },
+  "context_add_folder": {
+    "message": "Thêm thư mục"
+  },
+  "context_sort_by_name": {
+    "message": "Sắp xếp theo tên"
+  },
+  "context_rename_edit": {
+    "message": "Đổi tên / Chỉnh sửa"
+  },
+  "context_folder_style": {
+    "message": "Kiểu thư mục"
+  },
+  "context_sort_message": {
+    "message": "Sắp xếp nội dung của “$FOLDER$” theo bảng chữ cái (thư mục trước)? Thao tác này sẽ thay đổi vĩnh viễn thứ tự dấu trang.",
+    "placeholders": {
+      "folder": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "context_this_folder": {
+    "message": "thư mục này"
+  },
+  "context_edit_bookmark": {
+    "message": "Chỉnh sửa dấu trang"
+  },
+  "context_rename_folder": {
+    "message": "Đổi tên thư mục"
+  },
+  "context_delete_confirmation": {
+    "message": "Xác nhận xóa"
+  },
+  "context_delete_bookmark_message": {
+    "message": "Bạn có chắc muốn xóa dấu trang “$TITLE$”?",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "context_delete_folder_message": {
+    "message": "Bạn có chắc muốn xóa thư mục “$TITLE$” và toàn bộ nội dung?",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "modal_name": {
+    "message": "Tên"
+  },
+  "modal_name_placeholder": {
+    "message": "Nhập tên..."
+  },
+  "modal_url": {
+    "message": "URL"
+  },
+  "modal_folder_color": {
+    "message": "Màu thư mục"
+  },
+  "modal_folder_icon": {
+    "message": "Biểu tượng thư mục"
+  },
+  "modal_name_required": {
+    "message": "Tên không được để trống."
+  },
+  "modal_url_required": {
+    "message": "URL không được để trống."
+  },
+  "color_red": {
+    "message": "Đỏ"
+  },
+  "color_orange": {
+    "message": "Cam"
+  },
+  "color_yellow": {
+    "message": "Vàng"
+  },
+  "color_green": {
+    "message": "Xanh lá"
+  },
+  "color_blue": {
+    "message": "Xanh dương"
+  },
+  "color_purple": {
+    "message": "Tím"
+  },
+  "color_pink": {
+    "message": "Hồng"
+  },
+  "icon_code": {
+    "message": "Mã"
+  },
+  "icon_document": {
+    "message": "Tài liệu"
+  },
+  "icon_star": {
+    "message": "Sao"
+  },
+  "icon_heart": {
+    "message": "Yêu thích"
+  },
+  "icon_lock": {
+    "message": "Riêng tư"
+  },
+  "help_about": {
+    "message": "Giới thiệu"
+  },
+  "help_built_by": {
+    "message": "Được phát triển bởi"
+  },
+  "help_basics": {
+    "message": "Cơ bản"
+  },
+  "help_basics_folder": {
+    "message": "Nhấp vào thư mục để mở rộng hoặc thu gọn."
+  },
+  "help_basics_search": {
+    "message": "Dùng nút tìm kiếm (hoặc nhấn “/”) để lọc dấu trang theo tiêu đề hoặc URL."
+  },
+  "help_basics_background": {
+    "message": "Ctrl-nhấp hoặc nhấp chuột giữa sẽ mở dấu trang trong thẻ nền."
+  },
+  "help_basics_keyboard": {
+    "message": "Các phím mũi tên di chuyển trong cây; Enter mở mục đã chọn."
+  },
+  "help_basics_shortcut": {
+    "message": "Nhấn Alt+B để mở WideMark từ bất kỳ trang nào (có thể cấu hình tại chrome://extensions/shortcuts)."
+  },
+  "help_organize": {
+    "message": "Sắp xếp"
+  },
+  "help_organize_menu": {
+    "message": "Nhấp chuột phải vào thư mục hoặc dấu trang để thêm, đổi tên, chỉnh sửa hoặc xóa mục."
+  },
+  "help_organize_sort": {
+    "message": "Nhấp chuột phải vào thư mục và chọn “Sắp xếp theo tên” để sắp xếp nội dung."
+  },
+  "help_organize_drag": {
+    "message": "Kéo các mục để sắp xếp lại hoặc chuyển sang thư mục khác."
+  },
+  "help_organize_styles": {
+    "message": "Siêu dữ liệu kiểu thư mục được lưu trữ trong Chrome Sync."
+  },
+  "help_actions_duplicates": {
+    "message": "Tìm URL dấu trang trùng lặp hoặc dấu trang cùng tên miền ngay trên thiết bị."
+  },
+  "help_actions_cleanup": {
+    "message": "Xóa thư mục trống và hợp nhất thư mục cùng cấp trùng tên."
+  },
+  "help_actions_review": {
+    "message": "Xem lại đường dẫn thư mục trước khi xóa."
+  },
+  "help_actions_confirm": {
+    "message": "Việc xóa và hợp nhất cần được xác nhận."
+  },
+  "help_settings_adjust": {
+    "message": "Điều chỉnh giao diện, cỡ chữ, khoảng cách, thu phóng và hành vi nhấp."
+  },
+  "help_settings_restore": {
+    "message": "Khôi phục mặc định chỉ đặt lại cài đặt WideMark."
+  },
+  "help_privacy": {
+    "message": "Quyền riêng tư"
+  },
+  "help_privacy_permissions": {
+    "message": "Không yêu cầu quyền truy cập máy chủ trang web nhạy cảm."
+  },
+  "help_privacy_tracking": {
+    "message": "Không thu thập hoặc theo dõi dữ liệu người dùng."
+  },
+  "help_privacy_upload": {
+    "message": "Không gửi dữ liệu đến máy chủ của nhà phát triển."
+  },
+  "help_privacy_local": {
+    "message": "Dấu trang và việc kiểm tra trùng lặp được xử lý trên thiết bị."
+  }
+}

@@ -511,6 +511,17 @@ test('normalizeFolderStyleRecords - tolerates missing or malformed stored values
   assert.strictEqual(normalizeFolderStyleRecords(records), records);
 });
 
+test('assignFolderStyles - shares one style across indistinguishable synced twins', () => {
+  const record = { dateAdded: 100, title: 'Twin', path: ['Twin'], color: 'red' };
+  const assigned = assignFolderStyles([record], [
+    { id: 'a', dateAdded: 100, title: 'Twin', path: ['Twin'] },
+    { id: 'b', dateAdded: 100, title: 'Twin', path: ['Twin'] }
+  ]);
+
+  assert.strictEqual(assigned.get('a'), record);
+  assert.strictEqual(assigned.get('b'), record);
+});
+
 test('runChunkedDuplicateScan - reports progress and matches the synchronous result', async () => {
   const bookmarks = [];
   for (let i = 0; i < 450; i++) {

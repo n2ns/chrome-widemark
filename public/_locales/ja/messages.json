@@ -1,0 +1,595 @@
+{
+  "manifest_name": {
+    "message": "WideMark：ブックマークサイドパネル"
+  },
+  "manifest_short_name": {
+    "message": "WideMark"
+  },
+  "manifest_description": {
+    "message": "Chrome のサイドパネルで使える軽量ブックマークマネージャー。閲覧、検索、整理、フォルダーの装飾、重複項目の検出をローカルで行えます。"
+  },
+  "manifest_command_open": {
+    "message": "WideMark サイドパネルを開く"
+  },
+  "manifest_action_open": {
+    "message": "WideMark を開く"
+  },
+  "common_actions": {
+    "message": "操作"
+  },
+  "common_settings": {
+    "message": "設定"
+  },
+  "common_help": {
+    "message": "ヘルプ"
+  },
+  "common_error": { "message": "エラー" },
+  "common_storage_error": { "message": "変更を Chrome ストレージに保存できませんでした。もう一度お試しください。" },
+  "common_delete": {
+    "message": "削除"
+  },
+  "common_cancel": {
+    "message": "キャンセル"
+  },
+  "common_save": {
+    "message": "保存"
+  },
+  "common_ok": {
+    "message": "OK"
+  },
+  "common_confirm": {
+    "message": "確認"
+  },
+  "common_reset": {
+    "message": "リセット"
+  },
+  "common_restore": {
+    "message": "復元"
+  },
+  "common_sort": {
+    "message": "並べ替え"
+  },
+  "common_merge": {
+    "message": "統合"
+  },
+  "common_default": {
+    "message": "デフォルト"
+  },
+  "common_bookmarks": {
+    "message": "ブックマーク"
+  },
+  "common_docs": {
+    "message": "ドキュメント"
+  },
+  "toolbar_toggle_search": {
+    "message": "検索の表示を切り替え"
+  },
+  "toolbar_expand_all": {
+    "message": "すべてのフォルダーを展開"
+  },
+  "toolbar_collapse_all": {
+    "message": "すべてのフォルダーを折りたたむ"
+  },
+  "toolbar_search_placeholder": {
+    "message": "ブックマークを検索..."
+  },
+  "toolbar_clear_search": {
+    "message": "検索をクリア"
+  },
+  "tree_recently_added": {
+    "message": "最近追加した項目"
+  },
+  "tree_loading": {
+    "message": "ブックマークを読み込んでいます..."
+  },
+  "tree_result_count_one": {
+    "message": "$COUNT$ 件の結果",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "tree_result_count_other": {
+    "message": "$COUNT$ 件の結果",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "tree_empty_all": {
+    "message": "ブックマークはまだありません。"
+  },
+  "tree_empty_bar": {
+    "message": "ブックマーク バーにブックマークがありません。"
+  },
+  "settings_display": {
+    "message": "表示"
+  },
+  "settings_theme": {
+    "message": "テーマ"
+  },
+  "settings_sync_theme": {
+    "message": "Chrome / システムのテーマと同期"
+  },
+  "settings_show_other": {
+    "message": "その他のブックマークを表示"
+  },
+  "settings_show_recent": {
+    "message": "「最近追加した項目」を表示"
+  },
+  "settings_font_size": {
+    "message": "文字サイズ"
+  },
+  "settings_font_family": {
+    "message": "フォント"
+  },
+  "settings_row_spacing": {
+    "message": "行間隔"
+  },
+  "settings_ui_zoom": {
+    "message": "UI のズーム"
+  },
+  "settings_behavior": {
+    "message": "動作"
+  },
+  "settings_left_click": {
+    "message": "左クリック時の動作"
+  },
+  "settings_drag_protection": {
+    "message": "ドラッグ保護（並べ替えを無効化）"
+  },
+  "settings_tooltips": {
+    "message": "URL のホバーツールチップを有効化"
+  },
+  "settings_system": {
+    "message": "システム"
+  },
+  "settings_reset_styles": {
+    "message": "フォルダースタイルをリセット"
+  },
+  "settings_reset_styles_message": {
+    "message": "カスタムのフォルダー色とアイコンをすべて削除しますか？この操作は元に戻せません。"
+  },
+  "settings_restore_defaults": {
+    "message": "デフォルトに戻す"
+  },
+  "settings_restore_defaults_message": {
+    "message": "すべての設定をデフォルトに戻しますか？"
+  },
+  "option_theme_light": {
+    "message": "ライト"
+  },
+  "option_theme_dark": {
+    "message": "ダーク"
+  },
+  "option_theme_blue_gray": {
+    "message": "ブルーグレー"
+  },
+  "option_theme_graphite": {
+    "message": "グラファイト"
+  },
+  "option_theme_slate": {
+    "message": "スレート"
+  },
+  "option_theme_olive": {
+    "message": "オリーブ"
+  },
+  "option_theme_sepia": {
+    "message": "セピア"
+  },
+  "option_font_small": {
+    "message": "小（12px）"
+  },
+  "option_font_medium": {
+    "message": "中（14px）"
+  },
+  "option_font_large": {
+    "message": "大（16px）"
+  },
+  "option_font_extra_large": {
+    "message": "特大（18px）"
+  },
+  "option_font_system": {
+    "message": "システム既定"
+  },
+  "option_font_sans": {
+    "message": "サンセリフ（YaHei / Arial）"
+  },
+  "option_font_serif": {
+    "message": "セリフ（SimSun / Georgia）"
+  },
+  "option_font_mono": {
+    "message": "等幅（Consolas / Courier）"
+  },
+  "option_spacing_compact": {
+    "message": "コンパクト（狭い）"
+  },
+  "option_spacing_medium": {
+    "message": "標準（中）"
+  },
+  "option_spacing_relaxed": {
+    "message": "ゆったり（広い）"
+  },
+  "option_open_current": {
+    "message": "現在のタブで開く"
+  },
+  "option_open_foreground": {
+    "message": "新しいタブで開いて切り替える"
+  },
+  "option_open_background": {
+    "message": "新しいタブで開く（バックグラウンド）"
+  },
+  "actions_duplicate_urls": {
+    "message": "重複 URL"
+  },
+  "actions_same_domain": {
+    "message": "同じドメイン"
+  },
+  "actions_checking": {
+    "message": "確認しています..."
+  },
+  "actions_unable_load": {
+    "message": "ブックマークを読み込めませんでした。"
+  },
+  "actions_nothing_to_check": {
+    "message": "確認するブックマークがありません。"
+  },
+  "actions_checking_urls": {
+    "message": "重複 URL を確認しています（$CHECKED$/$TOTAL$）...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_checking_domains": {
+    "message": "同じドメインのブックマークを確認しています（$CHECKED$/$TOTAL$）...",
+    "placeholders": {
+      "checked": {
+        "content": "$1",
+        "example": "200"
+      },
+      "total": {
+        "content": "$2",
+        "example": "450"
+      }
+    }
+  },
+  "actions_check_complete_one": {
+    "message": "重複確認が完了しました。$COUNT$ 件のブックマークを確認しました。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_check_complete_other": {
+    "message": "重複確認が完了しました。$COUNT$ 件のブックマークを確認しました。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "450"
+      }
+    }
+  },
+  "actions_delete_bookmark": {
+    "message": "ブックマークを削除"
+  },
+  "actions_delete_bookmark_message": {
+    "message": "「$TITLE$」を削除しますか？",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "actions_no_empty_folders": {
+    "message": "空のフォルダーは見つかりませんでした。"
+  },
+  "actions_delete_empty_folders": {
+    "message": "空のフォルダーを削除"
+  },
+  "actions_delete_empty_one": {
+    "message": "$COUNT$ 個の空のフォルダーを削除しますか？（$PREVIEW$）",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Empty"
+      }
+    }
+  },
+  "actions_delete_empty_other": {
+    "message": "$COUNT$ 個の空のフォルダーを削除しますか？（$PREVIEW$）",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Work / Empty, Personal / Empty"
+      }
+    }
+  },
+  "actions_removed_empty_one": {
+    "message": "$COUNT$ 個の空のフォルダーを削除しました。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_removed_empty_other": {
+    "message": "$COUNT$ 個の空のフォルダーを削除しました。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_same_named": {
+    "message": "同じ階層に同名のフォルダーは見つかりませんでした。"
+  },
+  "actions_merge_same_named": {
+    "message": "同名フォルダーを統合"
+  },
+  "actions_merge_groups_one": {
+    "message": "同じ階層にある同名フォルダー $COUNT$ グループを統合しますか？内容はグループの最初のフォルダーにまとめられます。（$PREVIEW$）",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work"
+      }
+    }
+  },
+  "actions_merge_groups_other": {
+    "message": "同じ階層にある同名フォルダー $COUNT$ グループを統合しますか？内容は各グループの最初のフォルダーにまとめられます。（$PREVIEW$）",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      },
+      "preview": {
+        "content": "$2",
+        "example": "Bookmarks Bar / Work, Other Bookmarks / News"
+      }
+    }
+  },
+  "actions_merged_folders_one": {
+    "message": "$COUNT$ 個のフォルダーを統合しました。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+  "actions_merged_folders_other": {
+    "message": "$COUNT$ 個のフォルダーを統合しました。",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "actions_no_duplicates": {
+    "message": "重複するブックマークは見つかりませんでした。"
+  },
+  "actions_local_only_note": {
+    "message": "この重複確認はローカルのブックマーク URL のみを調べ、ウェブサイトには接続しません。"
+  },
+  "actions_cleanup": {
+    "message": "クリーンアップ"
+  },
+  "actions_empty_folders": {
+    "message": "空のフォルダー"
+  },
+  "actions_merge_folders": {
+    "message": "フォルダーを統合"
+  },
+  "context_add_bookmark": {
+    "message": "ブックマークを追加"
+  },
+  "context_add_folder": {
+    "message": "フォルダーを追加"
+  },
+  "context_sort_by_name": {
+    "message": "名前順に並べ替え"
+  },
+  "context_rename_edit": {
+    "message": "名前を変更 / 編集"
+  },
+  "context_folder_style": {
+    "message": "フォルダースタイル"
+  },
+  "context_sort_message": {
+    "message": "「$FOLDER$」の内容をアルファベット順（フォルダー優先）に並べ替えますか？ブックマークの順序は永続的に変更されます。",
+    "placeholders": {
+      "folder": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "context_this_folder": {
+    "message": "このフォルダー"
+  },
+  "context_edit_bookmark": {
+    "message": "ブックマークを編集"
+  },
+  "context_rename_folder": {
+    "message": "フォルダー名を変更"
+  },
+  "context_delete_confirmation": {
+    "message": "削除の確認"
+  },
+  "context_delete_bookmark_message": {
+    "message": "ブックマーク「$TITLE$」を削除してもよろしいですか？",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Project Docs"
+      }
+    }
+  },
+  "context_delete_folder_message": {
+    "message": "フォルダー「$TITLE$」とその内容をすべて削除してもよろしいですか？",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Work"
+      }
+    }
+  },
+  "modal_name": {
+    "message": "名前"
+  },
+  "modal_name_placeholder": {
+    "message": "名前を入力..."
+  },
+  "modal_url": {
+    "message": "URL"
+  },
+  "modal_folder_color": {
+    "message": "フォルダーの色"
+  },
+  "modal_folder_icon": {
+    "message": "フォルダーアイコン"
+  },
+  "modal_name_required": {
+    "message": "名前を入力してください。"
+  },
+  "modal_url_required": {
+    "message": "URL を入力してください。"
+  },
+  "color_red": {
+    "message": "赤"
+  },
+  "color_orange": {
+    "message": "オレンジ"
+  },
+  "color_yellow": {
+    "message": "黄"
+  },
+  "color_green": {
+    "message": "緑"
+  },
+  "color_blue": {
+    "message": "青"
+  },
+  "color_purple": {
+    "message": "紫"
+  },
+  "color_pink": {
+    "message": "ピンク"
+  },
+  "icon_code": {
+    "message": "コード"
+  },
+  "icon_document": {
+    "message": "文書"
+  },
+  "icon_star": {
+    "message": "スター"
+  },
+  "icon_heart": {
+    "message": "お気に入り"
+  },
+  "icon_lock": {
+    "message": "非公開"
+  },
+  "help_about": {
+    "message": "概要"
+  },
+  "help_built_by": {
+    "message": "開発"
+  },
+  "help_basics": {
+    "message": "基本操作"
+  },
+  "help_basics_folder": {
+    "message": "フォルダーをクリックすると展開または折りたためます。"
+  },
+  "help_basics_search": {
+    "message": "検索ボタン（または「/」キー）を使い、タイトルや URL でブックマークを絞り込めます。"
+  },
+  "help_basics_background": {
+    "message": "Ctrl キーを押しながらクリック、または中クリックすると、バックグラウンドタブで開きます。"
+  },
+  "help_basics_keyboard": {
+    "message": "矢印キーでツリー内を移動し、Enter キーで選択項目を開きます。"
+  },
+  "help_basics_shortcut": {
+    "message": "どのページでも Alt+B を押すと WideMark が開きます（chrome://extensions/shortcuts で変更可能）。"
+  },
+  "help_organize": {
+    "message": "整理"
+  },
+  "help_organize_menu": {
+    "message": "フォルダーやブックマークを右クリックして、追加、名前変更、編集、削除ができます。"
+  },
+  "help_organize_sort": {
+    "message": "フォルダーを右クリックして「名前順に並べ替え」を選ぶと、内容を整理できます。"
+  },
+  "help_organize_drag": {
+    "message": "項目をドラッグして並べ替えたり、別のフォルダーへ移動したりできます。"
+  },
+  "help_organize_styles": {
+    "message": "フォルダスタイルのメタデータは Chrome Sync に保存されます。"
+  },
+  "help_actions_duplicates": {
+    "message": "重複 URL や同じドメインのブックマークをローカルで検索します。"
+  },
+  "help_actions_cleanup": {
+    "message": "空のフォルダーを削除し、同じ階層の同名フォルダーを統合します。"
+  },
+  "help_actions_review": {
+    "message": "削除前にフォルダーのパスを確認してください。"
+  },
+  "help_actions_confirm": {
+    "message": "削除と統合には確認が必要です。"
+  },
+  "help_settings_adjust": {
+    "message": "テーマ、文字サイズ、間隔、ズーム、クリック動作を調整できます。"
+  },
+  "help_settings_restore": {
+    "message": "「デフォルトに戻す」は WideMark の設定だけをリセットします。"
+  },
+  "help_privacy": {
+    "message": "プライバシー"
+  },
+  "help_privacy_permissions": {
+    "message": "機密性の高いウェブサイトのホスト権限はありません。"
+  },
+  "help_privacy_tracking": {
+    "message": "ユーザーデータの収集や追跡は行いません。"
+  },
+  "help_privacy_upload": {
+    "message": "開発者のサーバーにはデータを送信しません。"
+  },
+  "help_privacy_local": {
+    "message": "ブックマークと重複確認はローカルで処理されます。"
+  }
+}

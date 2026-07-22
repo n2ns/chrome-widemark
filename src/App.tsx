@@ -13,6 +13,7 @@ import { ActionsView } from './components/ActionsView.tsx';
 import { HelpView } from './components/HelpView.tsx';
 import { ModalHost } from './components/ModalHost.tsx';
 import { ContextMenu } from './components/ContextMenu.tsx';
+import { t } from './lib/i18n.ts';
 
 export default function App() {
   useApplySettings();
@@ -21,13 +22,16 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
+    // Subscribe before async hydration so a Chrome Sync/storage event cannot
+    // fall into the initialization gap. Store generations prevent stale reads
+    // from overwriting a newer event-driven reload.
+    initChromeSubscriptions();
     Promise.all([
       useSettingsStore.getState().hydrate(),
       useFolderStylesStore.getState().hydrate(),
       useBookmarksStore.getState().hydrateExpanded(),
     ]).then(() => {
       if (cancelled) return;
-      initChromeSubscriptions();
       void useBookmarksStore.getState().reload();
     });
     return () => {
@@ -54,7 +58,7 @@ export default function App() {
         </a>
         <span className="footer-dot">·</span>
         <a href="https://datafrog.io/widemark" target="_blank" rel="noopener noreferrer">
-          Docs
+          {t('common_docs')}
         </a>
       </footer>
       <ModalHost />

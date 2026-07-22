@@ -10,7 +10,7 @@ ul {
   position: relative;
 }
 
-#bookmark-tree-root > ul {
+.tree-container > ul {
   padding-left: 0;
 }
 
@@ -93,22 +93,14 @@ li {
   flex-grow: 1;
 }
 
-/* Folder collapse anim */
+/* Collapsed branches are not mounted, avoiding hidden favicon/tree work. */
 .folder-children {
-  overflow: hidden;
-  transition: max-height var(--transition-speed) ease-in-out, opacity var(--transition-speed) ease-in-out;
-  max-height: 0;
-  opacity: 0;
-}
-
-.folder-children.visible {
-  max-height: 2000px; /* Big enough for most folders, transition done via JS height calculation */
-  opacity: 1;
+  overflow: visible;
 }
 
 /* Wide panel layout */
 @media (min-width: 480px) {
-  #bookmark-tree-root > ul {
+  .tree-container > ul {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     align-items: start;
@@ -116,11 +108,11 @@ li {
     padding-left: 0;
   }
   
-  #bookmark-tree-root > ul::before {
+  .tree-container > ul::before {
     display: none;
   }
   
-  #bookmark-tree-root > ul > li {
+  .tree-container > ul > li {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -131,21 +123,21 @@ li {
     align-self: start;
   }
   
-  #bookmark-tree-root > ul > li > .tree-node {
+  .tree-container > ul > li > .tree-node {
     font-weight: 600;
     border-radius: 6px;
   }
 
-  #bookmark-tree-root > ul > li > .tree-node.expanded {
+  .tree-container > ul > li > .tree-node.expanded {
     border-bottom: 1px solid var(--border);
     margin-bottom: 0.45em;
   }
   
-  #bookmark-tree-root > ul > li > ul.nested-tree {
+  .tree-container > ul > li > ul.nested-tree {
     padding-left: 0.25em;
   }
   
-  #bookmark-tree-root > ul > li > ul.nested-tree::before {
+  .tree-container > ul > li > ul.nested-tree::before {
     left: -4px;
   }
 }
@@ -202,4 +194,3 @@ li {
 .recent-section-header .node-title {
   font-weight: 600;
 }
-

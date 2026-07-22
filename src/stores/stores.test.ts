@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useSettingsStore, SETTINGS_DEFAULTS } from './settings.ts';
 import { useFolderStylesStore } from './folderStyles.ts';
 import { useBookmarksStore } from './bookmarks.ts';
+import { useOperationsStore } from './operations.ts';
 
 beforeEach(() => {
   useSettingsStore.setState({ ...SETTINGS_DEFAULTS, hydrated: false });
@@ -12,6 +13,24 @@ beforeEach(() => {
     loaded: false,
     batchDepth: 0,
     isImporting: false,
+  });
+  useOperationsStore.setState({ bookmarkMutationBusy: false, cleanupBusy: false, cleanupStatus: '' });
+});
+
+describe('operations store', () => {
+  it('serializes ordinary bookmark mutations and cleanup jobs', () => {
+    const operations = useOperationsStore.getState();
+    expect(operations.tryBeginMutation()).toBe(true);
+    expect(useOperationsStore.getState().tryBeginCleanup()).toBe(false);
+    useOperationsStore.getState().finishMutation();
+
+    expect(useOperationsStore.getState().tryBeginCleanup()).toBe(true);
+    expect(useOperationsStore.getState().tryBeginMutation()).toBe(false);
+    useOperationsStore.getState().finishCleanup('Done');
+
+    expect(useOperationsStore.getState().bookmarkMutationBusy).toBe(false);
+    expect(useOperationsStore.getState().cleanupBusy).toBe(false);
+    expect(useOperationsStore.getState().cleanupStatus).toBe('Done');
   });
 });
 
@@ -57,18 +76,89 @@ describe('settings store', () => {
     expect(useSettingsStore.getState().theme).toBe(SETTINGS_DEFAULTS.theme);
     expect(useSettingsStore.getState().hydrated).toBe(true);
   });
+
+  it('does not overwrite a setting changed while hydration is in flight', async () => {
+    let finishRead: ((result: object) => void) | undefined;
+    vi.stubGlobal('chrome', {
+      runtime: { lastError: undefined },
+      storage: {
+        local: {
+          get: (_keys: string[], cb: (result: object) => void) => { finishRead = cb; },
+          set: vi.fn(),
+        },
+      },
+    });
+
+    const hydration = useSettingsStore.getState().hydrate();
+    useSettingsStore.getState().setSetting('theme', 'dracula');
+    finishRead?.({ theme: 'light', showRecent: false });
+    await hydration;
+
+    expect(useSettingsStore.getState().theme).toBe('dracula');
+    expect(useSettingsStore.getState().showRecent).toBe(false);
+  });
+
+  it('applies settings written by another extension window', () => {
+    useSettingsStore.getState().applyExternalChanges({
+      theme: { oldValue: 'dark', newValue: 'light' },
+      showRecent: { oldValue: true, newValue: false },
+    });
+
+    expect(useSettingsStore.getState().theme).toBe('light');
+    expect(useSettingsStore.getState().showRecent).toBe(false);
+  });
 });
 
 describe('folderStyles store', () => {
-  it('applyStorageChange ignores identical values but applies real changes', () => {
+  it('hydrates folder styles from storage.sync', async () => {
+    vi.stubGlobal('chrome', {
+      runtime: { lastError: undefined },
+      storage: {
+        sync: {
+          get: (_keys: string[], cb: (r: object) => void) => cb({
+            folderStyles: [{ dateAdded: 1, color: 'red' }],
+          }),
+        },
+      },
+    });
+
+    await useFolderStylesStore.getState().hydrate();
+
+    expect(useFolderStylesStore.getState().styles).toEqual([
+      { dateAdded: 1, color: 'red' },
+    ]);
+    expect(useFolderStylesStore.getState().hydrated).toBe(true);
+  });
+
+  it('keeps the last good styles when a reload fails', async () => {
     const records = [{ dateAdded: 1, color: 'red' }];
-    useFolderStylesStore.setState({ styles: records });
+    useFolderStylesStore.setState({ styles: records, hydrated: true });
+    vi.stubGlobal('chrome', {
+      runtime: { lastError: { message: 'storage unavailable' } },
+      storage: { sync: { get: (_keys: string[], cb: (r: object) => void) => cb({}) } },
+    });
 
-    useFolderStylesStore.getState().applyStorageChange([{ dateAdded: 1, color: 'red' }]);
-    expect(useFolderStylesStore.getState().styles).toBe(records); // no-op: reference unchanged
+    await useFolderStylesStore.getState().reload();
 
-    useFolderStylesStore.getState().applyStorageChange([{ dateAdded: 2, color: 'blue' }]);
-    expect(useFolderStylesStore.getState().styles).toEqual([{ dateAdded: 2, color: 'blue' }]);
+    expect(useFolderStylesStore.getState().styles).toBe(records);
+  });
+
+  it('prevents an older reload from overwriting a newer snapshot', async () => {
+    const callbacks: Array<(result: Record<string, unknown>) => void> = [];
+    vi.stubGlobal('chrome', {
+      runtime: { lastError: undefined },
+      storage: { sync: { get: (_keys: string[], cb: (result: Record<string, unknown>) => void) => callbacks.push(cb) } },
+    });
+
+    const older = useFolderStylesStore.getState().reload();
+    const newer = useFolderStylesStore.getState().reload();
+    callbacks[1]!({ folderStyles: [{ dateAdded: 2, color: 'blue' }] });
+    callbacks[0]!({ folderStyles: [{ dateAdded: 1, color: 'red' }] });
+    await Promise.all([older, newer]);
+
+    expect(useFolderStylesStore.getState().styles).toEqual([
+      { dateAdded: 2, color: 'blue' },
+    ]);
   });
 });
 

@@ -29,7 +29,7 @@ WideMark uses only the permissions needed for bookmark-side-panel behavior:
 ]
 ```
 
-It does not declare `host_permissions`. WideMark does not collect, track, upload, or sell user data. Bookmark browsing, settings, and duplicate checks are processed locally in Chrome.
+It does not declare `host_permissions`. WideMark does not collect, track, or sell user data, and no data is sent to developer-operated servers. Bookmark browsing and duplicate checks are processed locally in Chrome. Folder style metadata is stored in Chrome Sync so those styles can follow the user's Chrome profile.
 
 See [PRIVACY.md](PRIVACY.md) for the privacy policy draft.
 
@@ -48,10 +48,16 @@ npm run check
 npm test
 ```
 
-Build the packaged extension and sync it to the configured local Chrome test directory:
+Build the unpacked extension:
 
 ```bash
 npm run build
+```
+
+Build and sync it to the configured local Chrome test directory:
+
+```bash
+npm run build:sync
 ```
 
 Create a Chrome Web Store upload package:

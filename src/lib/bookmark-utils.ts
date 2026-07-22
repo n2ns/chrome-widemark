@@ -178,9 +178,8 @@
 
   // Folder styles are stored as an array of records identified by the
   // folder's dateAdded (creation time). Node ids are profile-local, but
-  // Chrome bookmark sync transports creation time verbatim
-  // (BookmarkSpecifics.creation_time_us), so dateAdded is identical on every
-  // synced device and survives renames and moves. title/path only break ties
+  // Chrome preserves a folder's creation time, so dateAdded survives renames
+  // and moves. title/path only break ties
   // between folders created in the same millisecond (e.g. bulk imports) and
   // are refreshed ("healed") whenever a render finds them out of date.
   function sameFolderPath(a?: string[], b?: string[]): boolean {
@@ -210,10 +209,8 @@
   // the whole tree at once is what makes same-millisecond twins safe: a
   // record is matched one-to-one against every live folder sharing its
   // dateAdded, so a lone record can never be claimed by a twin of the folder
-  // it belongs to. Record title/path metadata is deliberately never written
-  // back outside an explicit user edit — an automatic "heal" write would
-  // ping-pong between devices whose trees disagree (e.g. bookmark sync lag
-  // or bookmark sync turned off while extension sync stays on).
+  // it belongs to. Record metadata is updated only when the user explicitly
+  // edits that folder's style.
   function assignFolderStyles(
     styleRecords: FolderStyleRecord[],
     folders: FolderIdentity[]
@@ -244,6 +241,15 @@
         // Unique on both sides: dateAdded alone identifies the folder, no
         // matter how stale the record's title/path metadata is.
         byFolderId.set(dateFolders[0]!.id, records[0]!);
+        return;
+      }
+
+      if (records.length === 1 && dateFolders.every((folder) =>
+        records[0]!.title === folder.title && sameFolderPath(records[0]!.path, folder.path)
+      )) {
+        // Completely indistinguishable twins share one style instead of
+        // relying on render order.
+        dateFolders.forEach((folder) => byFolderId.set(folder.id, records[0]!));
         return;
       }
 
@@ -296,6 +302,9 @@
   ): FolderStyleRecord[] {
     const next = styleRecords.filter((record) => {
       if (record === existingRecord) return false;
+      if (existingRecord && record.dateAdded === existingRecord.dateAdded &&
+        record.title === existingRecord.title &&
+        sameFolderPath(record.path, existingRecord.path)) return false;
       // Also drop a record that identifies the same folder even if the
       // reference went stale (e.g. the array was replaced by a sync update
       // while the style dialog was open).

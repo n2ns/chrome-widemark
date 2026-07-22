@@ -8,7 +8,9 @@ export interface BatchDeps {
   endBatch: () => void;
 }
 
-// Delete each folder subtree in turn (batched so the tree reloads once).
+// Delete each folder only if it is still empty at the exact mutation point.
+// chrome.bookmarks.remove is atomic here: unlike removeTree, it fails instead
+// of deleting children that appeared after the confirmation/revalidation.
 export function removeFoldersSequentially(ids: string[], deps: BatchDeps, onDone: (removed: number) => void) {
   deps.beginBatch();
   let index = 0;
@@ -19,7 +21,7 @@ export function removeFoldersSequentially(ids: string[], deps: BatchDeps, onDone
       onDone(removed);
       return;
     }
-    chrome.bookmarks.removeTree(ids[index]!, () => {
+    chrome.bookmarks.remove(ids[index]!, () => {
       if (!chrome.runtime.lastError) removed += 1;
       index += 1;
       next();

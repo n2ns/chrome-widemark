@@ -7,6 +7,8 @@ import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { useSettingsStore, SETTINGS_DEFAULTS } from '../stores/settings.ts';
 import { useUiStore } from '../stores/ui.ts';
 import { useFolderStylesStore } from '../stores/folderStyles.ts';
+import { useOperationsStore } from '../stores/operations.ts';
+import { useContextMenuStore } from '../stores/contextMenu.ts';
 import type { BookmarkNode } from '../types.ts';
 
 const tree = ([
@@ -44,10 +46,19 @@ beforeEach(() => {
   useFolderStylesStore.setState({ styles: [] });
   useBookmarksStore.setState({ tree, recent: [], expandedFolderIds: new Set(['f1']), loaded: true });
   useUiStore.setState({ view: 'main', searchQuery: '', recentExpanded: true, focusedNodeId: null });
+  useOperationsStore.setState({ bookmarkMutationBusy: false, cleanupBusy: false, cleanupStatus: '' });
+  useContextMenuStore.setState({ target: null, x: 0, y: 0, trigger: null });
   vi.stubGlobal('chrome', {
     runtime: { getURL: (p: string) => p, lastError: undefined },
     tabs: { update: vi.fn(), create: vi.fn() },
-    bookmarks: { move: vi.fn(), create: vi.fn() },
+    bookmarks: {
+      get: vi.fn((id: string, cb: (nodes: BookmarkNode[]) => void) => {
+        const nodes = [tree[0]!, tree[0]!.children![0]!, ...tree[0]!.children![0]!.children!, ...tree[0]!.children![0]!.children![1]!.children!];
+        cb(nodes.filter((node) => node.id === id));
+      }),
+      move: vi.fn((_id: string, _destination: object, cb?: () => void) => cb?.()),
+      create: vi.fn((_details: object, cb?: () => void) => cb?.()),
+    },
     storage: { local: { set: vi.fn() } },
   });
 });
@@ -69,6 +80,23 @@ describe('flattenVisibleNodes', () => {
   });
 });
 
+describe('tree rendering', () => {
+  it('does not mount descendants of collapsed folders', () => {
+    useBookmarksStore.setState({ expandedFolderIds: new Set() });
+    render(<BookmarkTree />);
+
+    expect(screen.getByText('Work').closest('[role="treeitem"]')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('Docs')).not.toBeInTheDocument();
+  });
+
+  it('keeps the tree tabbable when the saved focus key is no longer visible', () => {
+    useUiStore.setState({ focusedNodeId: 'missing-node' });
+    render(<BookmarkTree />);
+
+    expect(screen.getByRole('tree')).toHaveAttribute('tabindex', '0');
+  });
+});
+
 describe('keyboard navigation', () => {
   it('ArrowDown moves focus and Enter toggles a focused folder', () => {
     renderHook(() => useKeyboardNav());
@@ -84,11 +112,48 @@ describe('keyboard navigation', () => {
     expect(useBookmarksStore.getState().expandedFolderIds.has('f1')).toBe(false);
   });
 
+  it('moves real DOM focus with the visual tree focus', () => {
+    render(<BookmarkTree />);
+    renderHook(() => useKeyboardNav());
+    const github = screen.getByText('GitHub').closest<HTMLElement>('[role="treeitem"]')!;
+    github.focus();
+
+    fireEvent.keyDown(github, { key: 'ArrowDown' });
+
+    const work = screen.getByText('Work').closest<HTMLElement>('[role="treeitem"]')!;
+    expect(document.activeElement).toBe(work);
+    fireEvent.keyDown(work, { key: 'Enter' });
+    expect(useBookmarksStore.getState().expandedFolderIds.has('f1')).toBe(false);
+  });
+
+  it('moves right into an expanded folder and left back to its parent', () => {
+    render(<BookmarkTree />);
+    renderHook(() => useKeyboardNav());
+    const work = screen.getByText('Work').closest<HTMLElement>('[role="treeitem"]')!;
+    work.focus();
+
+    fireEvent.keyDown(work, { key: 'ArrowRight' });
+    const docs = screen.getByText('Docs').closest<HTMLElement>('[role="treeitem"]')!;
+    expect(document.activeElement).toBe(docs);
+
+    fireEvent.keyDown(docs, { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(work);
+  });
+
   it('"/" opens the search box', () => {
     renderHook(() => useKeyboardNav());
     expect(useSettingsStore.getState().isSearchOpen).toBe(false);
     fireEvent.keyDown(document.body, { key: '/' });
     expect(useSettingsStore.getState().isSearchOpen).toBe(true);
+  });
+
+  it('does not send the search shortcut through an open context menu', () => {
+    renderHook(() => useKeyboardNav());
+    useContextMenuStore.setState({ target: tree[0]!.children![0]!.children![0]! });
+
+    fireEvent.keyDown(document.body, { key: '/' });
+
+    expect(useSettingsStore.getState().isSearchOpen).toBe(false);
   });
 
   it('navigates only the rows rendered by an active search', () => {
@@ -111,16 +176,30 @@ describe('keyboard navigation', () => {
     renderHook(() => useKeyboardNav());
 
     fireEvent.keyDown(document.body, { key: 'ArrowDown' });
+    expect(useUiStore.getState().focusedNodeId).toBe('recent:header');
+    fireEvent.keyDown(document.body, { key: 'ArrowDown' });
     expect(useUiStore.getState().focusedNodeId).toBe('recent:b1');
 
     const githubRows = screen.getAllByText('GitHub').map((el) => el.closest('.bookmark-item'));
     expect(githubRows[0]).toHaveClass('kb-focus');
     expect(githubRows[1]).not.toHaveClass('kb-focus');
   });
+
+  it('toggles the recent treeitem once on Enter', () => {
+    useBookmarksStore.setState({ recent: [tree[0]!.children![0]!.children![0]!] });
+    render(<BookmarkTree />);
+    renderHook(() => useKeyboardNav());
+    const recent = screen.getByText('Recently Added').closest<HTMLElement>('[role="treeitem"]')!;
+    recent.focus();
+
+    fireEvent.keyDown(recent, { key: 'Enter' });
+
+    expect(useUiStore.getState().recentExpanded).toBe(false);
+  });
 });
 
 describe('drag and drop', () => {
-  it('dropping a bookmark onto a folder moves it via chrome.bookmarks.move', () => {
+  it('dropping a bookmark onto a folder moves it via chrome.bookmarks.move', async () => {
     render(<BookmarkTree />);
     const source = screen.getByText('GitHub').closest('.bookmark-item')!;
     const targetFolder = screen.getByText('Work').closest('.tree-node')!;
@@ -129,6 +208,21 @@ describe('drag and drop', () => {
     fireEvent.dragStart(source, { dataTransfer: dt });
     fireEvent.drop(targetFolder, { dataTransfer: dt, clientY: 5 });
 
-    expect(chrome.bookmarks.move).toHaveBeenCalledWith('b1', expect.anything());
+    await vi.waitFor(() => {
+      expect(chrome.bookmarks.move).toHaveBeenCalledWith('b1', expect.anything(), expect.any(Function));
+    });
+  });
+
+  it('clears the source dragging state before a same-level drop starts a mutation', async () => {
+    render(<BookmarkTree />);
+    const source = screen.getByText('GitHub').closest('.bookmark-item')!;
+    const target = screen.getByText('Work').closest('.tree-node')!;
+    const dt = makeDataTransfer();
+
+    fireEvent.dragStart(source, { dataTransfer: dt });
+    expect(source).toHaveClass('dragging');
+    fireEvent.drop(target, { dataTransfer: dt, clientY: 0 });
+
+    await vi.waitFor(() => expect(source).not.toHaveClass('dragging'));
   });
 });

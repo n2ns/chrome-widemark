@@ -22,6 +22,18 @@ test('manifest keeps the extension permission surface narrow', () => {
   assert.strictEqual(Object.hasOwn(manifest, 'optional_host_permissions'), false);
   assert.strictEqual(manifest.background.service_worker, 'src/background.ts');
   assert.strictEqual(manifest.side_panel.default_path, 'src/sidepanel.html');
+  assert.strictEqual(manifest.default_locale, 'en');
+  assert.strictEqual(manifest.name, '__MSG_manifest_name__');
+  assert.strictEqual(manifest.description, '__MSG_manifest_description__');
+});
+
+test('Chrome locale catalogs are validated as part of the standard check', () => {
+  const packageJson = JSON.parse(readProjectFile('package.json'));
+
+  assert.match(packageJson.scripts.check, /check:i18n/);
+  for (const locale of ['en', 'es', 'de', 'fr', 'zh_CN', 'zh_TW', 'ja', 'ko', 'tr', 'vi']) {
+    assert.ok(fs.existsSync(path.join(rootDir, 'public', '_locales', locale, 'messages.json')));
+  }
 });
 
 test('side panel html is the React module entry', () => {
