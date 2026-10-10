@@ -28,7 +28,13 @@ import {
   sortSearchResults
 } from '../src/lib/tree-logic.ts';
 import { gatherAllBookmarks, runChunkedDuplicateScan } from '../src/lib/duplicate-scan.ts';
+import type { DuplicateBookmark } from '../src/lib/duplicate-scan.ts';
 import { THEME_CLASSES } from '../src/lib/theme.ts';
+import type { BookmarkNode } from '../src/types.ts';
+
+// Fixtures carry only the fields each helper reads; cast them to Chrome's node type.
+const asNode = (value: object) => value as BookmarkNode;
+const asNodes = (list: object[]) => list as BookmarkNode[];
 
 test('bookmarkDomain - extracts hostname correctly', () => {
   assert.strictEqual(bookmarkDomain('https://www.google.com/search?q=test'), 'www.google.com');
@@ -44,11 +50,11 @@ test('sortNodes - sorts by index', () => {
     { title: 'C Bookmark', url: 'https://c.com', index: 3 },
     { title: 'D Folder', index: 1 }
   ];
-  const sorted = sortNodes(nodes);
-  assert.strictEqual(sorted[0].title, 'B Folder');
-  assert.strictEqual(sorted[1].title, 'D Folder');
-  assert.strictEqual(sorted[2].title, 'A Bookmark');
-  assert.strictEqual(sorted[3].title, 'C Bookmark');
+  const sorted = sortNodes(asNodes(nodes));
+  assert.strictEqual(sorted[0]!.title, 'B Folder');
+  assert.strictEqual(sorted[1]!.title, 'D Folder');
+  assert.strictEqual(sorted[2]!.title, 'A Bookmark');
+  assert.strictEqual(sorted[3]!.title, 'C Bookmark');
 });
 
 test('sortNodes - preserves mixed folder and bookmark index order', () => {
@@ -57,20 +63,20 @@ test('sortNodes - preserves mixed folder and bookmark index order', () => {
     { title: 'B Folder', index: 1 },
     { title: 'C Bookmark', url: 'https://c.com', index: 2 }
   ];
-  const sorted = sortNodes(nodes);
-  assert.strictEqual(sorted[0].title, 'A Bookmark');
-  assert.strictEqual(sorted[1].title, 'B Folder');
-  assert.strictEqual(sorted[2].title, 'C Bookmark');
+  const sorted = sortNodes(asNodes(nodes));
+  assert.strictEqual(sorted[0]!.title, 'A Bookmark');
+  assert.strictEqual(sorted[1]!.title, 'B Folder');
+  assert.strictEqual(sorted[2]!.title, 'C Bookmark');
 });
 
 test('computeMoveDestination - uses Chrome insert-before indices for downward moves', () => {
   const target = { id: 'd', parentId: '1', index: 4 };
 
-  assert.deepStrictEqual(computeMoveDestination(target, 'above'), {
+  assert.deepStrictEqual(computeMoveDestination(asNode(target), 'above'), {
     parentId: '1',
     index: 4
   });
-  assert.deepStrictEqual(computeMoveDestination(target, 'below'), {
+  assert.deepStrictEqual(computeMoveDestination(asNode(target), 'below'), {
     parentId: '1',
     index: 5
   });
@@ -79,7 +85,7 @@ test('computeMoveDestination - uses Chrome insert-before indices for downward mo
 test('computeMoveDestination - keeps same-parent below target one slot after the target', () => {
   const target = { id: 'b', parentId: '1', index: 2 };
 
-  assert.deepStrictEqual(computeMoveDestination(target, 'below'), {
+  assert.deepStrictEqual(computeMoveDestination(asNode(target), 'below'), {
     parentId: '1',
     index: 3
   });
@@ -88,7 +94,7 @@ test('computeMoveDestination - keeps same-parent below target one slot after the
 test('computeMoveDestination - keeps cross-parent moves unadjusted', () => {
   const target = { id: 'd', parentId: '2', index: 4 };
 
-  assert.deepStrictEqual(computeMoveDestination(target, 'below'), {
+  assert.deepStrictEqual(computeMoveDestination(asNode(target), 'below'), {
     parentId: '2',
     index: 5
   });
@@ -97,7 +103,7 @@ test('computeMoveDestination - keeps cross-parent moves unadjusted', () => {
 test('computeMoveDestination - inside folder appends to target folder', () => {
   const target = { id: 'folder', parentId: '1', index: 4 };
 
-  assert.deepStrictEqual(computeMoveDestination(target, 'inside'), {
+  assert.deepStrictEqual(computeMoveDestination(asNode(target), 'inside'), {
     parentId: 'folder'
   });
 });
@@ -112,40 +118,40 @@ test('cleanup excludes browser-owned folders identified by folderType', () => {
     ],
   }];
 
-  assert.deepStrictEqual(findEmptyFolders(tree).map(folder => folder.id), ['user-empty']);
+  assert.deepStrictEqual(findEmptyFolders(asNodes(tree)).map(folder => folder.id), ['user-empty']);
 });
 
 test('findDuplicateBookmarks - groups matching domains case-insensitively', () => {
-  const duplicates = findDuplicateBookmarks([
+  const duplicates = findDuplicateBookmarks(asNodes([
     { id: '1', title: 'A', url: 'https://example.com/page' },
     { id: '2', title: 'B', url: ' https://EXAMPLE.com/page ' },
     { id: '3', title: 'C', url: 'https://other.example.com/' },
     { id: '4', title: 'Folder' }
-  ]);
+  ]));
 
   assert.strictEqual(duplicates.length, 1);
-  assert.strictEqual(duplicates[0].url, 'example.com');
-  assert.deepStrictEqual(duplicates[0].items.map(item => item.id), ['1', '2']);
+  assert.strictEqual(duplicates[0]!.url, 'example.com');
+  assert.deepStrictEqual(duplicates[0]!.items.map(item => item.id), ['1', '2']);
 });
 
 test('findDuplicateBookmarks - groups matching domains with different paths', () => {
-  const duplicates = findDuplicateBookmarks([
+  const duplicates = findDuplicateBookmarks(asNodes([
     { id: '1', title: 'A', url: 'https://example.com/page1' },
     { id: '2', title: 'B', url: 'https://example.com/page2' },
     { id: '3', title: 'C', url: 'https://other.com/' }
-  ]);
+  ]));
 
   assert.strictEqual(duplicates.length, 1);
-  assert.strictEqual(duplicates[0].url, 'example.com');
-  assert.deepStrictEqual(duplicates[0].items.map(item => item.id), ['1', '2']);
+  assert.strictEqual(duplicates[0]!.url, 'example.com');
+  assert.deepStrictEqual(duplicates[0]!.items.map(item => item.id), ['1', '2']);
 });
 
 test('findDuplicateBookmarks - ignores unique and folder-only entries', () => {
-  const duplicates = findDuplicateBookmarks([
+  const duplicates = findDuplicateBookmarks(asNodes([
     { id: '1', title: 'A', url: 'https://a.example.com/' },
     { id: '2', title: 'B', url: 'https://b.example.com/' },
     { id: '3', title: 'Folder' }
-  ]);
+  ]));
 
   assert.deepStrictEqual(duplicates, []);
 });
@@ -157,31 +163,31 @@ test('bookmarkUrlKey - normalizes host case and whitespace, rejects invalid URLs
 });
 
 test('findDuplicateBookmarksByUrl - groups only exact URL matches', () => {
-  const duplicates = findDuplicateBookmarksByUrl([
+  const duplicates = findDuplicateBookmarksByUrl(asNodes([
     { id: '1', title: 'A', url: 'https://example.com/page' },
     { id: '2', title: 'B', url: ' https://EXAMPLE.com/page ' },
     { id: '3', title: 'C', url: 'https://example.com/other' },
     { id: '4', title: 'Folder' }
-  ]);
+  ]));
 
   assert.strictEqual(duplicates.length, 1);
-  assert.strictEqual(duplicates[0].url, 'https://example.com/page');
-  assert.deepStrictEqual(duplicates[0].items.map(item => item.id), ['1', '2']);
+  assert.strictEqual(duplicates[0]!.url, 'https://example.com/page');
+  assert.deepStrictEqual(duplicates[0]!.items.map(item => item.id), ['1', '2']);
 });
 
 test('findDuplicateBookmarksByUrl - keeps different paths and queries separate', () => {
-  const duplicates = findDuplicateBookmarksByUrl([
+  const duplicates = findDuplicateBookmarksByUrl(asNodes([
     { id: '1', title: 'A', url: 'https://example.com/page?a=1' },
     { id: '2', title: 'B', url: 'https://example.com/page?a=2' },
     { id: '3', title: 'C', url: 'https://example.com/page' }
-  ]);
+  ]));
 
   assert.deepStrictEqual(duplicates, []);
 });
 
 test('getBookmarkIconSrc - uses Chrome favicon endpoint for valid URLs', () => {
   const src = getBookmarkIconSrc({
-    chromeApi: { runtime: { getURL: path => `chrome-extension://id${path}` } },
+    chromeApi: { runtime: { getURL: (path: string) => `chrome-extension://id${path}` } } as unknown as typeof chrome,
     bookmarkDomain,
     url: 'https://example.com/page?a=1'
   });
@@ -194,7 +200,7 @@ test('getBookmarkIconSrc - uses Chrome favicon endpoint for valid URLs', () => {
 
 test('getBookmarkIconSrc - falls back for non-web URLs', () => {
   const src = getBookmarkIconSrc({
-    chromeApi: { runtime: { getURL: path => path } },
+    chromeApi: { runtime: { getURL: (path: string) => path } } as unknown as typeof chrome,
     bookmarkDomain,
     url: 'chrome://bookmarks'
   });
@@ -203,7 +209,7 @@ test('getBookmarkIconSrc - falls back for non-web URLs', () => {
 });
 
 test('gatherAllBookmarks - flattens nested bookmark trees and adds folder paths', () => {
-  const bookmarks = gatherAllBookmarks([
+  const bookmarks = gatherAllBookmarks(asNodes([
     {
       id: 'root',
       title: 'root',
@@ -214,7 +220,7 @@ test('gatherAllBookmarks - flattens nested bookmark trees and adds folder paths'
         { id: '2', title: 'Two', url: 'https://two.example/' }
       ]
     }
-  ]);
+  ]));
 
   assert.deepStrictEqual(bookmarks.map(bookmark => bookmark.id), ['1', '2']);
   assert.deepStrictEqual(bookmarks.map(bookmark => bookmark.folderPath), [
@@ -227,11 +233,11 @@ test('findBookmarksBarNode - prefers the Chrome bookmarks bar node', () => {
   const bookmarksBar = { id: '1', title: 'Bookmarks Bar', children: [] };
   const other = { id: '2', title: 'Other Bookmarks', children: [] };
 
-  assert.strictEqual(findBookmarksBarNode([{ id: '0', children: [other, bookmarksBar] }]), bookmarksBar);
+  assert.strictEqual(findBookmarksBarNode(asNodes([{ id: '0', children: [other, bookmarksBar] }])), bookmarksBar);
 });
 
 test('gatherFolderIds - collects nested folder ids and skips bookmark nodes', () => {
-  const folderIds = gatherFolderIds([
+  const folderIds = gatherFolderIds(asNodes([
     {
       id: '1',
       title: 'Folder',
@@ -240,7 +246,7 @@ test('gatherFolderIds - collects nested folder ids and skips bookmark nodes', ()
         { id: '3', title: 'Nested', children: [] }
       ]
     }
-  ]);
+  ]));
 
   assert.deepStrictEqual(folderIds, ['1', '3']);
 });
@@ -256,24 +262,24 @@ test('determineDropPosition - supports folder before inside and after drops', ()
   assert.strictEqual(determineDropPosition(35, 40, true), 'below');
 });
 
-function createDataTransfer(data) {
+function createDataTransfer(data: Record<string, string>) {
   return {
     types: Object.keys(data),
-    getData: type => data[type] || ''
-  };
+    getData: (type: string) => data[type] || ''
+  } as unknown as DataTransfer;
 }
 
 test('extractLinkInfo - reads the first URL from uri-list and uses anchor text as title', () => {
   const originalDOMParser = global.DOMParser;
   global.DOMParser = class FakeDOMParser {
-    parseFromString(html) {
+    parseFromString(html: string) {
       const match = html.match(/<a\b[^>]*>([\s\S]*?)<\/a>/i);
-      const text = match ? match[1].replace(/<[^>]+>/g, '').trim() : '';
+      const text = match ? match[1]!.replace(/<[^>]+>/g, '').trim() : '';
       return {
-        querySelector: selector => (selector === 'a' && text ? { textContent: text, innerText: text } : null)
+        querySelector: (selector: string) => (selector === 'a' && text ? { textContent: text, innerText: text } : null)
       };
     }
-  };
+  } as unknown as typeof DOMParser;
 
   try {
     assert.deepStrictEqual(extractLinkInfo(createDataTransfer({
@@ -305,7 +311,7 @@ test('extractLinkInfo - falls back when dragged anchor text is blank', () => {
         querySelector: () => ({ textContent: '   ', innerText: '   ' })
       };
     }
-  };
+  } as unknown as typeof DOMParser;
 
   try {
     assert.deepStrictEqual(extractLinkInfo(createDataTransfer({
@@ -350,11 +356,11 @@ test('shouldSearchBookmarks - allows useful short and multi-character queries', 
 });
 
 test('sortSearchResults - puts title matches before URL-only matches', () => {
-  const sorted = sortSearchResults([
+  const sorted = sortSearchResults(asNodes([
     { title: 'Docs', url: 'https://example.com/travel' },
     { title: 'Travel Payouts', url: 'https://app.example.com' },
     { title: 'Another Travel', url: 'https://another.example.com' }
-  ], 'travel');
+  ]), 'travel');
 
   assert.deepStrictEqual(sorted.map(item => item.title), [
     'Travel Payouts',
@@ -364,12 +370,12 @@ test('sortSearchResults - puts title matches before URL-only matches', () => {
 });
 
 test('sortSearchResults - ranks startsWith matches before contains matches', () => {
-  const sorted = sortSearchResults([
+  const sorted = sortSearchResults(asNodes([
     { title: 'Docs', url: 'https://travel.example.com' },
     { title: 'My Travel', url: 'https://example.com' },
     { title: 'Travel Admin', url: 'https://admin.example.com' },
     { title: 'Docs', url: 'https://example.com/travel' }
-  ], 'travel');
+  ]), 'travel');
 
   assert.deepStrictEqual(sorted.map(item => item.url), [
     'https://admin.example.com',
@@ -380,11 +386,11 @@ test('sortSearchResults - ranks startsWith matches before contains matches', () 
 });
 
 test('sortSearchResults - sorts by title then URL within the same match group', () => {
-  const sorted = sortSearchResults([
+  const sorted = sortSearchResults(asNodes([
     { title: 'Beta', url: 'https://b.example.com' },
     { title: 'Alpha', url: 'https://z.example.com' },
     { title: 'Alpha', url: 'https://a.example.com' }
-  ], 'a');
+  ]), 'a');
 
   assert.deepStrictEqual(sorted.map(item => item.url), [
     'https://a.example.com',
@@ -487,7 +493,7 @@ test('replaceFolderStyle - replaces exactly the assigned record and drops defaul
   const replaced = replaceFolderStyle(added, added[1], identity, { color: 'green', icon: 'star' });
   assert.strictEqual(replaced.length, 2);
   assert.strictEqual(replaced[0], other);
-  assert.strictEqual(replaced[1].color, 'green');
+  assert.strictEqual(replaced[1]!.color, 'green');
 
   const cleared = replaceFolderStyle(replaced, replaced[1], identity, { color: '', icon: 'default' });
   assert.deepStrictEqual(cleared, [other]);
@@ -523,12 +529,12 @@ test('assignFolderStyles - shares one style across indistinguishable synced twin
 });
 
 test('runChunkedDuplicateScan - reports progress and matches the synchronous result', async () => {
-  const bookmarks = [];
+  const bookmarks: DuplicateBookmark[] = [];
   for (let i = 0; i < 450; i++) {
-    bookmarks.push({ id: String(i), title: `B${i}`, url: `https://example.com/page${i % 100}` });
+    bookmarks.push({ id: String(i), title: `B${i}`, url: `https://example.com/page${i % 100}` } as DuplicateBookmark);
   }
 
-  const progress = [];
+  const progress: [number, number][] = [];
   const duplicates = await new Promise((resolve) => {
     runChunkedDuplicateScan({
       bookmarks,
@@ -541,13 +547,13 @@ test('runChunkedDuplicateScan - reports progress and matches the synchronous res
   });
 
   assert.deepStrictEqual(progress, [[200, 450], [400, 450], [450, 450]]);
-  assert.deepStrictEqual(duplicates, findDuplicateBookmarksByUrl(bookmarks));
+  assert.deepStrictEqual(duplicates, findDuplicateBookmarksByUrl(asNodes(bookmarks)));
 });
 
 test('runChunkedDuplicateScan - stops early when shouldContinue reports superseded', async () => {
-  const bookmarks = [];
+  const bookmarks: DuplicateBookmark[] = [];
   for (let i = 0; i < 450; i++) {
-    bookmarks.push({ id: String(i), title: `B${i}`, url: `https://example.com/p${i}` });
+    bookmarks.push({ id: String(i), title: `B${i}`, url: `https://example.com/p${i}` } as DuplicateBookmark);
   }
 
   let chunks = 0;
@@ -577,14 +583,14 @@ test('bookmarkDomainKey - lowercases hostnames and rejects non-web URLs', () => 
 });
 
 test('computeSortedChildren - folders first, then bookmarks, alphabetically and numerically', () => {
-  const sorted = computeSortedChildren([
+  const sorted = computeSortedChildren(asNodes([
     { id: '1', title: 'zeta', url: 'https://z.example' },
     { id: '2', title: 'Alpha Folder' },
     { id: '3', title: 'alpha', url: 'https://a.example' },
     { id: '4', title: 'item 10', url: 'https://ten.example' },
     { id: '5', title: 'item 2', url: 'https://two.example' },
     { id: '6', title: 'beta folder' }
-  ]);
+  ]));
 
   assert.deepStrictEqual(sorted.map(node => node.id), ['2', '6', '3', '5', '4', '1']);
 });
@@ -611,10 +617,10 @@ test('findEmptyFolders - reports topmost deep-empty folders and skips permanent 
     }]
   }];
 
-  const empties = findEmptyFolders(tree);
+  const empties = findEmptyFolders(asNodes(tree));
 
   assert.deepStrictEqual(empties.map(folder => folder.id), ['20', '30']);
-  assert.deepStrictEqual(empties[0].path, ['Bookmarks Bar', 'Hollow']);
+  assert.deepStrictEqual(empties[0]!.path, ['Bookmarks Bar', 'Hollow']);
 });
 
 test('findEmptyFolders and findSameNameFolderGroups - skip policy-managed subtrees', () => {
@@ -639,8 +645,8 @@ test('findEmptyFolders and findSameNameFolderGroups - skip policy-managed subtre
     }]
   }];
 
-  assert.deepStrictEqual(findEmptyFolders(tree).map(folder => folder.id), ['94']);
-  assert.deepStrictEqual(findSameNameFolderGroups(tree), []);
+  assert.deepStrictEqual(findEmptyFolders(asNodes(tree)).map(folder => folder.id), ['94']);
+  assert.deepStrictEqual(findSameNameFolderGroups(asNodes(tree)), []);
 });
 
 test('findSameNameFolderGroups - groups same-titled siblings only, keeping the lowest index', () => {
@@ -665,12 +671,12 @@ test('findSameNameFolderGroups - groups same-titled siblings only, keeping the l
     }]
   }];
 
-  const groups = findSameNameFolderGroups(tree);
+  const groups = findSameNameFolderGroups(asNodes(tree));
 
   assert.strictEqual(groups.length, 1);
-  assert.strictEqual(groups[0].keepId, '10');
-  assert.deepStrictEqual(groups[0].mergeIds, ['12', '11']);
-  assert.deepStrictEqual(groups[0].path, ['Bookmarks Bar', 'Dev']);
+  assert.strictEqual(groups[0]!.keepId, '10');
+  assert.deepStrictEqual(groups[0]!.mergeIds, ['12', '11']);
+  assert.deepStrictEqual(groups[0]!.path, ['Bookmarks Bar', 'Dev']);
 });
 
 test('THEME_CLASSES - includes every selectable theme class', () => {

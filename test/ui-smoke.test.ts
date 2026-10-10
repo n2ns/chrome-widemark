@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const rootDir = path.resolve(import.meta.dirname, '..');
 
-function readProjectFile(relativePath) {
+function readProjectFile(relativePath: string) {
   return fs.readFileSync(path.join(rootDir, relativePath), 'utf8');
 }
 
