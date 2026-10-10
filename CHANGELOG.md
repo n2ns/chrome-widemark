@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disclosed clearly in the UI, privacy policy, and store copy that folder style
   metadata is synchronized by Chrome Sync and is not received by developer servers.
 - CI now builds and inspects the packaged extension. The release workflow checks
-  package/Manifest/tag versions, uses least privilege and a protected environment,
+  package/Manifest/tag versions, uses least privilege and a dedicated environment,
   serializes deployments, and pins Actions to full commit SHAs.
 - Raised the minimum Chrome version to 116 to match the side-panel shortcut API.
 

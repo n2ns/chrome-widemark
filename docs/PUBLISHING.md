@@ -60,5 +60,5 @@ Before publishing, host the privacy policy and add the hosted URL to the Chrome 
 - Add the hosted privacy policy URL to the store listing.
 - Complete the privacy practices form.
 - Verify the packaged extension contains only the generated runtime files: `manifest.json`, `src/`, `assets/`, `icons/`, `service-worker-loader.js`, and `_locales/`.
-- Configure the `chrome-web-store` GitHub environment with required reviewers, prevent self-review, and store the Web Store credentials as environment secrets before using the tag workflow.
+- Store the Web Store credentials (`EXTENSION_ID`, `CLIENT_ID`, `CLIENT_SECRET`, `REFRESH_TOKEN`) as GitHub repository secrets before using the tag workflow. Pushing a `v*` tag runs the workflow in the `chrome-web-store` environment and publishes without manual approval.
 - Reload the unpacked extension and manually test browsing (including Other Bookmarks), search, drag/drop, sorting, settings, duplicate checks, cleanup actions, and keyboard navigation.
