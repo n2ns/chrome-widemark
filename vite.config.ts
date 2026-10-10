@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { crx } from '@crxjs/vite-plugin';
-import manifest from './manifest.json';
+import manifest from './manifest.json' with { type: 'json' };
 
 // @crxjs reads manifest.json, builds the side panel HTML entry and the
 // background service worker, and rewrites their paths in the emitted manifest.
