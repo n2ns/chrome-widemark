@@ -73,7 +73,6 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for details.
 - [Architecture](docs/ARCHITECTURE.md)
 - [Development](docs/DEVELOPMENT.md)
 - [Publishing](docs/PUBLISHING.md)
-- [Chrome Web Store Guide](docs/CHROME_WEB_STORE_GUIDE.md)
 - [References](docs/REFERENCES.md)
 
 ## Project Layout

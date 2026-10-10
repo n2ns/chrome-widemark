@@ -2,8 +2,6 @@
 
 ## Chrome Web Store Draft
 
-Copy-ready store listing text is maintained in [CHROME_WEB_STORE_GUIDE.md](CHROME_WEB_STORE_GUIDE.md).
-
 ### Product Name
 
 WideMark: Bookmark Side Panel
@@ -56,7 +54,7 @@ Before publishing, host the privacy policy and add the hosted URL to the Chrome 
 - Run `npm run package`.
 - Inspect the package with `unzip -l dist/widemark-v<version>.zip`.
 - Upload `dist/widemark-v<version>.zip` to the Chrome Web Store.
-- Fill the store listing fields from [CHROME_WEB_STORE_GUIDE.md](CHROME_WEB_STORE_GUIDE.md).
+- Fill the store listing fields from the draft above.
 - Capture Chrome Web Store screenshots.
 - Host the privacy policy on the project website.
 - Add the hosted privacy policy URL to the store listing.

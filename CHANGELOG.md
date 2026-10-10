@@ -39,8 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `@crxjs/vite-plugin` (replacing the vanilla-DOM controllers and the
   `tsc`-only build). Bookmark logic stays framework-agnostic in `src/lib/` and
   is unit-tested independently. Tests run on **Vitest** (happy-dom). The shipped
-  bundle carries no source maps. No user-facing behavior change intended. See
-  [docs/REACT_MIGRATION.md](docs/REACT_MIGRATION.md).
+  bundle carries no source maps. No user-facing behavior change intended.
 - Migrated the source from vanilla ES5-style UMD scripts to TypeScript. Modules
   are bundled into `build/` by Vite, while `tsc` performs strict type checking.
   Type checking runs under `strict`,
@@ -53,8 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   validates the packaged ZIP on push/PR.
 - Development now loads the bundled `build/` directory as the unpacked
   extension (`npm run build`); the packaged zip ships the Vite output. See
-  [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) and
-  [docs/TYPESCRIPT_MIGRATION.md](docs/TYPESCRIPT_MIGRATION.md).
+  [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
 ## [1.1.0] - 2026-07-21
 
