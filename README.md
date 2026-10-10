@@ -31,7 +31,7 @@ WideMark uses only the permissions needed for bookmark-side-panel behavior:
 
 It does not declare `host_permissions`. WideMark does not collect, track, or sell user data, and no data is sent to developer-operated servers. Bookmark browsing and duplicate checks are processed locally in Chrome. Folder style metadata is stored in Chrome Sync so those styles can follow the user's Chrome profile.
 
-See [PRIVACY.md](PRIVACY.md) for the privacy policy draft.
+See [PRIVACY.md](PRIVACY.md) for the privacy policy.
 
 ## Development
 
@@ -102,4 +102,4 @@ chrome-widemark/
 
 ## Status
 
-This is a personal project and intentionally avoids heavy process or framework overhead. See [TODO.md](TODO.md) for the current follow-up list.
+This project intentionally avoids heavy process or framework overhead. See [TODO.md](TODO.md) for the current follow-up list.
