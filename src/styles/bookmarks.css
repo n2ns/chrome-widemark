@@ -184,8 +184,9 @@ li {
   color: var(--text-muted);
 }
 
-/* Keyboard-navigation focus ring */
-.tree-node.kb-focus {
+/* Keyboard-navigation focus ring; mouse clicks also move the roving focus
+   anchor, but only keyboard-visible focus draws the ring. */
+.tree-node.kb-focus:focus-visible {
   outline: 1.5px solid var(--accent);
   outline-offset: -1.5px;
   border-radius: 8px;
