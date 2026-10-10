@@ -3,7 +3,7 @@
     "target": "es2022",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "lib": ["es2022", "dom", "dom.iterable"],
+    "lib": ["es2022", "dom"],
     "types": ["chrome-types"],
     "jsx": "react-jsx",
     "strict": true,
@@ -14,7 +14,8 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "erasableSyntaxOnly": true,
-    "rewriteRelativeImportExtensions": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
     "noEmit": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]

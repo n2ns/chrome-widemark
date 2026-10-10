@@ -84,7 +84,8 @@ chrome-widemark/
 ├── vite.config.ts          # Vite + @crxjs build
 ├── vitest.config.ts        # test runner (happy-dom)
 ├── tsconfig.json           # extension type-check (noEmit)
-├── tsconfig.scripts.json   # build-script type-check (Node)
+├── tsconfig.scripts.json   # build-script + Vite/Vitest config type-check (Node)
+├── tsconfig.test.json      # test/ type-check
 ├── src/
 │   ├── background.ts        # MV3 service worker
 │   ├── sidepanel.html       # React entry (#root + main.tsx)
