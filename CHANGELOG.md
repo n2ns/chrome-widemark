@@ -32,8 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings and folder-style reloads no longer allow older asynchronous reads to
   overwrite newer local or cross-window changes.
 
-## [1.2.0] - 2026-07-22
-
 ### Internal
 - Rewrote the UI on **React 19 + Zustand**, bundled by **Vite** with
   `@crxjs/vite-plugin` (replacing the vanilla-DOM controllers and the
