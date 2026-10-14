@@ -36,7 +36,7 @@ On `chrome://extensions`, click **Remove** on the WideMark card. You can then de
 
 **Good to know**
 
-- To Chrome, the manual copy and the Chrome Web Store version are the same extension. Use one or the other: remove the Chrome Web Store version before loading a manual copy.
+- To Chrome, the manual copy and the Chrome Web Store version are the same extension. Use one or the other: remove the Chrome Web Store version before loading a manual copy. Removing it deletes WideMark's saved settings (such as theme, font size, spacing, zoom, and folder styles), so note them first.
 - Chrome may remind you that extensions are running in developer mode. That is expected for manually installed extensions.
 
 ## Features
