@@ -60,5 +60,5 @@ Before publishing, host the privacy policy and add the hosted URL to the Chrome 
 - Add the hosted privacy policy URL to the store listing.
 - Complete the privacy practices form.
 - Verify the packaged extension contains only the generated runtime files: `manifest.json`, `src/`, `assets/`, `icons/`, `service-worker-loader.js`, and `_locales/`.
-- Store the Web Store credentials (`EXTENSION_ID`, `CLIENT_ID`, `CLIENT_SECRET`, `REFRESH_TOKEN`) as GitHub repository secrets before using the tag workflow. Pushing a `v*` tag runs the workflow in the `chrome-web-store` environment and publishes without manual approval.
+- Store the Web Store credentials (`EXTENSION_ID`, `CLIENT_ID`, `CLIENT_SECRET`, `REFRESH_TOKEN`) as GitHub repository secrets before using the tag workflow. Pushing a `v*` tag runs the workflow in the `chrome-web-store` environment and publishes without manual approval. The same workflow also creates a GitHub Release for the tag with `dist/widemark-v<version>.zip` attached (release notes are this version's CHANGELOG section plus manual install steps), so users can install by hand as described in the README.
 - Reload the unpacked extension and manually test browsing (including Other Bookmarks), search, drag/drop, sorting, settings, duplicate checks, cleanup actions, and keyboard navigation.
