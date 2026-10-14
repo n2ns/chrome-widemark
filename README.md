@@ -21,11 +21,14 @@ Use this if you cannot use the Chrome Web Store, or want a specific version. A m
 
 **Update**
 
-1. Download the newer zip from the [Releases page](https://github.com/n2ns/chrome-widemark/releases).
-2. Unzip it into the same folder, replacing the old files.
+1. Download the newer `widemark-v<version>.zip` from the Releases page.
+2. Replace the files in your existing folder with the new ones. Make sure they end up in that same folder, not in a new one next to it:
+   - Windows: right-click the zip, choose **Extract All…**, and set the destination to your existing folder. Confirm replacing the files.
+   - macOS: double-clicking the zip creates a new folder next to it. Open that folder, select all its files, and drag them into your existing folder, choosing **Replace**.
+   - Linux: `unzip -o widemark-v<version>.zip -d <your folder>`.
 3. On `chrome://extensions`, click the reload arrow on the WideMark card.
 
-Keep using the same folder: Chrome ties a manually installed extension, and the settings it saved, to the folder it was loaded from. Loading it from a different folder installs a separate copy that starts with empty settings.
+WideMark keeps the same identity and settings wherever its folder is, but loading one folder and updating it in place keeps things simple.
 
 **Remove**
 
@@ -33,7 +36,7 @@ On `chrome://extensions`, click **Remove** on the WideMark card. You can then de
 
 **Good to know**
 
-- Install either the Chrome Web Store version or a manual copy, not both, or you will see two WideMark icons.
+- To Chrome, the manual copy and the Chrome Web Store version are the same extension. Use one or the other: remove the Chrome Web Store version before loading a manual copy.
 - Chrome may remind you that extensions are running in developer mode. That is expected for manually installed extensions.
 
 ## Features
