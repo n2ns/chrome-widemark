@@ -3,7 +3,7 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA14k0h++bl/TQ5fAtLO/RGxvRRI5zwBMdOYDqAKt+mMC5KNVj5UTOkjOmzy1dSXLNVRVWrlNtMzQf+U0Duzyp/vC9w0Y/9sm687wrqMonFDJqRRo06+6iqriMHCzL2eYnFuoORCfeEatdhPvNWs1Cs60Rcy5ZuZQjv6R0vBh+drplqyjzwoxt0Ltvp2IIwpHI19MppBv3MSbDUYQ5Tf0ijpMNmVG/KrJ61Mi+/a08TZ2oOpfveIGTmyzqT5Hccjmt2/JXeHA56aZCBWamsV4sOfW4O1He+NfuHJC4xbq4Yxm0hQdRG6D+/yLrBYg0UT8JaCzXEFwYekswhgIp4IiB4QIDAQAB",
   "name": "__MSG_manifest_name__",
   "short_name": "__MSG_manifest_short_name__",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "__MSG_manifest_description__",
   "default_locale": "en",
   "minimum_chrome_version": "116",
