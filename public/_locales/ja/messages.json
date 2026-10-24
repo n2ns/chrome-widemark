@@ -71,10 +71,16 @@
     "message": "すべてのフォルダーを折りたたむ"
   },
   "toolbar_search_placeholder": {
-    "message": "ブックマークを検索..."
+    "message": "ブックマークとフォルダを検索..."
   },
   "toolbar_clear_search": {
     "message": "検索をクリア"
+  },
+  "search_show_in_folder": {
+    "message": "フォルダ内で表示"
+  },
+  "search_folder": {
+    "message": "フォルダ"
   },
   "tree_recently_added": {
     "message": "最近追加した項目"
@@ -533,7 +539,7 @@
     "message": "フォルダーをクリックすると展開または折りたためます。"
   },
   "help_basics_search": {
-    "message": "検索ボタン（または「/」キー）を使い、タイトルや URL でブックマークを絞り込めます。"
+    "message": "検索ボタン（または「/」キー）でブックマークとフォルダを検索します。複数のキーワードはスペースで区切ります。すべてのキーワードがタイトルまたは URL に含まれる項目を表示します。"
   },
   "help_basics_background": {
     "message": "Ctrl キーを押しながらクリック、または中クリックすると、バックグラウンドタブで開きます。"

@@ -7,12 +7,14 @@ import { useContextMenuStore } from '../stores/contextMenu.ts';
 import { getNavigableNodes } from '../lib/visible-nodes.ts';
 import { handleBookmarkClick } from '../lib/bookmark-click.ts';
 import { shouldSearchBookmarks } from '../lib/tree-logic.ts';
+import { revealBookmark } from '../lib/reveal-bookmark.ts';
 
 // Global keyboard handling: Escape closes overlays, "/" focuses search, and the
 // arrow keys / Enter navigate the tree (matching the pre-React behavior).
 export function useKeyboardNav() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.isComposing) return;
       if (event.key === 'Escape') {
         if (useModalStore.getState().active) useModalStore.getState().cancel();
         if (useContextMenuStore.getState().target) useContextMenuStore.getState().close();
@@ -49,6 +51,7 @@ export function useKeyboardNav() {
         expandedFolderIds: bookmarks.expandedFolderIds,
         searchQuery: ui.searchQuery,
         searchActive: settings.isSearchOpen && shouldSearchBookmarks(ui.searchQuery),
+        revealedRootId: ui.revealedRootId,
       });
       if (rows.length === 0) return;
 
@@ -74,6 +77,8 @@ export function useKeyboardNav() {
           ui.setRecentExpanded(!ui.recentExpanded);
         } else if (focused.url) {
           handleBookmarkClick(focused.url, event, useSettingsStore.getState().leftClickAction);
+        } else if (focusedRow?.focusKey.startsWith('search:')) {
+          revealBookmark(focused.id);
         } else {
           bookmarks.setExpanded(focused.id, !bookmarks.expandedFolderIds.has(focused.id));
         }
@@ -89,6 +94,9 @@ export function useKeyboardNav() {
       } else if (event.key === 'ArrowLeft' && focusedRow?.kind === 'recent-header' && ui.recentExpanded) {
         event.preventDefault();
         ui.setRecentExpanded(false);
+      } else if (event.key === 'ArrowRight' && focused && !focused.url && focusedRow?.focusKey.startsWith('search:')) {
+        event.preventDefault();
+        revealBookmark(focused.id);
       } else if (event.key === 'ArrowRight' && focused && !focused.url && !bookmarks.expandedFolderIds.has(focused.id)) {
         event.preventDefault();
         bookmarks.setExpanded(focused.id, true);

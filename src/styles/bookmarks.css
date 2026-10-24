@@ -184,6 +184,45 @@ li {
   color: var(--text-muted);
 }
 
+.search-result-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.tree-container > ul.search-results-list {
+  display: block;
+}
+
+.search-result-path {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: normal;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.search-reveal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 5px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.search-reveal-btn:hover,
+.search-reveal-btn:focus-visible {
+  color: var(--accent);
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
 /* Keyboard-navigation focus ring; mouse clicks also move the roving focus
    anchor, but only keyboard-visible focus draws the ring. */
 .tree-node.kb-focus:focus-visible {

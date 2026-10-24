@@ -1,3 +1,4 @@
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { useSettingsStore } from '../stores/settings.ts';
 import { useFolderStylesStore } from '../stores/folderStyles.ts';
@@ -8,41 +9,46 @@ import { useNodeDrag } from '../hooks/useNodeDrag.ts';
 import { sortNodes } from '../lib/bookmark-utils.ts';
 import { findBookmarksBarNode, shouldSearchBookmarks } from '../lib/tree-logic.ts';
 import { assignStylesToTree } from '../lib/folder-style-assignment.ts';
-import { searchBookmarks } from '../lib/search.ts';
+import { searchBookmarks, type SearchResult } from '../lib/search.ts';
+import { revealBookmark } from '../lib/reveal-bookmark.ts';
 import { getNavigableNodes } from '../lib/visible-nodes.ts';
 import { getFolderSvgIcon } from '../lib/ui-icons.ts';
 import { t, tp } from '../lib/i18n.ts';
 import { BookmarkRow } from './BookmarkRow.tsx';
+import { SearchResultContent } from './SearchResultContent.tsx';
 import type { BookmarkNode, FolderStyleRecord } from '../types.ts';
 
 type StyleMap = Map<string, FolderStyleRecord>;
 
-function FolderRow({ node, styleMap }: { node: BookmarkNode; styleMap: StyleMap }) {
+function FolderRow({ node, styleMap, searchResult }: { node: BookmarkNode; styleMap: StyleMap; searchResult?: SearchResult }) {
   const expanded = useBookmarksStore((s) => s.expandedFolderIds.has(node.id));
   const setExpanded = useBookmarksStore((s) => s.setExpanded);
-  const focused = useUiStore((s) => s.focusedNodeId === node.id);
+  const focusKey = searchResult ? `search:${node.id}` : node.id;
+  const focused = useUiStore((s) => s.focusedNodeId === focusKey);
   const drag = useNodeDrag(node);
   const style = styleMap.get(node.id);
   const iconHtml = getFolderSvgIcon(style?.icon && style.icon !== 'default' ? style.icon : 'default');
+  const activate = () => searchResult ? revealBookmark(node.id) : setExpanded(node.id, !expanded);
 
   return (
     <li role="none">
       <div
         role="treeitem"
         tabIndex={focused ? 0 : -1}
-        data-focus-key={node.id}
-        aria-expanded={expanded}
-        className={`tree-node${expanded ? ' expanded' : ''}${drag.dragClass}${focused ? ' kb-focus' : ''}`}
+        data-focus-key={focusKey}
+        aria-expanded={searchResult ? undefined : expanded}
+        className={`tree-node${searchResult ? ' search-result' : expanded ? ' expanded' : ''}${drag.dragClass}${focused ? ' kb-focus' : ''}`}
         data-node-id={node.id}
         draggable={drag.draggable}
         {...drag.handlers}
-        onClick={() => setExpanded(node.id, !expanded)}
-        onFocus={() => useUiStore.getState().setFocusedNodeId(node.id)}
+        onClick={activate}
+        onFocus={() => useUiStore.getState().setFocusedNodeId(focusKey)}
         onKeyDown={(event) => {
+          if (event.nativeEvent.isComposing) return;
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             event.stopPropagation();
-            setExpanded(node.id, !expanded);
+            activate();
           }
         }}
         onContextMenu={(event) => {
@@ -56,9 +62,9 @@ function FolderRow({ node, styleMap }: { node: BookmarkNode; styleMap: StyleMap 
           style={style?.color ? { color: style.color } : undefined}
           dangerouslySetInnerHTML={{ __html: iconHtml }}
         />
-        <span className="node-title">{node.title}</span>
+        {searchResult ? <SearchResultContent result={searchResult} /> : <span className="node-title">{node.title}</span>}
       </div>
-      {expanded && (
+      {!searchResult && expanded && (
         <ul className="nested-tree folder-children" role="group">
           {sortNodes(node.children ?? []).map((child) => (
             <TreeItem key={child.id} node={child} styleMap={styleMap} />
@@ -130,6 +136,22 @@ export function BookmarkTree() {
   const focusedNodeId = useUiStore((s) => s.focusedNodeId);
   const recentExpanded = useUiStore((s) => s.recentExpanded);
   const expandedFolderIds = useBookmarksStore((s) => s.expandedFolderIds);
+  const revealedRootId = useUiStore((s) => s.revealedRootId);
+  const revealTargetId = useUiStore((s) => s.revealTargetId);
+  const treeRef = useRef<HTMLDivElement>(null);
+  const searchActive = isSearchOpen && shouldSearchBookmarks(searchQuery);
+  const results = useMemo(() => searchActive ? searchBookmarks(tree, searchQuery) : [], [tree, searchQuery, searchActive]);
+
+  useLayoutEffect(() => {
+    if (!revealTargetId || searchActive) return;
+    const target = [...(treeRef.current?.querySelectorAll<HTMLElement>('[data-focus-key]') ?? [])]
+      .find((row) => row.dataset.focusKey === revealTargetId);
+    if (target) {
+      target.focus({ preventScroll: true });
+      target.scrollIntoView?.({ block: 'nearest' });
+      useUiStore.setState({ revealTargetId: null });
+    }
+  }, [revealTargetId, searchActive, tree]);
 
   if (!loaded) {
     return (
@@ -142,18 +164,18 @@ export function BookmarkTree() {
     );
   }
 
-  if (isSearchOpen && shouldSearchBookmarks(searchQuery)) {
-    const results = searchBookmarks(tree, searchQuery);
+  if (searchActive) {
+    const styleMap = assignStylesToTree(tree[0]?.children ?? [], folderStyles);
     const focusIsVisible = results.some((node) => focusedNodeId === `search:${node.id}`);
     return (
       <div className="tree-container">
         <div className="search-results-header">{tp('tree_result_count_one', 'tree_result_count_other', results.length)}</div>
         <ul className="search-results-list" role="tree" tabIndex={focusIsVisible ? -1 : 0}>
-          {results.map((node) => (
+          {results.map((node) => node.url ? (
             <li key={node.id} role="none">
-              <BookmarkRow node={node} focusKey={`search:${node.id}`} />
+              <BookmarkRow node={node} focusKey={`search:${node.id}`} searchResult={node} />
             </li>
-          ))}
+          ) : <FolderRow key={node.id} node={node} styleMap={styleMap} searchResult={node} />)}
         </ul>
       </div>
     );
@@ -162,9 +184,10 @@ export function BookmarkTree() {
   const bar = findBookmarksBarNode(tree);
   const barChildren = bar?.children ?? [];
   const topLevel = tree[0]?.children ?? [];
-  const otherRoots = showOtherBookmarks ? topLevel.filter((node) => node !== bar && !node.url) : [];
+  const otherRoots = topLevel.filter((node) => node !== bar && !node.url && (showOtherBookmarks || node.id === revealedRootId));
+  const showBarRoot = Boolean(bar && bar.id === revealedRootId);
 
-  if (barChildren.length === 0 && otherRoots.length === 0 && !(showRecent && recent.length > 0)) {
+  if (!showBarRoot && barChildren.length === 0 && otherRoots.length === 0 && !(showRecent && recent.length > 0)) {
     return (
       <div className="tree-container">
         <div className="empty-state">
@@ -174,7 +197,8 @@ export function BookmarkTree() {
     );
   }
 
-  const styleMap = assignStylesToTree([...barChildren, ...otherRoots], folderStyles);
+  const barNodes = showBarRoot && bar ? [bar] : barChildren;
+  const styleMap = assignStylesToTree([...barNodes, ...otherRoots], folderStyles);
   const focusIsVisible = getNavigableNodes({
     tree,
     recent,
@@ -184,13 +208,14 @@ export function BookmarkTree() {
     expandedFolderIds,
     searchQuery,
     searchActive: false,
+    revealedRootId,
   }).some((row) => row.focusKey === focusedNodeId);
 
   return (
-    <div className="tree-container">
+    <div className="tree-container" ref={treeRef}>
       <ul role="tree" aria-label={t('common_bookmarks')} tabIndex={focusIsVisible ? -1 : 0}>
         {showRecent && recent.length > 0 && <RecentSection nodes={recent} />}
-        {sortNodes(barChildren).map((node) => (
+        {sortNodes(barNodes).map((node) => (
           <TreeItem key={node.id} node={node} styleMap={styleMap} />
         ))}
         {otherRoots.map((node) => (

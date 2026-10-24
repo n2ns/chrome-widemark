@@ -71,10 +71,16 @@
     "message": "收合所有資料夾"
   },
   "toolbar_search_placeholder": {
-    "message": "搜尋書籤..."
+    "message": "搜尋書籤和資料夾..."
   },
   "toolbar_clear_search": {
     "message": "清除搜尋"
+  },
+  "search_show_in_folder": {
+    "message": "在資料夾中顯示"
+  },
+  "search_folder": {
+    "message": "資料夾"
   },
   "tree_recently_added": {
     "message": "最近新增"
@@ -533,7 +539,7 @@
     "message": "按一下資料夾可將其展開或收合。"
   },
   "help_basics_search": {
-    "message": "使用搜尋按鈕（或按「/」鍵），可依標題或 URL 篩選書籤。"
+    "message": "使用搜尋按鈕（或按「/」）尋找書籤和資料夾。以空格分隔多個關鍵字；所有關鍵字都須符合標題或 URL。"
   },
   "help_basics_background": {
     "message": "按住 Ctrl 再按一下，或按滑鼠中鍵，可在背景分頁中開啟書籤。"

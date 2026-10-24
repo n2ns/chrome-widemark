@@ -17,7 +17,8 @@ WideMark is a lightweight bookmark manager for Chrome's side panel. It keeps boo
 Key features:
 
 - Browse the full bookmark tree — Bookmarks Bar plus Other and Mobile Bookmarks — in a persistent Chrome side panel.
-- Search bookmark titles and URLs quickly.
+- Search bookmarks with multiple keywords across titles and URLs, and find folders by name.
+- See folder paths in search results and use "Show in folder" to expand and focus the original location.
 - Open bookmarks in the current tab, a foreground tab, or a background tab (middle-click supported).
 - Create, edit, delete, reorder, sort, and move bookmarks.
 - Keyboard support: Alt+B opens the panel, arrow keys navigate, "/" focuses search.

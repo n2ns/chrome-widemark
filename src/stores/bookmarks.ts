@@ -25,6 +25,7 @@ interface BookmarksStore {
   onImportEnded: () => void;
 
   setExpanded: (id: string, expanded: boolean) => void;
+  expandFolders: (ids: string[]) => void;
   expandAll: () => void;
   collapseAll: () => void;
 }
@@ -107,6 +108,12 @@ export const useBookmarksStore = create<BookmarksStore>((set, get) => ({
     const ids = new Set(gatherFolderIds(get().tree));
     set({ expandedFolderIds: ids });
     persistExpanded(ids);
+  },
+
+  expandFolders: (ids) => {
+    const nextIds = new Set([...get().expandedFolderIds, ...ids]);
+    set({ expandedFolderIds: nextIds });
+    persistExpanded(nextIds);
   },
 
   collapseAll: () => {

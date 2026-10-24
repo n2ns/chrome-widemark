@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-10-24
+
+### Added
+- Search bookmarks using multiple keywords across titles and URLs, and find folders by name.
+- Show folder paths in search results to distinguish bookmarks with the same title.
+- Use "Show in folder" to expand the original location, scroll to the item, and focus it. Opening a folder result also reveals its contents.
+- Reveal results in hidden bookmark roots without changing the saved visibility preference.
+
+### Changed
+- Updated search hints and help in all ten supported languages.
+- Search results use a list layout with wrapping paths, including in wider panels.
+
 ## [1.2.2] - 2026-10-15
 
 ### Changed

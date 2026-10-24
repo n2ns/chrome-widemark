@@ -42,7 +42,7 @@ On `chrome://extensions`, click **Remove** on the WideMark card. You can then de
 ## Features
 
 - Browse the full bookmark tree — Bookmarks Bar plus Other/Mobile Bookmarks — in Chrome's side panel.
-- Search bookmark titles and URLs.
+- Search bookmarks and folders with multiple keywords across bookmark titles and URLs, or folder names. Results show their folder paths; use “Show in folder” to expand the original location and focus the item.
 - Open bookmarks in the current tab, a foreground tab, or a background tab (middle-click supported).
 - Create, edit, delete, reorder, and move bookmarks.
 - Sort a folder's contents by name from the right-click menu.

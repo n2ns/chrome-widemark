@@ -29,8 +29,11 @@ export const FALLBACK_MESSAGES = {
   toolbar_toggle_search: 'Toggle Search',
   toolbar_expand_all: 'Expand all folders',
   toolbar_collapse_all: 'Collapse all folders',
-  toolbar_search_placeholder: 'Search bookmarks...',
+  toolbar_search_placeholder: 'Search bookmarks and folders...',
   toolbar_clear_search: 'Clear search',
+
+  search_show_in_folder: 'Show in folder',
+  search_folder: 'Folder',
 
   tree_recently_added: 'Recently Added',
   tree_loading: 'Loading bookmarks...',
@@ -145,7 +148,7 @@ export const FALLBACK_MESSAGES = {
   help_built_by: 'Built by',
   help_basics: 'Basics',
   help_basics_folder: 'Click a folder to expand or collapse it.',
-  help_basics_search: 'Use the search button (or press “/”) to filter bookmarks by title or URL.',
+  help_basics_search: 'Use the search button (or press “/”) to find bookmarks and folders. Separate keywords with spaces; all keywords must match the title or URL.',
   help_basics_background: 'Ctrl-click or middle-click opens a bookmark in a background tab.',
   help_basics_keyboard: 'Arrow keys move through the tree; Enter opens the selected item.',
   help_basics_shortcut: 'Press Alt+B to open WideMark from any page (configurable at chrome://extensions/shortcuts).',

@@ -1,25 +1,36 @@
 import type { BookmarkNode } from '../types.ts';
 import { sortSearchResults } from './tree-logic.ts';
 
-// Flatten all URL-bearing bookmarks and keep those whose title or URL contains
-// the query, ranked by sortSearchResults (title-prefix first, then URL).
-export function searchBookmarks(roots: BookmarkNode[], query: string): BookmarkNode[] {
-  const needle = query.trim().toLocaleLowerCase();
-  const matches: BookmarkNode[] = [];
+export interface SearchResult extends BookmarkNode {
+  folderPath: string[];
+  ancestorIds: string[];
+}
 
-  const walk = (nodes: BookmarkNode[]) => {
+// Every query word must match the title or URL. Paths describe the result's
+// location; they do not make unrelated descendants match a folder name.
+export function searchBookmarks(roots: BookmarkNode[], query: string): SearchResult[] {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  if (!normalizedQuery) return [];
+  const words = normalizedQuery.split(/\s+/);
+  const matches: SearchResult[] = [];
+
+  const walk = (nodes: BookmarkNode[], folderPath: string[], ancestorIds: string[]) => {
     nodes.forEach((node) => {
-      if (node.url) {
-        const title = (node.title || '').toLocaleLowerCase();
-        if (title.includes(needle) || node.url.toLocaleLowerCase().includes(needle)) {
-          matches.push(node);
-        }
-      } else if (node.children) {
-        walk(node.children);
+      const title = (node.title || '').toLocaleLowerCase();
+      const url = (node.url || '').toLocaleLowerCase();
+      if (node.id !== '0' && words.every((word) => title.includes(word) || url.includes(word))) {
+        matches.push({ ...node, folderPath, ancestorIds });
+      }
+      if (!node.url && node.children) {
+        walk(
+          node.children,
+          node.title ? [...folderPath, node.title] : folderPath,
+          [...ancestorIds, node.id]
+        );
       }
     });
   };
 
-  walk(roots);
+  walk(roots, [], []);
   return sortSearchResults(matches, query);
 }

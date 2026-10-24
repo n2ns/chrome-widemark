@@ -71,10 +71,16 @@
     "message": "Tüm klasörleri daralt"
   },
   "toolbar_search_placeholder": {
-    "message": "Yer imlerinde ara..."
+    "message": "Yer işaretlerinde ve klasörlerde ara..."
   },
   "toolbar_clear_search": {
     "message": "Aramayı temizle"
+  },
+  "search_show_in_folder": {
+    "message": "Klasörde göster"
+  },
+  "search_folder": {
+    "message": "Klasör"
   },
   "tree_recently_added": {
     "message": "Son Eklenenler"
@@ -533,7 +539,7 @@
     "message": "Bir klasörü genişletmek veya daraltmak için tıklayın."
   },
   "help_basics_search": {
-    "message": "Yer imlerini başlığa veya URL’ye göre filtrelemek için arama düğmesini kullanın (veya “/” tuşuna basın)."
+    "message": "Yer işaretlerini ve klasörleri bulmak için arama düğmesini kullanın (veya “/” tuşuna basın). Anahtar kelimeleri boşluklarla ayırın; tüm kelimeler başlıkta veya URL’de bulunmalıdır."
   },
   "help_basics_background": {
     "message": "Ctrl ile tıklama veya orta tıklama, yer imini arka plandaki bir sekmede açar."

@@ -45,7 +45,7 @@ beforeEach(() => {
   useSettingsStore.setState({ ...SETTINGS_DEFAULTS, hydrated: true });
   useFolderStylesStore.setState({ styles: [] });
   useBookmarksStore.setState({ tree, recent: [], expandedFolderIds: new Set(['f1']), loaded: true });
-  useUiStore.setState({ view: 'main', searchQuery: '', recentExpanded: true, focusedNodeId: null });
+  useUiStore.setState({ view: 'main', searchQuery: '', recentExpanded: true, focusedNodeId: null, revealedRootId: null, revealTargetId: null });
   useOperationsStore.setState({ bookmarkMutationBusy: false, cleanupBusy: false, cleanupStatus: '' });
   useContextMenuStore.setState({ target: null, x: 0, y: 0, trigger: null });
   vi.stubGlobal('chrome', {
@@ -183,6 +183,42 @@ describe('keyboard navigation', () => {
     const githubRows = screen.getAllByText('GitHub').map((el) => el.closest('.bookmark-item'));
     expect(githubRows[0]).toHaveClass('kb-focus');
     expect(githubRows[1]).not.toHaveClass('kb-focus');
+  });
+
+  it('uses the reveal button from the keyboard without opening the bookmark', () => {
+    useSettingsStore.setState({ isSearchOpen: true });
+    useUiStore.setState({ searchQuery: 'docs' });
+    render(<BookmarkTree />);
+    renderHook(() => useKeyboardNav());
+    const button = screen.getByRole('button', { name: 'Show in folder: Docs' });
+    button.focus();
+    fireEvent.keyDown(button, { key: 'Enter' });
+    fireEvent.click(button); // native button activation
+    expect(document.activeElement).toHaveAttribute('data-focus-key', 'b2');
+    expect(chrome.tabs.update).not.toHaveBeenCalled();
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
+    expect(document.activeElement).toHaveAttribute('data-focus-key', 'f1');
+  });
+
+  it('reveals a searched folder with ArrowRight instead of expanding an invisible subtree', () => {
+    useSettingsStore.setState({ isSearchOpen: true });
+    useUiStore.setState({ searchQuery: 'work' });
+    render(<BookmarkTree />);
+    renderHook(() => useKeyboardNav());
+    fireEvent.keyDown(document.body, { key: 'ArrowDown' });
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowRight' });
+    expect(document.activeElement).toHaveAttribute('data-focus-key', 'f1');
+    expect(screen.getByText('Docs')).toBeInTheDocument();
+  });
+
+  it('does not activate a search result while an IME composition is being confirmed', () => {
+    useSettingsStore.setState({ isSearchOpen: true });
+    useUiStore.setState({ searchQuery: 'docs' });
+    render(<BookmarkTree />);
+    renderHook(() => useKeyboardNav());
+    const row = screen.getByText('Docs').closest('[role="treeitem"]')!;
+    fireEvent.keyDown(row, { key: 'Enter', isComposing: true });
+    expect(chrome.tabs.update).not.toHaveBeenCalled();
   });
 
   it('toggles the recent treeitem once on Enter', () => {

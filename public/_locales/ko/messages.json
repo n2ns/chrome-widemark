@@ -71,10 +71,16 @@
     "message": "모든 폴더 접기"
   },
   "toolbar_search_placeholder": {
-    "message": "북마크 검색..."
+    "message": "북마크 및 폴더 검색..."
   },
   "toolbar_clear_search": {
     "message": "검색 지우기"
+  },
+  "search_show_in_folder": {
+    "message": "폴더에서 표시"
+  },
+  "search_folder": {
+    "message": "폴더"
   },
   "tree_recently_added": {
     "message": "최근 추가됨"
@@ -533,7 +539,7 @@
     "message": "폴더를 클릭하여 펼치거나 접습니다."
   },
   "help_basics_search": {
-    "message": "검색 버튼(또는 “/” 키)을 사용하여 제목이나 URL로 북마크를 필터링합니다."
+    "message": "검색 버튼을 누르거나 “/” 키를 눌러 북마크와 폴더를 찾으세요. 키워드는 공백으로 구분하며, 모든 키워드가 제목 또는 URL에 포함되어야 합니다."
   },
   "help_basics_background": {
     "message": "Ctrl-클릭 또는 가운데 클릭으로 북마크를 백그라운드 탭에서 엽니다."

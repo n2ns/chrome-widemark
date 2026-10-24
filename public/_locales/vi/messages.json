@@ -71,10 +71,16 @@
     "message": "Thu gọn tất cả thư mục"
   },
   "toolbar_search_placeholder": {
-    "message": "Tìm kiếm dấu trang..."
+    "message": "Tìm dấu trang và thư mục..."
   },
   "toolbar_clear_search": {
     "message": "Xóa tìm kiếm"
+  },
+  "search_show_in_folder": {
+    "message": "Hiển thị trong thư mục"
+  },
+  "search_folder": {
+    "message": "Thư mục"
   },
   "tree_recently_added": {
     "message": "Mới thêm gần đây"
@@ -533,7 +539,7 @@
     "message": "Nhấp vào thư mục để mở rộng hoặc thu gọn."
   },
   "help_basics_search": {
-    "message": "Dùng nút tìm kiếm (hoặc nhấn “/”) để lọc dấu trang theo tiêu đề hoặc URL."
+    "message": "Dùng nút tìm kiếm (hoặc nhấn “/”) để tìm dấu trang và thư mục. Phân tách các từ khóa bằng dấu cách; tất cả từ khóa phải xuất hiện trong tiêu đề hoặc URL."
   },
   "help_basics_background": {
     "message": "Ctrl-nhấp hoặc nhấp chuột giữa sẽ mở dấu trang trong thẻ nền."

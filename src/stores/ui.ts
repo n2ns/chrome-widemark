@@ -11,6 +11,8 @@ interface UiStore {
   recentExpanded: boolean;
   /** Unique rendered-row key; prefixes distinguish recent/search duplicates. */
   focusedNodeId: string | null;
+  revealedRootId: string | null;
+  revealTargetId: string | null;
   setView: (view: PanelView) => void;
   toggleView: (view: PanelView) => void;
   setSearchQuery: (searchQuery: string) => void;
@@ -23,9 +25,11 @@ export const useUiStore = create<UiStore>((set, get) => ({
   searchQuery: '',
   recentExpanded: true,
   focusedNodeId: null,
+  revealedRootId: null,
+  revealTargetId: null,
   setView: (view) => set({ view }),
   toggleView: (view) => set({ view: get().view === view ? 'main' : view }),
-  setSearchQuery: (searchQuery) => set({ searchQuery }),
+  setSearchQuery: (searchQuery) => set({ searchQuery, revealedRootId: null, revealTargetId: null }),
   setRecentExpanded: (recentExpanded) => set({ recentExpanded }),
   setFocusedNodeId: (focusedNodeId) => set({ focusedNodeId }),
 }));

@@ -128,8 +128,9 @@ function normalizeUrlForSearchRank(url: string | null | undefined) {
   return normalizeSearchText(url).replace(/^[a-z][a-z0-9+.-]*:\/\//, '').replace(/^www\./, '');
 }
 
-export function sortSearchResults(results: BookmarkNode[], query: string) {
-  const normalizedQuery = normalizeSearchText(query);
+export function sortSearchResults<T extends BookmarkNode>(results: T[], query: string): T[] {
+  const normalizedQuery = normalizeSearchText(query).replace(/\s+/g, ' ');
+  const words = normalizedQuery.split(' ');
 
   function matchRank(item: BookmarkNode) {
     const title = normalizeSearchText(item.title);
@@ -137,9 +138,11 @@ export function sortSearchResults(results: BookmarkNode[], query: string) {
     const rankedUrl = normalizeUrlForSearchRank(item.url);
     if (title.startsWith(normalizedQuery)) return 0;
     if (title.includes(normalizedQuery)) return 1;
-    if (rankedUrl.startsWith(normalizedQuery)) return 2;
-    if (url.includes(normalizedQuery)) return 3;
-    return 4;
+    if (words.every((word) => title.includes(word))) return 2;
+    if (rankedUrl.startsWith(normalizedQuery)) return 3;
+    if (url.includes(normalizedQuery)) return 4;
+    if (words.every((word) => url.includes(word))) return 5;
+    return 6;
   }
 
   return [...results].sort((a, b) => {

@@ -18,12 +18,13 @@ const RECENT_HEADER_NODE = { id: 'widemark:recent-header', title: 'Recently Adde
 export function flattenVisibleNodes(
   tree: BookmarkNode[],
   showOtherBookmarks: boolean,
-  expandedFolderIds: Set<string>
+  expandedFolderIds: Set<string>,
+  revealedRootId: string | null = null
 ): BookmarkNode[] {
   const bar = findBookmarksBarNode(tree);
   const barChildren = bar?.children ?? [];
   const topLevel = tree[0]?.children ?? [];
-  const otherRoots = showOtherBookmarks ? topLevel.filter((n) => n !== bar && !n.url) : [];
+  const otherRoots = topLevel.filter((n) => n !== bar && !n.url && (showOtherBookmarks || n.id === revealedRootId));
 
   const out: BookmarkNode[] = [];
   const walk = (nodes: BookmarkNode[], sort: boolean) => {
@@ -34,7 +35,7 @@ export function flattenVisibleNodes(
       }
     });
   };
-  walk(barChildren, true);
+  walk(bar && bar.id === revealedRootId ? [bar] : barChildren, true);
   walk(otherRoots, false);
   return out;
 }
@@ -48,6 +49,7 @@ export function getNavigableNodes({
   expandedFolderIds,
   searchQuery,
   searchActive,
+  revealedRootId = null,
 }: {
   tree: BookmarkNode[];
   recent: BookmarkNode[];
@@ -57,6 +59,7 @@ export function getNavigableNodes({
   expandedFolderIds: Set<string>;
   searchQuery: string;
   searchActive: boolean;
+  revealedRootId?: string | null;
 }): NavigableNode[] {
   if (searchActive) {
     return searchBookmarks(tree, searchQuery).map((node) => ({ focusKey: `search:${node.id}`, node }));
@@ -68,7 +71,7 @@ export function getNavigableNodes({
         ...(recentExpanded ? recent.map((node) => ({ focusKey: `recent:${node.id}`, node, parentFocusKey: 'recent:header' })) : []),
       ]
     : [];
-  const flatNodes = flattenVisibleNodes(tree, showOtherBookmarks, expandedFolderIds);
+  const flatNodes = flattenVisibleNodes(tree, showOtherBookmarks, expandedFolderIds, revealedRootId);
   const visibleIds = new Set(flatNodes.map((node) => node.id));
   const parentById = new Map<string, string>();
   const walkParents = (nodes: BookmarkNode[]) => nodes.forEach((node) => {

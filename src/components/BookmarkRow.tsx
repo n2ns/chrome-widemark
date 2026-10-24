@@ -8,8 +8,10 @@ import { getBookmarkIconSrc, LINK_ICON_DATA_URI } from '../lib/ui-icons.ts';
 import { bookmarkDomain } from '../lib/bookmark-utils.ts';
 import { handleBookmarkClick } from '../lib/bookmark-click.ts';
 import type { BookmarkNode } from '../types.ts';
+import type { SearchResult } from '../lib/search.ts';
+import { SearchResultContent } from './SearchResultContent.tsx';
 
-export function BookmarkRow({ node, focusKey = node.id }: { node: BookmarkNode; focusKey?: string }) {
+export function BookmarkRow({ node, focusKey = node.id, searchResult }: { node: BookmarkNode; focusKey?: string; searchResult?: SearchResult }) {
   const tooltipEnabled = useSettingsStore((s) => s.tooltipEnabled);
   const leftClickAction = useSettingsStore((s) => s.leftClickAction);
   const focused = useUiStore((s) => s.focusedNodeId === focusKey);
@@ -19,6 +21,7 @@ export function BookmarkRow({ node, focusKey = node.id }: { node: BookmarkNode; 
 
   const open = (event: MouseEvent) => handleBookmarkClick(url, event, leftClickAction);
   const openFromKeyboard = (event: KeyboardEvent) => {
+    if (event.nativeEvent.isComposing) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     event.stopPropagation();
@@ -30,7 +33,7 @@ export function BookmarkRow({ node, focusKey = node.id }: { node: BookmarkNode; 
       role="treeitem"
       tabIndex={focused ? 0 : -1}
       data-focus-key={focusKey}
-      className={`tree-node bookmark-item${drag.dragClass}${focused ? ' kb-focus' : ''}`}
+      className={`tree-node bookmark-item${searchResult ? ' search-result' : ''}${drag.dragClass}${focused ? ' kb-focus' : ''}`}
       data-url={url}
       data-node-id={node.id}
       draggable={drag.draggable}
@@ -56,7 +59,7 @@ export function BookmarkRow({ node, focusKey = node.id }: { node: BookmarkNode; 
           event.currentTarget.src = LINK_ICON_DATA_URI;
         }}
       />
-      <span className="node-title">{node.title || url}</span>
+      {searchResult ? <SearchResultContent result={searchResult} /> : <span className="node-title">{node.title || url}</span>}
     </div>
   );
 }
