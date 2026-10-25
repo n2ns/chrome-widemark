@@ -140,3 +140,7 @@ chrome-widemark/
 ## Status
 
 This project intentionally avoids heavy process or framework overhead. See [TODO.md](TODO.md) for the current follow-up list.
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
