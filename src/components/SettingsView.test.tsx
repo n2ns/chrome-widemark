@@ -93,7 +93,7 @@ describe('SettingsView', () => {
     fireEvent.click(screen.getByText('Reset Folder Styles'));
     fireEvent.click(await screen.findByText('Reset'));
 
-    await vi.waitFor(() => expect(chrome.storage.sync.remove).toHaveBeenCalledWith('folderStyles', expect.any(Function)));
+    await vi.waitFor(() => expect(chrome.storage.sync.remove).toHaveBeenCalledWith(['folderStyles'], expect.any(Function)));
     expect(useFolderStylesStore.getState().styles).toEqual([]);
     expect(useOperationsStore.getState().bookmarkMutationBusy).toBe(false);
   });

@@ -56,6 +56,35 @@ describe('ModalHost', () => {
     expect(await result).toEqual({ color: '#3b82f6', icon: 'star' });
   });
 
+  it.each(['mailto:person@example.com', 'about:blank', 'javascript:alert(1)', 'custom.scheme:123'])(
+    'preserves the existing protocol when renaming %s', async (url) => {
+      render(<ModalHost />);
+      const result = useModalStore.getState().openCustomModal({
+        title: 'Edit Bookmark', mode: 'input', showFields: ['title', 'url'],
+        fieldsVal: { title: 'Original', url },
+      });
+      fireEvent.change(await screen.findByLabelText('Name'), { target: { value: 'Renamed' } });
+      fireEvent.click(screen.getByText('Save'));
+      expect(await result).toEqual({ title: 'Renamed', url });
+    }
+  );
+
+  it.each([
+    ['localhost:3000', 'https://localhost:3000'],
+    ['example.com:8080/path', 'https://example.com:8080/path'],
+    ['mailto:person@example.com', 'mailto:person@example.com'],
+    ['tel:123456', 'tel:123456'],
+  ])('normalizes a newly entered address %s', async (url, expected) => {
+    render(<ModalHost />);
+    const result = useModalStore.getState().openCustomModal({
+      title: 'Add Bookmark', mode: 'input', showFields: ['title', 'url'],
+      fieldsVal: { title: 'Link', url: 'https://' },
+    });
+    fireEvent.change(await screen.findByLabelText('URL'), { target: { value: url } });
+    fireEvent.click(screen.getByText('Save'));
+    expect(await result).toEqual({ title: 'Link', url: expected });
+  });
+
   it('exposes dialog semantics and keyboard-accessible style choices', async () => {
     render(<ModalHost />);
     useModalStore.getState().openCustomModal({

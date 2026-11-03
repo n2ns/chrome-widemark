@@ -4,12 +4,10 @@ import { useContextMenuStore } from '../stores/contextMenu.ts';
 import { useModalStore } from '../stores/modal.ts';
 import { useFolderStylesStore } from '../stores/folderStyles.ts';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
-import { useSettingsStore } from '../stores/settings.ts';
 import { useOperationsStore } from '../stores/operations.ts';
 import { computeSortedChildren, isPermanentFolder } from '../lib/bookmark-utils.ts';
 import { assignStylesToTree, collectFolderIdentities } from '../lib/folder-style-assignment.ts';
 import { loadFolderStyleRecords, saveFolderStyleRecord } from '../lib/folder-style-storage.ts';
-import { getVisibleRoots } from '../lib/tree-logic.ts';
 import { t } from '../lib/i18n.ts';
 import { withGlobalBookmarkMutation } from '../lib/bookmark-mutation-lock.ts';
 import type { BookmarkNode } from '../types.ts';
@@ -211,7 +209,10 @@ export function ContextMenu() {
       const operations = beginMutation();
       if (!operations) return;
       void withGlobalBookmarkMutation(() => new Promise<void>((resolve) => {
-        chrome.bookmarks.update(target.id, { title: data.title, url: data.url }, () => resolve());
+        chrome.bookmarks.update(target.id, {
+          title: data.title,
+          ...(data.url !== target.url ? { url: data.url } : {}),
+        }, () => resolve());
       })).finally(() => operations.finishMutation());
       return;
     }
@@ -239,9 +240,9 @@ export function ContextMenu() {
 
   const folderStyle = async () => {
     close();
-    const roots = getVisibleRoots(useBookmarksStore.getState().tree, useSettingsStore.getState().showOtherBookmarks);
+    const tree = useBookmarksStore.getState().tree;
     const styles = useFolderStylesStore.getState().styles;
-    const record = assignStylesToTree(roots, styles).get(target.id) ?? null;
+    const record = assignStylesToTree(tree, styles).get(target.id) ?? null;
     const current = record ? { color: record.color || '', icon: record.icon || 'default' } : { color: '', icon: 'default' };
     const data = (await openModal({ title: t('context_folder_style'), mode: 'input', showFields: ['folderStyle'], fieldsVal: current })) as ModalData | false;
     if (!data) return;
@@ -250,14 +251,14 @@ export function ContextMenu() {
     let unableToLoadFolder = false;
     try {
       await withGlobalBookmarkMutation(async () => {
-        let latestRoots: BookmarkNode[];
+        let latestTree: BookmarkNode[];
         try {
-          latestRoots = getVisibleRoots(await readFreshBookmarkTree(), true);
+          latestTree = await readFreshBookmarkTree();
         } catch {
           unableToLoadFolder = true;
           throw new Error('Unable to load bookmark tree');
         }
-        const latestIdentities = collectFolderIdentities(latestRoots);
+        const latestIdentities = collectFolderIdentities(latestTree);
         const latestIdentity = latestIdentities.find((folder) => folder.id === target.id);
         if (!latestIdentity) {
           unableToLoadFolder = true;
@@ -266,7 +267,7 @@ export function ContextMenu() {
         // Re-read inside the mutation lock so the edit uses the latest local
         // bookmark and style snapshot.
         const latestStyles = await loadFolderStyleRecords();
-        const latestRecord = assignStylesToTree(latestRoots, latestStyles).get(target.id) ?? null;
+        const latestRecord = assignStylesToTree(latestTree, latestStyles).get(target.id) ?? null;
         const saved = await saveFolderStyleRecord(
           latestRecord,
           latestIdentity,

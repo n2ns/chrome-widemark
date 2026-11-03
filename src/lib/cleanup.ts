@@ -1,5 +1,5 @@
 import { findSameNameFolderGroups } from './bookmark-utils.ts';
-import type { SameNameFolderGroup } from '../types.ts';
+import type { BookmarkNode, SameNameFolderGroup } from '../types.ts';
 
 const MAX_MERGE_PASSES = 10;
 
@@ -8,7 +8,8 @@ export interface BatchDeps {
   endBatch: () => void;
 }
 
-// Delete each folder only if it is still empty at the exact mutation point.
+// Delete confirmed deep-empty subtrees from the leaves up, counting only the
+// confirmed roots. Recheck the whole subtree before removing any of its folders.
 // chrome.bookmarks.remove is atomic here: unlike removeTree, it fails instead
 // of deleting children that appeared after the confirmation/revalidation.
 export function removeFoldersSequentially(ids: string[], deps: BatchDeps, onDone: (removed: number) => void) {
@@ -21,10 +22,37 @@ export function removeFoldersSequentially(ids: string[], deps: BatchDeps, onDone
       onDone(removed);
       return;
     }
-    chrome.bookmarks.remove(ids[index]!, () => {
-      if (!chrome.runtime.lastError) removed += 1;
-      index += 1;
-      next();
+    const rootId = ids[index++]!;
+    chrome.bookmarks.getSubTree(rootId, (tree) => {
+      if (chrome.runtime.lastError || !tree[0]) {
+        next();
+        return;
+      }
+      const folderIds: string[] = [];
+      const collectEmptyFolders = (node: BookmarkNode): boolean => {
+        if (node.url || node.unmodifiable) return false;
+        if (!(node.children || []).every(collectEmptyFolders)) return false;
+        folderIds.push(node.id);
+        return true;
+      };
+      if (!collectEmptyFolders(tree[0])) {
+        next();
+        return;
+      }
+      let folderIndex = 0;
+      const removeNext = () => {
+        if (folderIndex >= folderIds.length) {
+          next();
+          return;
+        }
+        const folderId = folderIds[folderIndex++]!;
+        chrome.bookmarks.remove(folderId, () => {
+          const failed = Boolean(chrome.runtime.lastError);
+          if (!failed && folderId === rootId) removed += 1;
+          removeNext();
+        });
+      };
+      removeNext();
     });
   };
   next();

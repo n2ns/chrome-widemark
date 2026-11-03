@@ -130,7 +130,7 @@ chrome-widemark/
 │   ├── stores/              # Zustand stores
 │   ├── hooks/               # settings apply / keyboard / drag
 │   ├── lib/                 # framework-agnostic bookmark logic
-│   ├── types.d.ts  ·  chrome-shims.d.ts
+│   ├── types.d.ts
 │   └── styles/
 ├── build/                   # Vite output, git-ignored (Load unpacked here)
 ├── icons/  ·  store-assets/  ·  design/

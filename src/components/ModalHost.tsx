@@ -74,7 +74,8 @@ export function ModalHost() {
       return;
     }
     const nextTitle = title.trim();
-    let nextUrl = url.trim();
+    const unchangedUrl = url === active.fieldsVal?.url;
+    let nextUrl = unchangedUrl ? url : url.trim();
     if (fields.includes('title') && nextTitle === '') {
       setError(t('modal_name_required'));
       return;
@@ -84,7 +85,8 @@ export function ModalHost() {
         setError(t('modal_url_required'));
         return;
       }
-      if (!/^[a-zA-Z0-9+-.]+:\/\//.test(nextUrl)) {
+      const bareHostPort = /^(?:localhost|[^\s/:?#]+\.[^\s/:?#]+):\d+(?:[/?#]|$)/i.test(nextUrl);
+      if (!unchangedUrl && (bareHostPort || !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(nextUrl))) {
         nextUrl = `https://${nextUrl}`;
       }
     }

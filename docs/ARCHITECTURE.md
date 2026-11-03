@@ -37,7 +37,7 @@ manifest.json ──▶ @crxjs ──▶ build/  (loadable extension)
 
 The bookmark algorithms carry no DOM/React dependency and are covered by their own tests: `bookmark-utils` (domain/keys, duplicates, sorting, folder-style matching), `tree-logic` (bookmarks-bar lookup, drop-position math, dropped-link parsing, search ranking), `duplicate-scan`, `folder-style-assignment`, `folder-style-storage`, `cleanup`, `search`, `visible-nodes`, `bookmark-click`, `theme`, `ui-icons`.
 
-Type-only declaration files (`src/types.d.ts`, `src/chrome-shims.d.ts`) emit no JavaScript; the latter augments `chrome-types` with `chrome.runtime.lastError`.
+The type-only declaration file `src/types.d.ts` emits no JavaScript. Chrome API types, including `chrome.runtime.lastError`, come from `chrome-types`.
 
 ## Permission Boundary
 
@@ -45,7 +45,11 @@ WideMark deliberately avoids `host_permissions`. It uses only Chrome's Bookmarks
 
 ## Data Boundary
 
-Chrome bookmarks remain Chrome bookmark data. WideMark stores only its own preferences and a simple `folderStyles` list in extension storage. Folder styles use `dateAdded` as their rename/move-stable identity, with title/path metadata for rare same-millisecond collisions. The list is synchronized by Chrome Sync when enabled and is never sent to developer-operated servers.
+Chrome bookmarks remain Chrome bookmark data. WideMark stores only its own preferences and folder style metadata in extension storage. Folder styles use `dateAdded` as their rename/move-stable identity, with title/path metadata for rare same-millisecond collisions. Matching always includes the complete folder tree, independent of visibility or search. Bookmarks Bar descendants retain their existing bar-relative paths; other roots retain their root-prefixed paths.
+
+Styles are synchronized by Chrome Sync when enabled and are never sent to developer-operated servers. The legacy `folderStyles` array remains readable and migrates on the next successful style edit to a versioned index plus `folderStyles:<n>` chunks, each within Chrome Sync's 8 KB item limit. Index and chunks share a revision; incomplete snapshots are rejected until synchronization completes. The total Sync quota and write limits still apply.
+
+Empty-folder cleanup re-reads each confirmed subtree, skips it if it now contains bookmarks, and removes empty folders from the leaves up. Each deletion uses `chrome.bookmarks.remove` so content added during cleanup is preserved. The reported count is the number of confirmed subtree roots successfully removed.
 
 ## Internationalization
 

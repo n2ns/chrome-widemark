@@ -97,7 +97,6 @@ chrome-widemark/
 │   ├── hooks/               # useApplySettings / useKeyboardNav / useNodeDrag
 │   ├── lib/                 # framework-agnostic logic (+ tests)
 │   ├── types.d.ts           # shared types (emits no JS)
-│   ├── chrome-shims.d.ts    # chrome-types augmentation
 │   └── styles/
 ├── build/                   # Vite output (git-ignored; Load unpacked here)
 ├── icons/  ·  store-assets/  ·  design/

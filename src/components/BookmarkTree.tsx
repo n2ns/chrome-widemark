@@ -141,6 +141,7 @@ export function BookmarkTree() {
   const treeRef = useRef<HTMLDivElement>(null);
   const searchActive = isSearchOpen && shouldSearchBookmarks(searchQuery);
   const results = useMemo(() => searchActive ? searchBookmarks(tree, searchQuery) : [], [tree, searchQuery, searchActive]);
+  const styleMap = useMemo(() => assignStylesToTree(tree, folderStyles), [tree, folderStyles]);
 
   useLayoutEffect(() => {
     if (!revealTargetId || searchActive) return;
@@ -165,7 +166,6 @@ export function BookmarkTree() {
   }
 
   if (searchActive) {
-    const styleMap = assignStylesToTree(tree[0]?.children ?? [], folderStyles);
     const focusIsVisible = results.some((node) => focusedNodeId === `search:${node.id}`);
     return (
       <div className="tree-container">
@@ -198,7 +198,6 @@ export function BookmarkTree() {
   }
 
   const barNodes = showBarRoot && bar ? [bar] : barChildren;
-  const styleMap = assignStylesToTree([...barNodes, ...otherRoots], folderStyles);
   const focusIsVisible = getNavigableNodes({
     tree,
     recent,

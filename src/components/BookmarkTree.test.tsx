@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
 import { BookmarkTree } from './BookmarkTree.tsx';
 import { useBookmarksStore } from '../stores/bookmarks.ts';
 import { useSettingsStore, SETTINGS_DEFAULTS } from '../stores/settings.ts';
@@ -50,6 +50,28 @@ afterEach(() => {
 });
 
 describe('BookmarkTree', () => {
+  it('keeps hidden same-date folders in style matching across normal and search views', () => {
+    const nextTree = structuredClone(tree);
+    nextTree[0]!.children![1]!.children = [{
+      id: 'f2', title: 'Hidden Work', dateAdded: 100, children: [], syncing: false,
+    }];
+    useBookmarksStore.setState({ tree: nextTree });
+    useFolderStylesStore.setState({ styles: [{
+      dateAdded: 100, title: 'Hidden Work', path: ['Other Bookmarks', 'Hidden Work'], color: '#ef4444', icon: 'star',
+    }] });
+    render(<BookmarkTree />);
+    const workIcon = () => screen.getByText('Work').closest('.tree-node')!.querySelector('.folder-icon');
+    expect(workIcon()).not.toHaveStyle({ color: '#ef4444' });
+    act(() => useSettingsStore.setState({ showOtherBookmarks: false }));
+    expect(workIcon()).not.toHaveStyle({ color: '#ef4444' });
+    act(() => {
+      useSettingsStore.setState({ isSearchOpen: true });
+      useUiStore.setState({ searchQuery: 'Hidden Work' });
+    });
+    expect(screen.getByText('Hidden Work').closest('.tree-node')!.querySelector('.folder-icon'))
+      .toHaveStyle({ color: '#ef4444' });
+  });
+
   it('renders bookmarks and folders from the store', () => {
     render(<BookmarkTree />);
     expect(screen.getByText('GitHub')).toBeInTheDocument();
@@ -142,7 +164,19 @@ describe('BookmarkTree', () => {
 describe('assignStylesToTree', () => {
   it('maps a folder id to its style record by dateAdded', () => {
     const styles = [{ dateAdded: 100, title: 'Work', path: ['Work'], color: '#f00', icon: 'star' }];
-    const map = assignStylesToTree(tree[0]!.children![0]!.children!, styles);
+    const map = assignStylesToTree(tree, styles);
     expect(map.get('f1')).toMatchObject({ color: '#f00', icon: 'star' });
+  });
+
+  it('preserves a legacy shared style for indistinguishable bookmarks-bar folders', () => {
+    const nextTree = structuredClone(tree);
+    const first = nextTree[0]!.children![0]!.children![1]!;
+    nextTree[0]!.children![0]!.children!.push({ ...first, id: 'f2' });
+    const styles = [{ dateAdded: 100, title: 'Work', path: ['Work'], color: '#f00', icon: 'star' }];
+
+    const map = assignStylesToTree(nextTree, styles);
+
+    expect(map.get('f1')).toEqual(styles[0]);
+    expect(map.get('f2')).toEqual(styles[0]);
   });
 });

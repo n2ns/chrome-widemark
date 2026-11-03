@@ -1,6 +1,7 @@
 import { useBookmarksStore } from './bookmarks.ts';
 import { useFolderStylesStore } from './folderStyles.ts';
 import { useSettingsStore } from './settings.ts';
+import { isFolderStyleStorageKey } from '../lib/folder-style-storage.ts';
 
 // Wire Chrome events into the stores. Called once at app startup. Zustand
 // actions have stable identity, so the bound references are valid listeners.
@@ -24,7 +25,7 @@ export function initChromeSubscriptions() {
     if (areaName === 'local') {
       useSettingsStore.getState().applyExternalChanges(changes);
     }
-    if (areaName === 'sync' && changes.folderStyles) {
+    if (areaName === 'sync' && Object.keys(changes).some(isFolderStyleStorageKey)) {
       void useFolderStylesStore.getState().reload();
     }
   });
