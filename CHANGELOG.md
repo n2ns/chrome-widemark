@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-11-04
+
+### Fixed
+- Preserve existing bookmark URLs when renaming, including non-web protocols, while continuing to complete bare host-and-port addresses.
+- Keep folder colors and icons consistent across search and hidden bookmark roots, preserve existing style paths, and allow styling the Bookmarks Bar itself.
+- Clean up nested empty folders from the leaves up while preserving bookmarks added during cleanup.
+- Split folder styles across Chrome Sync storage items to avoid the single-item 8 KB limit. Existing styles migrate on the next successful edit; incomplete synchronized snapshots cannot overwrite saved styles.
+
+### Changed
+- Updated runtime and development dependencies to their latest stable versions, including React 19.3.1, Vite 8.3.5, Vitest 5.1.0, and Happy DOM 21.0.4.
+- Standardized the project license on Apache-2.0.
+
 ## [1.3.0] - 2026-10-24
 
 ### Added
