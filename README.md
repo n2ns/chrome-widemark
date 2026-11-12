@@ -2,6 +2,11 @@
 
 WideMark is a compact Chrome Manifest V3 bookmark manager for the side panel. It provides a persistent bookmark tree, fast search, folder styling, bookmark editing, drag-and-drop organization, and local duplicate-bookmark detection.
 
+[![Chrome Web Store version](https://img.shields.io/chrome-web-store/v/jmagjbdffihnegmhhpfdffceapdhlldh?label=chrome%20web%20store)](https://chromewebstore.google.com/detail/widemark-bookmark-side-pa/jmagjbdffihnegmhhpfdffceapdhlldh)
+[![Chrome Web Store users](https://img.shields.io/chrome-web-store/users/jmagjbdffihnegmhhpfdffceapdhlldh)](https://chromewebstore.google.com/detail/widemark-bookmark-side-pa/jmagjbdffihnegmhhpfdffceapdhlldh)
+[![CI](https://img.shields.io/github/actions/workflow/status/n2ns/chrome-widemark/ci.yml?branch=main&label=CI)](https://github.com/n2ns/chrome-widemark/actions/workflows/ci.yml)
+[![license](https://img.shields.io/github/license/n2ns/chrome-widemark)](https://github.com/n2ns/chrome-widemark/blob/main/LICENSE)
+
 [Install from the Chrome Web Store](https://chromewebstore.google.com/detail/widemark-bookmark-side-pa/jmagjbdffihnegmhhpfdffceapdhlldh)
 
 <img src="docs/images/side-panel.png" alt="WideMark side panel showing a bookmark tree with styled folders" width="380">
